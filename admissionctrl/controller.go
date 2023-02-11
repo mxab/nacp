@@ -24,10 +24,19 @@ type JobValidator interface {
 	AdmissionController
 	Validate(*structs.Job) (warnings []error, err error)
 }
+
 type JobHandler struct {
 	mutators   []JobMutator
 	validators []JobValidator
 	logger     hclog.Logger
+}
+
+func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclog.Logger) *JobHandler {
+	return &JobHandler{
+		mutators:   mutators,
+		validators: validators,
+		logger:     logger,
+	}
 }
 
 func (j *JobHandler) ApplyAdmissionControllers(job *structs.Job) (out *structs.Job, warnings []error, err error) {
