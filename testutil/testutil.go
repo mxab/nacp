@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/nomad/nomad/structs"
 )
 
-func ReadJob(t *testing.T) *structs.Job {
+func readJobJson(t *testing.T) []byte {
 	t.Helper()
-	job := &structs.Job{}
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -32,7 +31,18 @@ func ReadJob(t *testing.T) *structs.Job {
 	if err != nil {
 		t.Fatalf("Error reading file")
 	}
-	err = json.Unmarshal(data, &job)
+	return data
+}
+func ReadJobJson(t *testing.T) string {
+	t.Helper()
+	return string(readJobJson(t))
+}
+func ReadJob(t *testing.T) *structs.Job {
+	t.Helper()
+
+	data := readJobJson(t)
+	job := &structs.Job{}
+	err := json.Unmarshal(data, &job)
 	if err != nil {
 		t.Fatalf("Error unmarshalling json")
 	}

@@ -13,7 +13,7 @@
     "ID": "example",
     "JobModifyIndex": 11,
     "Meta": null,
-    "ModifyIndex": 11,
+    "ModifyIndex": 12,
     "Multiregion": null,
     "Name": "example",
     "Namespace": "default",
@@ -26,14 +26,20 @@
     "Region": "global",
     "Spreads": null,
     "Stable": false,
-    "Status": "pending",
+    "Status": "running",
     "StatusDescription": "",
     "Stop": false,
-    "SubmitTime": 1675891187313750000,
+    "SubmitTime": 1676120893707424000,
     "TaskGroups": [
       {
         "Affinities": null,
-        "Constraints": null,
+        "Constraints": [
+          {
+            "LTarget": "${attr.vault.version}",
+            "Operand": "semver",
+            "RTarget": ">= 0.6.1"
+          }
+        ],
         "Consul": {
           "Namespace": ""
         },
@@ -96,11 +102,11 @@
             "Artifacts": null,
             "CSIPluginConfig": null,
             "Config": {
+              "auth_soft_fail": true,
               "image": "redis:7",
               "ports": [
                 "db"
-              ],
-              "auth_soft_fail": true
+              ]
             },
             "Constraints": null,
             "DispatchPayload": null,
@@ -144,7 +150,7 @@
               "Env": true,
               "Namespace": "",
               "Policies": [
-                "example-redis"
+                "redis"
               ]
             },
             "VolumeMounts": null
