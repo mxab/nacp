@@ -12,7 +12,7 @@ func TestHelloMutator(t *testing.T) {
 
 	//read the json file and unmarshal it into the job struct
 	//this is the job that we will be mutating
-	job := testutil.ReadJob(t)
+	job := testutil.ReadJob(t, "job.json")
 
 	job, _, _ = mutator.Mutate(job)
 

@@ -24,7 +24,7 @@ func TestProxyTableDriven(t *testing.T) {
 		method string
 		want   string
 	}
-	wantJob := testutil.ReadJob(t)
+	wantJob := testutil.ReadJob(t, "job.json")
 	wantJob.Meta = map[string]string{
 		"hello": "world",
 	}
@@ -84,7 +84,7 @@ func TestProxyTableDriven(t *testing.T) {
 			defer proxyServer.Close()
 
 			jobRequest := structs.JobRegisterRequest{
-				Job: testutil.ReadJob(t),
+				Job: testutil.ReadJob(t, "job.json"),
 			}
 
 			buffer := new(bytes.Buffer)

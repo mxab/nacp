@@ -1,29 +1,22 @@
 package validator
 
 import (
-	"context"
 	"testing"
 
 	"github.com/mxab/nacp/testutil"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpaValidator(t *testing.T) {
 	// create a context with a timeout
 
-	ctx := context.TODO()
-
 	// create a new OPA object
-	// opa := NewOpaValidator()
-
-	// opa.Validate(nil)
-	// create a new query object
-	query, err := rego.New(
-		rego.Query("policies_allowed = data.nacp.vault_policy_prefix.allow"),
-		//rego.Query("data.nacp.vault_policy_prefix.policy_prefix"),
-		rego.Module("nacp.vault_policy_prefix", `
-		package nacp.vault_policy_prefix
+	opa, err := NewOpaValidator([]OpaRule{
+		{
+			name:  "nacp.vault_policy_prefix",
+			query: "policies_allowed = data.nacp.vault_policy_prefix.allow",
+			module: `
+			package nacp.vault_policy_prefix
 
 		import future.keywords.every
 		import future.keywords.if
@@ -40,19 +33,37 @@ func TestOpaValidator(t *testing.T) {
 				startswith(p, policy_prefix)
 			}
 		}
-		`),
-	).PrepareForEval(ctx)
+			`,
+			binding: "policies_allowed",
+		},
+	})
 
-	// prepare the query for evaluation
+	require.Equal(t, nil, err)
 
-	if err != nil {
-		panic(err)
+	tests := []struct {
+		name    string
+		jobFile string
+		wantErr bool
+	}{
+		{
+			name:    "valid job",
+			jobFile: "job.json",
+			wantErr: false,
+		},
+		{
+			name:    "invalid job",
+			jobFile: "job_invalid_policy.json",
+			wantErr: true,
+		},
 	}
-	results, err := query.Eval(ctx, rego.EvalInput(testutil.ReadJob(t)))
-
-	if err != nil {
-		panic(err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			job := testutil.ReadJob(t, tt.jobFile)
+			_, _, err := opa.Validate(job)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
-	assert.Equal(t, true, results[0].Bindings["policies_allowed"])
 
 }

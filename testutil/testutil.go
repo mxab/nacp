@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/nomad/nomad/structs"
 )
 
-func readJobJson(t *testing.T) []byte {
+func readJobJson(t *testing.T, name string) []byte {
 	t.Helper()
 
 	_, filename, _, ok := runtime.Caller(0)
@@ -19,7 +19,7 @@ func readJobJson(t *testing.T) []byte {
 		t.Fatalf("Could not get filename")
 	}
 
-	path := path.Join(path.Dir(filename), "..", "testdata", "job.json")
+	path := path.Join(path.Dir(filename), "..", "testdata", name)
 
 	jsonFile, err := os.Open(path)
 
@@ -33,14 +33,14 @@ func readJobJson(t *testing.T) []byte {
 	}
 	return data
 }
-func ReadJobJson(t *testing.T) string {
+func ReadJobJson(t *testing.T, name string) string {
 	t.Helper()
-	return string(readJobJson(t))
+	return string(readJobJson(t, name))
 }
-func ReadJob(t *testing.T) *structs.Job {
+func ReadJob(t *testing.T, name string) *structs.Job {
 	t.Helper()
 
-	data := readJobJson(t)
+	data := readJobJson(t, name)
 	job := &structs.Job{}
 	err := json.Unmarshal(data, &job)
 	if err != nil {
