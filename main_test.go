@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/mxab/nacp/config"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,18 +70,17 @@ func TestProxyTableDriven(t *testing.T) {
 			defer nomadDummy.Close()
 
 			// Use Client & URL from our local test server
-			c := Config{
+			c := &config.Config{
 				Port: 8080,
 				Bind: "0.0.0.0",
-				nomad: NomadServer{
+				Nomad: &config.NomadServer{
 					Address: nomadDummy.URL,
 				},
+				Validators: []config.Validator{},
 			}
 			proxy := NewServer(c, hclog.NewNullLogger())
 
-			//http.Handle("/", proxy)
-
-			proxyServer := httptest.NewServer(proxy)
+			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 
 			jobRequest := structs.JobRegisterRequest{

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -14,23 +15,15 @@ import (
 	"github.com/hashicorp/nomad/nomad/structs"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
+	"github.com/mxab/nacp/config"
 )
 
-type NomadServer struct {
-	Address string
-}
-type Config struct {
-	Port  int
-	Bind  string
-	nomad NomadServer
-}
-
-func NewServer(c Config, appLogger hclog.Logger) *httputil.ReverseProxy {
+func NewServer(c *config.Config, appLogger hclog.Logger) func(http.ResponseWriter, *http.Request) {
 
 	// create a reverse proxy that catches "/v1/jobs" post calls
 	// and forwards them to the jobs service
 	// create a new reverse proxy
-	backend, err := url.Parse(c.nomad.Address)
+	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		panic(err)
 	}
@@ -43,10 +36,14 @@ func NewServer(c Config, appLogger hclog.Logger) *httputil.ReverseProxy {
 	)
 
 	proxy := httputil.NewSingleHostReverseProxy(backend)
+
 	originalDirector := proxy.Director
 
 	proxy.Director = func(r *http.Request) {
 		originalDirector(r)
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
 
 		// only check for the header if it is a POST request and path is /v1/jobs
 		if isCreate(r) || isUpdate(r) {
@@ -80,9 +77,9 @@ func NewServer(c Config, appLogger hclog.Logger) *httputil.ReverseProxy {
 			r.Body = io.NopCloser(bytes.NewBuffer(data))
 
 		}
-
+		proxy.ServeHTTP(w, r)
 	}
-	return proxy
+
 }
 func isCreate(r *http.Request) bool {
 	return r.Method == "POST" && r.URL.Path == "/v1/jobs"
@@ -92,6 +89,7 @@ func isUpdate(r *http.Request) bool {
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html
+// https://joshsoftware.wordpress.com/2021/05/25/simple-and-powerful-reverseproxy-in-go/
 func main() {
 
 	appLogger := hclog.New(&hclog.LoggerOptions{
@@ -105,13 +103,15 @@ func main() {
 	// and forwards them to the jobs service
 	// create a new reverse proxy
 
-	c := Config{
-		Port: 8080,
-		Bind: "0.0.0.0",
-		nomad: NomadServer{
-			Address: "http://localhost:4646",
-		},
+	c, err := config.LoadConfig("config.hcl")
+	if err != nil {
+		appLogger.Error("Failed to load config", "error", err)
+		os.Exit(1)
 	}
-	NewServer(c, appLogger)
+	proxy := NewServer(c, appLogger)
 
+	http.HandleFunc("/", proxy)
+
+	appLogger.Info("Started Nomad Admission Control Proxy", "bind", c.Bind, "port", c.Port)
+	appLogger.Error("%s", http.ListenAndServe(fmt.Sprintf("%s:%d", c.Bind, c.Port), nil))
 }
