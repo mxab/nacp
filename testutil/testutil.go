@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/stretchr/testify/mock"
 )
 
 func readJobJson(t *testing.T, name string) []byte {
@@ -47,4 +48,28 @@ func ReadJob(t *testing.T, name string) *structs.Job {
 		t.Fatalf("Error unmarshalling json")
 	}
 	return job
+}
+
+type MockMutator struct {
+	mock.Mock
+}
+
+func (m *MockMutator) Mutate(job *structs.Job) (out *structs.Job, warnings []error, err error) {
+	args := m.Called(job)
+	return args.Get(0).(*structs.Job), args.Get(1).([]error), args.Error(2)
+}
+func (m *MockMutator) Name() string {
+	return "mock-mutator"
+}
+
+type MockValidator struct {
+	mock.Mock
+}
+
+func (m *MockValidator) Validate(job *structs.Job) (warnings []error, err error) {
+	args := m.Called(job)
+	return args.Get(0).([]error), args.Error(1)
+}
+func (m *MockValidator) Name() string {
+	return "mock-validator"
 }

@@ -5,33 +5,10 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-type MockMutator struct {
-	mock.Mock
-}
-
-func (m *MockMutator) Mutate(job *structs.Job) (out *structs.Job, warnings []error, err error) {
-	args := m.Called(job)
-	return args.Get(0).(*structs.Job), args.Get(1).([]error), args.Error(2)
-}
-func (m *MockMutator) Name() string {
-	return "mock-mutator"
-}
-
-type MockValidator struct {
-	mock.Mock
-}
-
-func (m *MockValidator) Validate(job *structs.Job) (warnings []error, err error) {
-	args := m.Called(job)
-	return args.Get(0).([]error), args.Error(1)
-}
-func (m *MockValidator) Name() string {
-	return "mock-validator"
-}
 func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 
 	type fields struct {
@@ -43,10 +20,10 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		job *structs.Job
 	}
 	job := &structs.Job{} // testutil.ReadJob(t)
-	mutator := new(MockMutator)
+	mutator := new(testutil.MockMutator)
 	mutator.On("Mutate", job).Return(job, []error{}, nil)
 
-	validator := new(MockValidator)
+	validator := new(testutil.MockValidator)
 	validator.On("Validate", job).Return([]error{}, nil)
 	tests := []struct {
 		name    string

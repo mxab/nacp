@@ -18,24 +18,13 @@ import (
 	"github.com/mxab/nacp/config"
 )
 
-func NewServer(c *config.Config, appLogger hclog.Logger) func(http.ResponseWriter, *http.Request) {
+func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger) func(http.ResponseWriter, *http.Request) {
 
 	// create a reverse proxy that catches "/v1/jobs" post calls
 	// and forwards them to the jobs service
 	// create a new reverse proxy
-	backend, err := url.Parse(c.Nomad.Address)
-	if err != nil {
-		panic(err)
-	}
 
-	handler := admissionctrl.NewJobHandler(
-
-		[]admissionctrl.JobMutator{&mutator.HelloMutator{}},
-		[]admissionctrl.JobValidator{},
-		appLogger.Named("handler"),
-	)
-
-	proxy := httputil.NewSingleHostReverseProxy(backend)
+	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
 	originalDirector := proxy.Director
 
@@ -45,20 +34,24 @@ func NewServer(c *config.Config, appLogger hclog.Logger) func(http.ResponseWrite
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// only check for the header if it is a POST request and path is /v1/jobs
+		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
+
+		// // only check for the header if it is a POST request and path is /v1/jobs
 		if isCreate(r) || isUpdate(r) {
 
 			jobRegisterRequest := &structs.JobRegisterRequest{}
+
 			if err := json.NewDecoder(r.Body).Decode(jobRegisterRequest); err != nil {
 				//TODO: configure if we want to prevent the request from being forwarded
 				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
 				return
 			}
-			job, warnings, err := handler.ApplyAdmissionControllers(jobRegisterRequest.Job)
+			job, warnings, err := jobHandler.ApplyAdmissionControllers(jobRegisterRequest.Job)
 			if err != nil {
-				//TODO: configure if we want to prevent the request from being forwarded
 
-				appLogger.Warn("Failed to apply admission controllers, skipping", "error", err)
+				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
 				return
 			}
 			if len(warnings) > 0 {
@@ -73,6 +66,7 @@ func NewServer(c *config.Config, appLogger hclog.Logger) func(http.ResponseWrite
 				appLogger.Warn("Error marshalling job", "error", err)
 				return
 			}
+			appLogger.Info("Job after admission controllers", "job", string(data))
 			r.ContentLength = int64(len(data))
 			r.Body = io.NopCloser(bytes.NewBuffer(data))
 
@@ -82,10 +76,10 @@ func NewServer(c *config.Config, appLogger hclog.Logger) func(http.ResponseWrite
 
 }
 func isCreate(r *http.Request) bool {
-	return r.Method == "POST" && r.URL.Path == "/v1/jobs"
+	return r.Method == "PUT" && r.URL.Path == "/v1/jobs"
 }
 func isUpdate(r *http.Request) bool {
-	return r.Method == "POST" && regexp.MustCompile("^/v1/job/.*").MatchString(r.URL.Path)
+	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/.*").MatchString(r.URL.Path)
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html
@@ -108,7 +102,18 @@ func main() {
 		appLogger.Error("Failed to load config", "error", err)
 		os.Exit(1)
 	}
-	proxy := NewServer(c, appLogger)
+	backend, err := url.Parse(c.Nomad.Address)
+	if err != nil {
+		panic(err)
+	}
+	handler := admissionctrl.NewJobHandler(
+
+		[]admissionctrl.JobMutator{&mutator.HelloMutator{}},
+		[]admissionctrl.JobValidator{},
+		appLogger.Named("handler"),
+	)
+
+	proxy := NewProxyHandler(backend, handler, appLogger)
 
 	http.HandleFunc("/", proxy)
 
