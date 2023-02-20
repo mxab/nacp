@@ -1,11 +1,11 @@
 package mutator
 
-import "github.com/hashicorp/nomad/nomad/structs"
+import "github.com/hashicorp/nomad/api"
 
 type HelloMutator struct {
 }
 
-func (h *HelloMutator) Mutate(job *structs.Job) (out *structs.Job, warnings []error, err error) {
+func (h *HelloMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
 
 	if job.Meta == nil {
 		job.Meta = make(map[string]string)

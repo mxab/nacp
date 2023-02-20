@@ -4,11 +4,12 @@ package admissionctrl
 // https://github.com/hashicorp/nomad/blob/v1.5.0-beta.1/nomad/job_endpoint_hooks.go
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 )
 
 type AdmissionController interface {
@@ -17,12 +18,12 @@ type AdmissionController interface {
 
 type JobMutator interface {
 	AdmissionController
-	Mutate(*structs.Job) (out *structs.Job, warnings []error, err error)
+	Mutate(*api.Job) (out *api.Job, warnings []error, err error)
 }
 
 type JobValidator interface {
 	AdmissionController
-	Validate(*structs.Job) (warnings []error, err error)
+	Validate(*api.Job) (warnings []error, err error)
 }
 
 type JobHandler struct {
@@ -39,7 +40,7 @@ func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclo
 	}
 }
 
-func (j *JobHandler) ApplyAdmissionControllers(job *structs.Job) (out *structs.Job, warnings []error, err error) {
+func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warnings []error, err error) {
 	// Mutators run first before validators, so validators view the final rendered job.
 	// So, mutators must handle invalid jobs.
 	out, warnings, err = j.admissionMutators(job)
@@ -57,7 +58,7 @@ func (j *JobHandler) ApplyAdmissionControllers(job *structs.Job) (out *structs.J
 }
 
 // admissionMutator returns an updated job as well as warnings or an error.
-func (j *JobHandler) admissionMutators(job *structs.Job) (_ *structs.Job, warnings []error, err error) {
+func (j *JobHandler) admissionMutators(job *api.Job) (_ *api.Job, warnings []error, err error) {
 	var w []error
 	for _, mutator := range j.mutators {
 		job, w, err = mutator.Mutate(job)
@@ -72,9 +73,10 @@ func (j *JobHandler) admissionMutators(job *structs.Job) (_ *structs.Job, warnin
 
 // admissionValidators returns a slice of validation warnings and a multierror
 // of validation failures.
-func (j *JobHandler) admissionValidators(origJob *structs.Job) ([]error, error) {
+func (j *JobHandler) admissionValidators(origJob *api.Job) ([]error, error) {
 	// ensure job is not mutated
-	job := origJob.Copy()
+
+	job := copyJob(origJob)
 
 	var warnings []error
 	var errs error
@@ -90,4 +92,17 @@ func (j *JobHandler) admissionValidators(origJob *structs.Job) ([]error, error) 
 
 	return warnings, errs
 
+}
+
+func copyJob(job *api.Job) *api.Job {
+	jobCopy := &api.Job{}
+	data, err := json.Marshal(job)
+	if err != nil {
+		return nil
+	}
+	err = json.Unmarshal(data, jobCopy)
+	if err != nil {
+		return nil
+	}
+	return jobCopy
 }

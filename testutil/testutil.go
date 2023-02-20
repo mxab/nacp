@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -38,11 +38,11 @@ func ReadJobJson(t *testing.T, name string) string {
 	t.Helper()
 	return string(readJobJson(t, name))
 }
-func ReadJob(t *testing.T, name string) *structs.Job {
+func ReadJob(t *testing.T, name string) *api.Job {
 	t.Helper()
 
 	data := readJobJson(t, name)
-	job := &structs.Job{}
+	job := &api.Job{}
 	err := json.Unmarshal(data, &job)
 	if err != nil {
 		t.Fatalf("Error unmarshalling json")
@@ -54,9 +54,9 @@ type MockMutator struct {
 	mock.Mock
 }
 
-func (m *MockMutator) Mutate(job *structs.Job) (out *structs.Job, warnings []error, err error) {
+func (m *MockMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
 	args := m.Called(job)
-	return args.Get(0).(*structs.Job), args.Get(1).([]error), args.Error(2)
+	return args.Get(0).(*api.Job), args.Get(1).([]error), args.Error(2)
 }
 func (m *MockMutator) Name() string {
 	return "mock-mutator"
@@ -66,7 +66,7 @@ type MockValidator struct {
 	mock.Mock
 }
 
-func (m *MockValidator) Validate(job *structs.Job) (warnings []error, err error) {
+func (m *MockValidator) Validate(job *api.Job) (warnings []error, err error) {
 	args := m.Called(job)
 	return args.Get(0).([]error), args.Error(1)
 }

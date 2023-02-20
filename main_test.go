@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/testutil"
@@ -33,7 +33,7 @@ func TestProxyTableDriven(t *testing.T) {
 	wantJob.Meta = map[string]string{
 		"hello": "world",
 	}
-	register := &structs.JobRegisterRequest{
+	register := &api.JobRegisterRequest{
 		Job: wantJob,
 	}
 	wantRegisterData, err := json.Marshal(register)
@@ -44,13 +44,13 @@ func TestProxyTableDriven(t *testing.T) {
 		{
 			name:   "create job",
 			path:   "/v1/jobs",
-			method: "POST",
+			method: "PUT",
 			want:   string(wantRegisterData),
 		},
 		{
 			name:   "update job",
 			path:   "/v1/job/some-job",
-			method: "POST",
+			method: "PUT",
 			want:   string(wantRegisterData),
 		},
 	}
@@ -91,7 +91,7 @@ func TestProxyTableDriven(t *testing.T) {
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 
-			jobRequest := structs.JobRegisterRequest{
+			jobRequest := api.JobRegisterRequest{
 				Job: testutil.ReadJob(t, "job.json"),
 			}
 
@@ -100,7 +100,8 @@ func TestProxyTableDriven(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			res, err := http.Post(fmt.Sprintf("%s%s", proxyServer.URL, tc.path), "application/json", buffer)
+
+			res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, tc.path), buffer)
 			assert.NoError(t, err, "No http call error")
 			assert.Equal(t, 200, res.StatusCode, "OK response is expected")
 		})
@@ -134,7 +135,7 @@ func TestAdmissionControllerErrors(t *testing.T) {
 
 	defer proxyServer.Close()
 
-	jobRequest := structs.JobRegisterRequest{
+	jobRequest := api.JobRegisterRequest{
 		Job: testutil.ReadJob(t, "job.json"),
 	}
 
@@ -143,11 +144,21 @@ func TestAdmissionControllerErrors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := http.Post(fmt.Sprintf("%s%s", proxyServer.URL, "/v1/jobs"), "application/json", buffer)
+	res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, "/v1/jobs"), buffer)
 	require.NoError(t, err, "No http call error")
 	assert.Equal(t, 500, res.StatusCode, "Should return 400")
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 	x := string(body)
 	t.Logf("response: %s", x)
+}
+
+func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodPut, url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return http.DefaultClient.Do(req)
 }

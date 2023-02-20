@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/open-policy-agent/opa/rego"
 )
 
@@ -50,7 +50,7 @@ type OpaValidator struct {
 	ruleSets map[string]*opaRuleSet
 }
 
-func (v *OpaValidator) Validate(job *structs.Job) (*structs.Job, []error, error) {
+func (v *OpaValidator) Validate(job *api.Job) (*api.Job, []error, error) {
 
 	ctx := context.TODO()
 	//iterate over rulesets and evaluate

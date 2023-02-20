@@ -12,7 +12,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/config"
@@ -39,7 +39,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		// // only check for the header if it is a POST request and path is /v1/jobs
 		if isCreate(r) || isUpdate(r) {
 
-			jobRegisterRequest := &structs.JobRegisterRequest{}
+			jobRegisterRequest := &api.JobRegisterRequest{}
 
 			if err := json.NewDecoder(r.Body).Decode(jobRegisterRequest); err != nil {
 				//TODO: configure if we want to prevent the request from being forwarded

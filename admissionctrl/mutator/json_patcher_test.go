@@ -3,19 +3,19 @@ package mutator
 import (
 	"testing"
 
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJSONPatcher_Mutate(t *testing.T) {
 	type args struct {
-		job *structs.Job
+		job *api.Job
 	}
 	tests := []struct {
 		name         string
 		j            *JSONPatcher
 		args         args
-		wantOut      *structs.Job
+		wantOut      *api.Job
 		wantWarnings []error
 		wantErr      bool
 	}{

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,9 +17,9 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		logger    hclog.Logger
 	}
 	type args struct {
-		job *structs.Job
+		job *api.Job
 	}
-	job := &structs.Job{} // testutil.ReadJob(t)
+	job := &api.Job{} // testutil.ReadJob(t)
 	mutator := new(testutil.MockMutator)
 	mutator.On("Mutate", job).Return(job, []error{}, nil)
 
@@ -29,7 +29,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *structs.Job
+		want    *api.Job
 		want1   []error
 		wantErr bool
 	}{

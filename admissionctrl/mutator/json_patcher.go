@@ -7,7 +7,7 @@ import (
 
 	"github.com/antchfx/jsonquery"
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/hashicorp/nomad/api"
 )
 
 type JSONPatcher struct {
@@ -25,7 +25,7 @@ func buildJsonPath(node *jsonquery.Node) string {
 	}
 	return path
 }
-func (j *JSONPatcher) Mutate(job *structs.Job) (out *structs.Job, warnings []error, err error) {
+func (j *JSONPatcher) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
 
 	jobData, err := json.Marshal(job)
 	if err != nil {
@@ -51,8 +51,8 @@ func (j *JSONPatcher) Mutate(job *structs.Job) (out *structs.Job, warnings []err
 
 	patchJSON := []byte(`[
 		{
-			"op": "add", 
-			"path": "/Meta", 
+			"op": "add",
+			"path": "/Meta",
 			"value": {"foo": "bar"}
 		}
 	]`)
