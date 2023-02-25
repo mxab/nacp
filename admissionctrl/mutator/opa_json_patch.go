@@ -3,6 +3,7 @@ package mutator
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/hashicorp/go-hclog"
@@ -16,14 +17,22 @@ type OpaJsonPatchMutator struct {
 }
 
 func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
-
+	allWarnings := make([]error, 0)
 	ctx := context.TODO()
 	for _, ruleSet := range j.ruleSets {
-		result, err := ruleSet.Eval(ctx, job)
+		results, err := ruleSet.Eval(ctx, job)
 		if err != nil {
 			return nil, nil, err
 		}
-		patchData, ok := result[0].Bindings["patch"].([]interface{})
+
+		warnings, ok := results[0].Bindings["warnings"].([]interface{})
+
+		if ok && len(warnings) > 0 {
+			for _, warn := range warnings {
+				allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, ruleSet.Name()))
+			}
+		}
+		patchData, ok := results[0].Bindings["patch"].([]interface{})
 		patchJSON, err := json.Marshal(patchData)
 		if err != nil {
 			return nil, nil, err
@@ -55,7 +64,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (out *api.Job, warnings []err
 
 	}
 
-	return job, nil, nil
+	return job, allWarnings, nil
 }
 func (j *OpaJsonPatchMutator) Name() string {
 	return "jsonpatch"

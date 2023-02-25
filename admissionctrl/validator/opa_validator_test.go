@@ -96,7 +96,7 @@ func TestOpaValidatorSimple(t *testing.T) {
 
 			opa, err := NewOpaValidator([]opa.OpaQueryAndModule{
 				{
-					Filename: testutil.Filepath(t, "opa/validators/errors.rego"),
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
 					Query:    tt.query,
 				},
 			})
