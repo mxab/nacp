@@ -6,26 +6,38 @@ import (
 )
 
 type OpaRule struct {
-	Query   string `hcl:"query"`
-	File    string `hcl:"file"`
-	Module  string `hcl:"module"`
-	Binding string `hcl:"binding"`
+	Query    string `hcl:"query"`
+	Filename string `hcl:"filename"`
 }
 
 type Validator struct {
 	Type     string    `hcl:"type,label"`
 	Name     string    `hcl:"name,label"`
-	OpaRules []OpaRule `hcl:"rule,block"`
+	OpaRules []OpaRule `hcl:"opa_rule,block"`
+}
+type Mutator struct {
+	Type     string    `hcl:"type,label"`
+	Name     string    `hcl:"name,label"`
+	OpaRules []OpaRule `hcl:"opa_rule,block"`
 }
 
 type NomadServer struct {
 	Address string `hcl:"address"`
+	// CaFile   string `hcl:"ca_file"`
+	// CertFile string `hcl:"cert_file"`
+	// KeyFile  string `hcl:"key_file"`
 }
 type Config struct {
-	Port       int          `hcl:"port,optional"`
-	Bind       string       `hcl:"bind,optional"`
+	Port int    `hcl:"port,optional"`
+	Bind string `hcl:"bind,optional"`
+
+	// CaFile   string `hcl:"ca_file"`
+	// CertFile string `hcl:"cert_file"`
+	// KeyFile  string `hcl:"key_file"`
+
 	Nomad      *NomadServer `hcl:"nomad,block"`
 	Validators []Validator  `hcl:"validator,block"`
+	Mutators   []Mutator    `hcl:"mutator,block"`
 }
 
 func DefaultConfig() *Config {
@@ -36,6 +48,7 @@ func DefaultConfig() *Config {
 			Address: "http://localhost:4646",
 		},
 		Validators: []Validator{},
+		Mutators:   []Mutator{},
 	}
 	return c
 }

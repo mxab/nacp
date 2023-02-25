@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/opa"
@@ -11,33 +12,38 @@ import (
 
 type OpaValidator struct {
 	ruleSets []*opa.OpaRuleSet
+	logger   hclog.Logger
 }
 
-func (v *OpaValidator) Validate(job *api.Job) (*api.Job, []error, error) {
+func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 
 	ctx := context.TODO()
 	//iterate over rulesets and evaluate
 	allErrs := &multierror.Error{}
 	allWarnings := make([]error, 0)
+
+	v.logger.Debug("Validating job", "job", job.ID)
 	for _, ruleSet := range v.ruleSets {
 		// evaluate the query
 
 		results, err := ruleSet.Eval(ctx, job)
 
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		// aggregate warnings
 		warnings, ok := results[0].Bindings["warnings"].([]interface{})
-
+		v.logger.Trace("Warnings", "warnings", warnings, "ok", ok)
 		if ok && len(warnings) > 0 {
+
 			for _, warn := range warnings {
 				allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, ruleSet.Name()))
 			}
 		}
 
 		errors, ok := results[0].Bindings["errors"].([]interface{})
+		v.logger.Trace("Errors", "errors", errors, "ok", ok)
 		if ok || len(errors) > 0 { // no errors is ok
 			errsForRule := &multierror.Error{}
 			for _, err := range errors {
@@ -48,9 +54,9 @@ func (v *OpaValidator) Validate(job *api.Job) (*api.Job, []error, error) {
 
 	}
 	if len(allErrs.Errors) > 0 {
-		return job, allWarnings, allErrs
+		return allWarnings, allErrs
 	}
-	return job, allWarnings, nil
+	return allWarnings, nil
 }
 
 // Name
@@ -58,7 +64,7 @@ func (v *OpaValidator) Name() string {
 	return "opa"
 }
 
-func NewOpaValidator(rules []opa.OpaQueryAndModule) (*OpaValidator, error) {
+func NewOpaValidator(rules []opa.OpaQueryAndModule, logger hclog.Logger) (*OpaValidator, error) {
 
 	ctx := context.TODO()
 	// read the policy file
@@ -68,6 +74,7 @@ func NewOpaValidator(rules []opa.OpaQueryAndModule) (*OpaValidator, error) {
 	}
 	return &OpaValidator{
 		ruleSets: ruleSets,
+		logger:   logger,
 	}, nil
 
 }

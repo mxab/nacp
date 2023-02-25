@@ -7,6 +7,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/opa"
 )
@@ -23,6 +24,16 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (out *api.Job, warnings []err
 		results, err := ruleSet.Eval(ctx, job)
 		if err != nil {
 			return nil, nil, err
+		}
+
+		errors, ok := results[0].Bindings["errors"].([]interface{})
+
+		if ok && len(errors) > 0 {
+			allErrors := multierror.Append(nil)
+			for _, warn := range errors {
+				allErrors = multierror.Append(allErrors, fmt.Errorf("%s (%s)", warn, ruleSet.Name()))
+			}
+			return nil, nil, allErrors
 		}
 
 		warnings, ok := results[0].Bindings["warnings"].([]interface{})
@@ -43,7 +54,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (out *api.Job, warnings []err
 			if err != nil {
 				return nil, nil, err
 			}
-			j.logger.Debug("Got patch fom ruleset %s, patch: %v", ruleSet.Name(), patchJSON)
+			j.logger.Debug("Got patch fom rule", "rule", ruleSet.Name(), "patch", patchJSON)
 			jobJson, err := json.Marshal(job)
 			if err != nil {
 				return nil, nil, err

@@ -30,6 +30,7 @@ func TestLoadConfig(t *testing.T) {
 					Address: nomadAddr,
 				},
 				Validators: []Validator{},
+				Mutators:   []Mutator{},
 			},
 		},
 		{
@@ -37,6 +38,42 @@ func TestLoadConfig(t *testing.T) {
 			args:    args{name: "testdata/doesnotexist.hcl"},
 			want:    nil,
 			wantErr: true,
+		},
+
+		{
+			name: "with admission controllers",
+			args: args{name: "testdata/with_admission.hcl"},
+			want: &Config{
+				Port: port,
+				Bind: bind,
+				Nomad: &NomadServer{
+					Address: nomadAddr,
+				},
+				Validators: []Validator{
+					{
+						Type: "opa",
+						Name: "some_opa_validator",
+						OpaRules: []OpaRule{
+							{
+								Query:    "errors = data.costcenter_meta.errors",
+								Filename: "testdata/opa/validators/costcenter_meta.rego",
+							},
+						},
+					},
+				},
+				Mutators: []Mutator{
+					{
+						Type: "opa_jsonpatch",
+						Name: "some_opa_mutator",
+						OpaRules: []OpaRule{
+							{
+								Query:    "patch = data.hello_world_meta.patch",
+								Filename: "testdata/opa/mutators/hello_world_meta.rego",
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {

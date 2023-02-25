@@ -1,6 +1,10 @@
 job "example" {
   datacenters = ["dc1"]
 
+  meta {
+    costcenter = "cccode-bar"
+
+  }
 
   group "cache" {
     network {

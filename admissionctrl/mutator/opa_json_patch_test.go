@@ -82,11 +82,35 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", testutil.Filepath(t, "opa/errors.rego"))},
 			wantErr:      false,
 		},
+		{
+			name: "error and world",
+			j: newMutator(t, []opa.OpaQueryAndModule{
+				{
+					Filename: testutil.Filepath(t, "opa/mutators/hello_world_meta.rego"),
+					Query:    `patch = data.hello_world_meta.patch`,
+				},
+				{
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
+					Query: `
+
+					errors = data.dummy.errors
+					`,
+				},
+			}),
+
+			args: args{
+				job: &api.Job{},
+			},
+			wantOut:      nil,
+			wantWarnings: nil,
+			wantErr:      true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotOut, gotWarnings, err := tt.j.Mutate(tt.args.job)
 			require.Equal(t, tt.wantErr, err != nil, "JSONPatcher.Mutate() error = %v, wantErr %v", err, tt.wantErr)
+
 			assert.Equal(t, tt.wantWarnings, gotWarnings, "JSONPatcher.Mutate() gotWarnings = %v, want %v", gotWarnings, tt.wantWarnings)
 			assert.Equal(t, tt.wantOut, gotOut)
 

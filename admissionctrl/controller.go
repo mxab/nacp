@@ -1,6 +1,6 @@
 package admissionctrl
 
-// Admission Controller code copied from Nomad
+// Admission Controller code copied from Nomad and adjusted to use api.Job instead of structs.Job
 // https://github.com/hashicorp/nomad/blob/v1.5.0-beta.1/nomad/job_endpoint_hooks.go
 
 import (
