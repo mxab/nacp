@@ -26,8 +26,8 @@ jobs:
       run: go build -v ./...
     - name: Test
       run: |
-        go test  -coverprofile=bin/cov.out -v ./...
-        go tool cover -func=bin/cov.out
+        go test  -coverprofile=cov.out -v ./...
+        go tool cover -func=cov.out
     - name: Analyze with SonarCloud
       uses: sonarsource/sonarcloud-github-action@master
       env:
