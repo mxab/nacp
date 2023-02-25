@@ -47,13 +47,11 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			jobRegisterRequest := &api.JobRegisterRequest{}
 
 			if err := json.NewDecoder(r.Body).Decode(jobRegisterRequest); err != nil {
-				//TODO: configure if we want to prevent the request from being forwarded
 				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
 				return
 			}
 			job, warnings, err := jobHandler.ApplyAdmissionControllers(jobRegisterRequest.Job)
 			if err != nil {
-
 				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
 				writeError(w, err)
 				return
