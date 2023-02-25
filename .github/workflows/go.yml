@@ -25,4 +25,11 @@ jobs:
     - name: Build
       run: go build -v ./...
     - name: Test
-      run: go test -cover -v ./...
+      run: |
+        go test  -coverprofile=bin/cov.out -v ./...
+        go tool cover -func=bin/cov.out
+    - name: Analyze with SonarCloud
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
