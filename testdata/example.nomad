@@ -18,7 +18,9 @@ job "example" {
         ports          = ["db"]
         auth_soft_fail = true
       }
-
+      env {
+        foo = "bar"
+      }
       resources {
         cpu    = 500
         memory = 256

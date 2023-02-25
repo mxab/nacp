@@ -4,74 +4,70 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
-	"github.com/open-policy-agent/opa/rego"
+	"github.com/mxab/nacp/admissionctrl/opa"
 )
 
-type OpaRule struct {
-	name    string
-	query   string
-	module  string
-	binding string
-}
-
-type opaRuleSet struct {
-	rule     OpaRule
-	prepared *rego.PreparedEvalQuery
-}
-
-func NewOpaValidator(rules []OpaRule) (*OpaValidator, error) {
-	ruleSets := make(map[string]*opaRuleSet)
-
-	ctx := context.TODO()
-
-	for _, rule := range rules {
-
-		query, err := rego.New(
-			rego.Query(rule.query),
-			rego.Module(rule.name, rule.module),
-		).PrepareForEval(ctx)
-
-		if err != nil {
-			return nil, err
-		}
-		ruleSets[rule.name] = &opaRuleSet{
-			rule:     rule,
-			prepared: &query,
-		}
-	}
-	return &OpaValidator{
-		ruleSets: ruleSets,
-	}, nil
-
-}
-
 type OpaValidator struct {
-	ruleSets map[string]*opaRuleSet
+	ruleSets []*opa.OpaRuleSet
 }
 
 func (v *OpaValidator) Validate(job *api.Job) (*api.Job, []error, error) {
 
 	ctx := context.TODO()
 	//iterate over rulesets and evaluate
+	allErrs := &multierror.Error{}
+	allWarnings := make([]error, 0)
 	for _, ruleSet := range v.ruleSets {
 		// evaluate the query
-		results, err := ruleSet.prepared.Eval(ctx, rego.EvalInput(job))
+
+		results, err := ruleSet.Eval(ctx, job)
+
 		if err != nil {
 			return nil, nil, err
 		}
-		result := results[0].Bindings[ruleSet.rule.binding]
-		//check if result is true
-		if result != true {
-			//if true return job
-			return nil, nil, fmt.Errorf("opa validation failed for rule %s (result: %s)", ruleSet.rule.name, result)
-		}
-	}
 
-	return job, nil, nil
+		// aggregate warnings
+		warnings, ok := results[0].Bindings["warnings"].([]interface{})
+
+		if ok && len(warnings) > 0 {
+			for _, warn := range warnings {
+				allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, ruleSet.Name()))
+			}
+		}
+
+		errors, ok := results[0].Bindings["errors"].([]interface{})
+		if ok || len(errors) > 0 { // no errors is ok
+			errsForRule := &multierror.Error{}
+			for _, err := range errors {
+				errsForRule = multierror.Append(errsForRule, fmt.Errorf("%s (%s)", err, ruleSet.Name()))
+			}
+			allErrs = multierror.Append(allErrs, errsForRule)
+		}
+
+	}
+	if len(allErrs.Errors) > 0 {
+		return job, allWarnings, allErrs
+	}
+	return job, allWarnings, nil
 }
 
 // Name
 func (v *OpaValidator) Name() string {
 	return "opa"
+}
+
+func NewOpaValidator(rules []opa.OpaQueryAndModule) (*OpaValidator, error) {
+
+	ctx := context.TODO()
+	// read the policy file
+	ruleSets, err := opa.CreateOpaRuleSet(rules, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &OpaValidator{
+		ruleSets: ruleSets,
+	}, nil
+
 }

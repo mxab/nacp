@@ -36,8 +36,10 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
 
-		// // only check for the header if it is a POST request and path is /v1/jobs
-		if isCreate(r) || isUpdate(r) {
+		isRegister := isCreate(r) || isUpdate(r)
+
+		//isPlan := r.Method == "POST" && r.URL.Path == "/v1/jobs/plan"
+		if isRegister {
 
 			jobRegisterRequest := &api.JobRegisterRequest{}
 
@@ -79,7 +81,11 @@ func isCreate(r *http.Request) bool {
 	return r.Method == "PUT" && r.URL.Path == "/v1/jobs"
 }
 func isUpdate(r *http.Request) bool {
-	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/.*").MatchString(r.URL.Path)
+
+	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/[a-zA-Z]+[a-z-Z0-9\\-]*$").MatchString(r.URL.Path)
+}
+func isPlan(r *http.Request) bool {
+	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/[a-zA-Z]+[a-z-Z0-9\\-]*/plan$").MatchString(r.URL.Path)
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html

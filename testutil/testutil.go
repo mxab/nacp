@@ -73,3 +73,14 @@ func (m *MockValidator) Validate(job *api.Job) (warnings []error, err error) {
 func (m *MockValidator) Name() string {
 	return "mock-validator"
 }
+
+func Filepath(t *testing.T, name string) string {
+	t.Helper()
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatalf("Could not get filename")
+	}
+
+	return path.Join(path.Dir(filename), "..", "testdata", name)
+}
