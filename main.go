@@ -47,73 +47,93 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		isRegister := isCreate(r) || isUpdate(r)
 
 		if isRegister {
-			body := r.Body
-			jobRegisterRequest := &api.JobRegisterRequest{}
-
-			if err := json.NewDecoder(body).Decode(jobRegisterRequest); err != nil {
-				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
-				return
-			}
-			orginalJob := jobRegisterRequest.Job
-
-			job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
+			data, warnings, err := handleRegister(r, appLogger, jobHandler)
 			if err != nil {
-				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
 				writeError(w, err)
 				return
 			}
 			if len(warnings) > 0 {
+				//TODO: attach to response?
 				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
 			}
-			jobRegisterRequest.Job = job
-
-			data, err := json.Marshal(jobRegisterRequest)
-
-			if err != nil {
-				//TODO: configure if we want to prevent the request from being forwarded
-				appLogger.Warn("Error marshalling job", "error", err)
-				return
-			}
 			appLogger.Info("Job after admission controllers", "job", string(data))
-			r.ContentLength = int64(len(data))
-			r.Body = io.NopCloser(bytes.NewBuffer(data))
+			rewriteRequest(r, data)
 
 		} else if isPlan(r) {
-			body := r.Body
-			jobPlanRequest := &api.JobPlanRequest{}
 
-			if err := json.NewDecoder(body).Decode(jobPlanRequest); err != nil {
-				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
-				return
-			}
-			orginalJob := jobPlanRequest.Job
-
-			job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
+			data, warnings, err := handlePlan(r, appLogger, jobHandler)
 			if err != nil {
-				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
 				writeError(w, err)
 				return
 			}
 			if len(warnings) > 0 {
+				//TODO: attach to response?
 				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
 			}
-			jobPlanRequest.Job = job
-
-			data, err := json.Marshal(jobPlanRequest)
-
-			if err != nil {
-				//TODO: configure if we want to prevent the request from being forwarded
-				appLogger.Warn("Error marshalling job", "error", err)
-				return
-			}
 			appLogger.Info("Job after admission controllers", "job", string(data))
-			r.ContentLength = int64(len(data))
-			r.Body = io.NopCloser(bytes.NewBuffer(data))
+			rewriteRequest(r, data)
 
 		}
+
 		proxy.ServeHTTP(w, r)
 	}
 
+}
+
+func rewriteRequest(r *http.Request, data []byte) {
+
+	r.ContentLength = int64(len(data))
+	r.Body = io.NopCloser(bytes.NewBuffer(data))
+}
+
+func handleRegister(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+	body := r.Body
+	jobRegisterRequest := &api.JobRegisterRequest{}
+
+	if err := json.NewDecoder(body).Decode(jobRegisterRequest); err != nil {
+
+		return nil, nil, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
+	}
+	orginalJob := jobRegisterRequest.Job
+
+	job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
+	if err != nil {
+		return nil, nil, fmt.Errorf("admission controllers send an error, returning error: %w", err)
+	}
+	jobRegisterRequest.Job = job
+
+	data, err := json.Marshal(jobRegisterRequest)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("error marshalling job: %w", err)
+	}
+	return data, warnings, nil
+}
+func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+	body := r.Body
+	jobPlanRequest := &api.JobPlanRequest{}
+
+	if err := json.NewDecoder(body).Decode(jobPlanRequest); err != nil {
+		appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
+		return nil, nil, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
+	}
+	orginalJob := jobPlanRequest.Job
+
+	job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
+	if err != nil {
+		appLogger.Warn("Admission controllers send an error, returning error", "error", err)
+		return nil, nil, fmt.Errorf("admission controllers send an error, returning error: %w", err)
+	}
+
+	jobPlanRequest.Job = job
+
+	data, err := json.Marshal(jobPlanRequest)
+
+	if err != nil {
+		appLogger.Warn("Error marshalling job", "error", err)
+		return nil, nil, fmt.Errorf("error marshalling job: %w", err)
+	}
+	return data, warnings, nil
 }
 
 func writeError(w http.ResponseWriter, err error) {
