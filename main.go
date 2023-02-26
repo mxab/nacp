@@ -49,6 +49,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		if isRegister {
 			data, warnings, err := handleRegister(r, appLogger, jobHandler)
 			if err != nil {
+				appLogger.Warn("Error applying admission controllers", "error", err)
 				writeError(w, err)
 				return
 			}
@@ -63,6 +64,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 			data, warnings, err := handlePlan(r, appLogger, jobHandler)
 			if err != nil {
+				appLogger.Warn("Error applying admission controllers", "error", err)
 				writeError(w, err)
 				return
 			}
@@ -114,14 +116,12 @@ func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionct
 	jobPlanRequest := &api.JobPlanRequest{}
 
 	if err := json.NewDecoder(body).Decode(jobPlanRequest); err != nil {
-		appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
 		return nil, nil, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
 	}
 	orginalJob := jobPlanRequest.Job
 
 	job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
 	if err != nil {
-		appLogger.Warn("Admission controllers send an error, returning error", "error", err)
 		return nil, nil, fmt.Errorf("admission controllers send an error, returning error: %w", err)
 	}
 
@@ -130,7 +130,6 @@ func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionct
 	data, err := json.Marshal(jobPlanRequest)
 
 	if err != nil {
-		appLogger.Warn("Error marshalling job", "error", err)
 		return nil, nil, fmt.Errorf("error marshalling job: %w", err)
 	}
 	return data, warnings, nil
