@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
@@ -24,34 +24,38 @@ import (
 func TestProxyTableDriven(t *testing.T) {
 
 	type test struct {
-		name   string
-		path   string
-		method string
-		want   string
+		name        string
+		path        string
+		method      string
+		requestJson string
+		want        string
 	}
 	wantJob := testutil.ReadJob(t, "job.json")
 	wantJob.Meta = map[string]string{
 		"hello": "world",
 	}
-	register := &api.JobRegisterRequest{
-		Job: wantJob,
-	}
-	wantRegisterData, err := json.Marshal(register)
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	tests := []test{
 		{
-			name:   "create job",
-			path:   "/v1/jobs",
-			method: "PUT",
-			want:   string(wantRegisterData),
+			name:        "create job",
+			path:        "/v1/jobs",
+			method:      "PUT",
+			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			want:        registerRequestJson(t, wantJob),
 		},
 		{
-			name:   "update job",
-			path:   "/v1/job/some-job",
-			method: "PUT",
-			want:   string(wantRegisterData),
+			name:        "update job",
+			path:        "/v1/job/some-job",
+			method:      "PUT",
+			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			want:        registerRequestJson(t, wantJob),
+		},
+		{
+			name:        "plan job",
+			path:        "/v1/job/some-job/plan",
+			method:      "PUT",
+			requestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
+			want:        planRequestJson(t, wantJob),
 		},
 	}
 
@@ -60,7 +64,7 @@ func TestProxyTableDriven(t *testing.T) {
 			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				// Test request parameters
 
-				assert.Equal(t, req.Method, tc.method, "Ensure method is set to POST")
+				assert.Equal(t, req.Method, tc.method, "Ensure method is set")
 				assert.Equal(t, req.URL.Path, tc.path, "Ensure path is set")
 				jsonData, err := io.ReadAll(req.Body)
 				if err != nil {
@@ -91,22 +95,35 @@ func TestProxyTableDriven(t *testing.T) {
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 
-			jobRequest := api.JobRegisterRequest{
-				Job: testutil.ReadJob(t, "job.json"),
-			}
-
-			buffer := new(bytes.Buffer)
-			err = json.NewEncoder(buffer).Encode(jobRequest)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, tc.path), buffer)
+			res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, tc.path), strings.NewReader(tc.requestJson))
 			assert.NoError(t, err, "No http call error")
 			assert.Equal(t, 200, res.StatusCode, "OK response is expected")
 		})
 	}
 
+}
+
+func registerRequestJson(t *testing.T, wantJob *api.Job) string {
+	t.Helper()
+	register := &api.JobRegisterRequest{
+		Job: wantJob,
+	}
+	wantRegisterData, err := json.Marshal(register)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(wantRegisterData)
+}
+func planRequestJson(t *testing.T, wantJob *api.Job) string {
+	t.Helper()
+	plan := &api.JobPlanRequest{
+		Job: wantJob,
+	}
+	planData, err := json.Marshal(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(planData)
 }
 
 func TestAdmissionControllerErrors(t *testing.T) {
@@ -135,16 +152,8 @@ func TestAdmissionControllerErrors(t *testing.T) {
 
 	defer proxyServer.Close()
 
-	jobRequest := api.JobRegisterRequest{
-		Job: testutil.ReadJob(t, "job.json"),
-	}
-
-	buffer := new(bytes.Buffer)
-	err = json.NewEncoder(buffer).Encode(jobRequest)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, "/v1/jobs"), buffer)
+	jobRequestJson := registerRequestJson(t, testutil.ReadJob(t, "job.json"))
+	res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, "/v1/jobs"), strings.NewReader(jobRequestJson))
 	require.NoError(t, err, "No http call error")
 	assert.Equal(t, 500, res.StatusCode, "Should return 400")
 	body, err := io.ReadAll(res.Body)

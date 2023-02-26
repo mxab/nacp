@@ -21,6 +21,11 @@ import (
 	"github.com/mxab/nacp/config"
 )
 
+var (
+	jobPathRegex     = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
+	jobPlanPathRegex = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
+)
+
 func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger) func(http.ResponseWriter, *http.Request) {
 
 	// create a reverse proxy that catches "/v1/jobs" post calls
@@ -41,16 +46,17 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		isRegister := isCreate(r) || isUpdate(r)
 
-		//isPlan := r.Method == "POST" && r.URL.Path == "/v1/jobs/plan"
 		if isRegister {
-
+			body := r.Body
 			jobRegisterRequest := &api.JobRegisterRequest{}
 
-			if err := json.NewDecoder(r.Body).Decode(jobRegisterRequest); err != nil {
+			if err := json.NewDecoder(body).Decode(jobRegisterRequest); err != nil {
 				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
 				return
 			}
-			job, warnings, err := jobHandler.ApplyAdmissionControllers(jobRegisterRequest.Job)
+			orginalJob := jobRegisterRequest.Job
+
+			job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
 			if err != nil {
 				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
 				writeError(w, err)
@@ -62,6 +68,38 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			jobRegisterRequest.Job = job
 
 			data, err := json.Marshal(jobRegisterRequest)
+
+			if err != nil {
+				//TODO: configure if we want to prevent the request from being forwarded
+				appLogger.Warn("Error marshalling job", "error", err)
+				return
+			}
+			appLogger.Info("Job after admission controllers", "job", string(data))
+			r.ContentLength = int64(len(data))
+			r.Body = io.NopCloser(bytes.NewBuffer(data))
+
+		} else if isPlan(r) {
+			body := r.Body
+			jobPlanRequest := &api.JobPlanRequest{}
+
+			if err := json.NewDecoder(body).Decode(jobPlanRequest); err != nil {
+				appLogger.Info("Failed decoding job, skipping admission controller", "error", err)
+				return
+			}
+			orginalJob := jobPlanRequest.Job
+
+			job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
+			if err != nil {
+				appLogger.Warn("Admission controllers send an error, returning erro", "error", err)
+				writeError(w, err)
+				return
+			}
+			if len(warnings) > 0 {
+				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
+			}
+			jobPlanRequest.Job = job
+
+			data, err := json.Marshal(jobPlanRequest)
 
 			if err != nil {
 				//TODO: configure if we want to prevent the request from being forwarded
@@ -87,10 +125,11 @@ func isCreate(r *http.Request) bool {
 }
 func isUpdate(r *http.Request) bool {
 
-	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/[a-zA-Z]+[a-z-Z0-9\\-]*$").MatchString(r.URL.Path)
+	return r.Method == "PUT" && jobPathRegex.MatchString(r.URL.Path)
 }
 func isPlan(r *http.Request) bool {
-	return r.Method == "PUT" && regexp.MustCompile("^/v1/job/[a-zA-Z]+[a-z-Z0-9\\-]*/plan$").MatchString(r.URL.Path)
+
+	return r.Method == "PUT" && jobPlanPathRegex.MatchString(r.URL.Path)
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html
