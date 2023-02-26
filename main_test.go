@@ -29,35 +29,55 @@ func TestProxyTableDriven(t *testing.T) {
 		method      string
 		requestJson string
 		want        string
-	}
-	wantJob := testutil.ReadJob(t, "job.json")
-	wantJob.Meta = map[string]string{
-		"hello": "world",
+
+		nomadResponse string
+		//	responseWarnings []error
+		validators []admissionctrl.JobValidator
+		mutators   []admissionctrl.JobMutator
 	}
 
 	tests := []test{
 		{
-			name:        "create job",
-			path:        "/v1/jobs",
-			method:      "PUT",
-			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:        registerRequestJson(t, wantJob),
+			name:          "create job",
+			path:          "/v1/jobs",
+			method:        "PUT",
+			requestJson:   registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			want:          registerRequestJson(t, jobWithHelloWorldMeta(t)),
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+			validators:    []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
 		},
 		{
-			name:        "update job",
-			path:        "/v1/job/some-job",
-			method:      "PUT",
-			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:        registerRequestJson(t, wantJob),
+			name:          "update job",
+			path:          "/v1/job/some-job",
+			method:        "PUT",
+			requestJson:   registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			want:          registerRequestJson(t, jobWithHelloWorldMeta(t)),
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+			validators:    []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
 		},
 		{
 			name:        "plan job",
 			path:        "/v1/job/some-job/plan",
 			method:      "PUT",
 			requestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:        planRequestJson(t, wantJob),
+			want:        planRequestJson(t, jobWithHelloWorldMeta(t)),
+
+			nomadResponse: toJson(t, &api.JobPlanResponse{}),
+			validators:    []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
 		},
 	}
+
+	// validator := new(testutil.MockValidator)
+	// validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("some error"))
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -72,7 +92,8 @@ func TestProxyTableDriven(t *testing.T) {
 				}
 				json := string(jsonData)
 				assert.JSONEq(t, tc.want, json, "Body matches")
-				_, _ = rw.Write([]byte(`OK`))
+
+				_, _ = rw.Write([]byte(tc.nomadResponse))
 			}))
 			// Close the server when test finishes
 			defer nomadDummy.Close()
@@ -84,10 +105,8 @@ func TestProxyTableDriven(t *testing.T) {
 				t.Fatal(err)
 			}
 			jobHandler := admissionctrl.NewJobHandler(
-				[]admissionctrl.JobMutator{
-					&mutator.HelloMutator{},
-				},
-				[]admissionctrl.JobValidator{},
+				tc.mutators,
+				tc.validators,
 				hclog.NewNullLogger(),
 			)
 			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger())
@@ -103,27 +122,36 @@ func TestProxyTableDriven(t *testing.T) {
 
 }
 
+func jobWithHelloWorldMeta(t *testing.T) *api.Job {
+	wantJob := testutil.ReadJob(t, "job.json")
+	wantJob.Meta = map[string]string{
+		"hello": "world",
+	}
+	return wantJob
+}
+func toJson(t *testing.T, v interface{}) string {
+	t.Helper()
+	data, err := json.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}
 func registerRequestJson(t *testing.T, wantJob *api.Job) string {
 	t.Helper()
 	register := &api.JobRegisterRequest{
 		Job: wantJob,
 	}
-	wantRegisterData, err := json.Marshal(register)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(wantRegisterData)
+	return toJson(t, register)
+
 }
 func planRequestJson(t *testing.T, wantJob *api.Job) string {
 	t.Helper()
 	plan := &api.JobPlanRequest{
 		Job: wantJob,
 	}
-	planData, err := json.Marshal(plan)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(planData)
+	return toJson(t, plan)
+
 }
 
 func TestAdmissionControllerErrors(t *testing.T) {
