@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
@@ -21,7 +23,10 @@ import (
 	"github.com/mxab/nacp/config"
 )
 
+type contextKeyWarnings struct{}
+
 var (
+	ctxWarnings      = contextKeyWarnings{}
 	jobPathRegex     = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
 	jobPlanPathRegex = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
 )
@@ -40,11 +45,46 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		originalDirector(r)
 	}
 
+	proxy.ModifyResponse = func(resp *http.Response) error {
+
+		warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
+		if ok && len(warnings) > 0 {
+			appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
+
+			registerRespone := &api.JobRegisterResponse{}
+
+			json.NewDecoder(resp.Body).Decode(registerRespone)
+			appLogger.Info("Job after admission controllers", "job", registerRespone.JobModifyIndex)
+
+			allWarnings := &multierror.Error{}
+			if registerRespone.Warnings != "" {
+				multierror.Append(allWarnings, fmt.Errorf("%s", registerRespone.Warnings))
+
+			}
+			allWarnings = multierror.Append(allWarnings, warnings...)
+			registerRespone.Warnings = allWarnings.Error()
+
+			newResponeData, err := json.Marshal(registerRespone)
+			if err != nil {
+				return err
+			}
+
+			// resp.Body = &DebugReader{Body: "some body"}
+			// resp.Header.Set("Foo", "bar")
+			resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newResponeData)))
+			resp.ContentLength = int64(len(newResponeData))
+			resp.Body = io.NopCloser(bytes.NewBuffer(newResponeData))
+		}
+		return nil
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
 
 		isRegister := isCreate(r) || isUpdate(r)
+
+		ctx := r.Context()
 
 		if isRegister {
 			data, warnings, err := handleRegister(r, appLogger, jobHandler)
@@ -56,6 +96,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			if len(warnings) > 0 {
 				//TODO: attach to response?
 				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
+				ctx = context.WithValue(ctx, ctxWarnings, warnings)
 			}
 			appLogger.Info("Job after admission controllers", "job", string(data))
 			rewriteRequest(r, data)
@@ -76,7 +117,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			rewriteRequest(r, data)
 
 		}
-
+		r = r.WithContext(ctx)
 		proxy.ServeHTTP(w, r)
 	}
 

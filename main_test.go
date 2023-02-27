@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
@@ -24,13 +25,13 @@ import (
 func TestProxyTableDriven(t *testing.T) {
 
 	type test struct {
-		name        string
-		path        string
-		method      string
-		requestJson string
-		want        string
-
-		nomadResponse string
+		name                  string
+		path                  string
+		method                string
+		requestJson           string
+		wantNomadRequestJson  string
+		wantProxyResponseJson string
+		nomadResponse         string
 		//	responseWarnings []error
 		validators []admissionctrl.JobValidator
 		mutators   []admissionctrl.JobMutator
@@ -38,46 +39,87 @@ func TestProxyTableDriven(t *testing.T) {
 
 	tests := []test{
 		{
-			name:          "create job",
-			path:          "/v1/jobs",
-			method:        "PUT",
-			requestJson:   registerRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:          registerRequestJson(t, jobWithHelloWorldMeta(t)),
-			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
-			validators:    []admissionctrl.JobValidator{},
-			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
-			},
-		},
-		{
-			name:          "update job",
-			path:          "/v1/job/some-job",
-			method:        "PUT",
-			requestJson:   registerRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:          registerRequestJson(t, jobWithHelloWorldMeta(t)),
-			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
-			validators:    []admissionctrl.JobValidator{},
-			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
-			},
-		},
-		{
-			name:        "plan job",
-			path:        "/v1/job/some-job/plan",
-			method:      "PUT",
-			requestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
-			want:        planRequestJson(t, jobWithHelloWorldMeta(t)),
+			name:   "create job adds hello meta",
+			path:   "/v1/jobs",
+			method: "PUT",
 
-			nomadResponse: toJson(t, &api.JobPlanResponse{}),
+			requestJson:          registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			wantNomadRequestJson: registerRequestJson(t, jobWithHelloWorldMeta(t)),
+
+			wantProxyResponseJson: toJson(t, &api.JobRegisterResponse{}),
+			nomadResponse:         toJson(t, &api.JobRegisterResponse{}),
+			validators:            []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
+		},
+		{
+			name:        "update job adds hello meta",
+			path:        "/v1/job/some-job",
+			method:      "PUT",
+			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantNomadRequestJson:  registerRequestJson(t, jobWithHelloWorldMeta(t)),
+			wantProxyResponseJson: toJson(t, &api.JobRegisterResponse{}),
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators:    []admissionctrl.JobValidator{},
 			mutators: []admissionctrl.JobMutator{
 				&mutator.HelloMutator{},
 			},
+		},
+		{
+			name:                 "plan job adds hello meta",
+			path:                 "/v1/job/some-job/plan",
+			method:               "PUT",
+			requestJson:          planRequestJson(t, testutil.ReadJob(t, "job.json")),
+			wantNomadRequestJson: planRequestJson(t, jobWithHelloWorldMeta(t)),
+
+			wantProxyResponseJson: toJson(t, &api.JobRegisterResponse{}),
+			nomadResponse:         toJson(t, &api.JobRegisterResponse{}),
+
+			validators: []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
+		},
+		{
+			name:        "create job adds warnings",
+			path:        "/v1/jobs",
+			method:      "PUT",
+			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			wantProxyResponseJson: toJson(t, &api.JobRegisterResponse{
+				Warnings: "1 error occurred:\n\t* some warning\n\n",
+			}),
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+			name:        "create job concats warnings",
+			path:        "/v1/jobs",
+			method:      "PUT",
+			requestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+			wantProxyResponseJson: toJson(t, &api.JobRegisterResponse{
+				Warnings: "2 errors occurred:\n\t* 1 error occurred:\n\t* some warning\n\n\n\t* some warning\n\n",
+			}),
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{
+				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
+			}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
 		},
 	}
-
-	// validator := new(testutil.MockValidator)
-	// validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("some error"))
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -91,7 +133,7 @@ func TestProxyTableDriven(t *testing.T) {
 					t.Fatal(err)
 				}
 				json := string(jsonData)
-				assert.JSONEq(t, tc.want, json, "Body matches")
+				assert.JSONEq(t, tc.wantNomadRequestJson, json, "Body matches")
 
 				_, _ = rw.Write([]byte(tc.nomadResponse))
 			}))
@@ -117,11 +159,26 @@ func TestProxyTableDriven(t *testing.T) {
 			res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, tc.path), strings.NewReader(tc.requestJson))
 			assert.NoError(t, err, "No http call error")
 			assert.Equal(t, 200, res.StatusCode, "OK response is expected")
+			assert.JSONEq(t, tc.wantProxyResponseJson, readClosterToString(t, res.Body), "Body matches")
 		})
 	}
 
 }
+func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 
+	validator := new(testutil.MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf(warning)}, nil)
+	return validator
+
+}
+func readClosterToString(t *testing.T, rc io.ReadCloser) string {
+	t.Helper()
+	data, err := io.ReadAll(rc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}
 func jobWithHelloWorldMeta(t *testing.T) *api.Job {
 	wantJob := testutil.ReadJob(t, "job.json")
 	wantJob.Meta = map[string]string{
@@ -145,6 +202,7 @@ func registerRequestJson(t *testing.T, wantJob *api.Job) string {
 	return toJson(t, register)
 
 }
+
 func planRequestJson(t *testing.T, wantJob *api.Job) string {
 	t.Helper()
 	plan := &api.JobPlanRequest{
