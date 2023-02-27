@@ -119,6 +119,44 @@ func TestProxyTableDriven(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
+		{
+			name:        "plan job adds warnings",
+			path:        "/v1/job/some-job/plan",
+			method:      "PUT",
+			requestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
+			wantProxyResponseJson: toJson(t, &api.JobPlanResponse{
+				// Diff: &api.JobDiff{
+				// 	Fields: []*api.FieldDiff{
+				// 		{
+				// 			Name: "aaa",
+				// 			Type: "bbb",
+				// 			Old:  "ccc",
+				// 			New:  "ddd",
+				// 		},
+				// 	},
+				// },
+				Warnings: "1 error occurred:\n\t* some warning\n\n",
+			}),
+
+			nomadResponse: toJson(t, &api.JobPlanResponse{
+				// Diff: &api.JobDiff{
+				// 	Fields: []*api.FieldDiff{
+				// 		{
+				// 			Name: "aaa",
+				// 			Type: "bbb",
+				// 			Old:  "ccc",
+				// 			New:  "ddd",
+				// 		},
+				// 	},
+				// },
+			}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 	}
 
 	for _, tc := range tests {

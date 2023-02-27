@@ -51,29 +51,28 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		if ok && len(warnings) > 0 {
 			appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
 
-			registerRespone := &api.JobRegisterResponse{}
-
-			json.NewDecoder(resp.Body).Decode(registerRespone)
-			appLogger.Info("Job after admission controllers", "job", registerRespone.JobModifyIndex)
-
-			allWarnings := &multierror.Error{}
-			if registerRespone.Warnings != "" {
-				multierror.Append(allWarnings, fmt.Errorf("%s", registerRespone.Warnings))
-
+			var response interface{}
+			var warningsGetter func() string
+			var warningsSetter func(string)
+			var err error
+			if isRegister(resp.Request) {
+				response, warningsGetter, warningsSetter, err = getRegisterResponseParts(resp, appLogger)
 			}
-			allWarnings = multierror.Append(allWarnings, warnings...)
-			registerRespone.Warnings = allWarnings.Error()
-
-			newResponeData, err := json.Marshal(registerRespone)
+			if isPlan(resp.Request) {
+				response, warningsGetter, warningsSetter, err = getJobPlanResponseParts(resp, appLogger)
+			}
 			if err != nil {
+				appLogger.Error("Preparing response failed", "error", err)
+
 				return err
 			}
+			newResponeData, err := appendWarnings(response, warnings, warningsGetter, warningsSetter)
+			if err != nil {
+				appLogger.Error("Error marshalling job", "error", err)
+				return err
+			}
+			rewriteResponse(resp, newResponeData)
 
-			// resp.Body = &DebugReader{Body: "some body"}
-			// resp.Header.Set("Foo", "bar")
-			resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newResponeData)))
-			resp.ContentLength = int64(len(newResponeData))
-			resp.Body = io.NopCloser(bytes.NewBuffer(newResponeData))
 		}
 		return nil
 	}
@@ -82,11 +81,9 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
 
-		isRegister := isCreate(r) || isUpdate(r)
-
 		ctx := r.Context()
 
-		if isRegister {
+		if isRegister(r) {
 			data, warnings, err := handleRegister(r, appLogger, jobHandler)
 			if err != nil {
 				appLogger.Warn("Error applying admission controllers", "error", err)
@@ -94,8 +91,6 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 				return
 			}
 			if len(warnings) > 0 {
-				//TODO: attach to response?
-				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
 				ctx = context.WithValue(ctx, ctxWarnings, warnings)
 			}
 			appLogger.Info("Job after admission controllers", "job", string(data))
@@ -110,8 +105,8 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 				return
 			}
 			if len(warnings) > 0 {
-				//TODO: attach to response?
-				appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
+				ctx = context.WithValue(ctx, ctxWarnings, warnings)
+
 			}
 			appLogger.Info("Job after admission controllers", "job", string(data))
 			rewriteRequest(r, data)
@@ -121,6 +116,67 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		proxy.ServeHTTP(w, r)
 	}
 
+}
+
+func getRegisterResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+	response := &api.JobRegisterResponse{}
+	err := json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		appLogger.Error("Error decoding job", "error", err)
+		return nil, nil, nil, err
+	}
+	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
+
+	warningsGetter := func() string {
+		return response.Warnings
+	}
+	warningsSetter := func(warnings string) {
+		response.Warnings = warnings
+	}
+	return response, warningsGetter, warningsSetter, nil
+}
+func getJobPlanResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+	response := &api.JobPlanResponse{}
+	err := json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		appLogger.Error("Error decoding job", "error", err)
+		return nil, nil, nil, err
+	}
+	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
+
+	warningsGetter := func() string {
+		return response.Warnings
+	}
+	warningsSetter := func(warnings string) {
+		response.Warnings = warnings
+	}
+	return response, warningsGetter, warningsSetter, nil
+}
+
+func appendWarnings(response interface{}, warnings []error, warningsGetter func() string, warningsSetter func(string)) ([]byte, error) {
+	allWarnings := &multierror.Error{}
+
+	upstreamResponseWarnings := warningsGetter()
+	if upstreamResponseWarnings != "" {
+		multierror.Append(allWarnings, fmt.Errorf("%s", upstreamResponseWarnings))
+	}
+	allWarnings = multierror.Append(allWarnings, warnings...)
+
+	warningsSetter(allWarnings.Error())
+
+	newResponeData, err := json.Marshal(response)
+	if err != nil {
+
+		return nil, err
+	}
+
+	return newResponeData, nil
+}
+
+func rewriteResponse(resp *http.Response, newResponeData []byte) {
+	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newResponeData)))
+	resp.ContentLength = int64(len(newResponeData))
+	resp.Body = io.NopCloser(bytes.NewBuffer(newResponeData))
 }
 
 func rewriteRequest(r *http.Request, data []byte) {
@@ -180,6 +236,11 @@ func writeError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write([]byte(err.Error()))
 }
+func isRegister(r *http.Request) bool {
+	isRegister := isCreate(r) || isUpdate(r)
+	return isRegister
+}
+
 func isCreate(r *http.Request) bool {
 	return r.Method == "PUT" && r.URL.Path == "/v1/jobs"
 }
