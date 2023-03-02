@@ -57,8 +57,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			var err error
 			if isRegister(resp.Request) {
 				response, warningsGetter, warningsSetter, err = getRegisterResponseParts(resp, appLogger)
-			}
-			if isPlan(resp.Request) {
+			} else if isPlan(resp.Request) {
 				response, warningsGetter, warningsSetter, err = getJobPlanResponseParts(resp, appLogger)
 			}
 			if err != nil {
