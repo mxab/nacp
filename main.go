@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -32,13 +35,16 @@ var (
 	jobPlanPathRegex = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
 )
 
-func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger) func(http.ResponseWriter, *http.Request) {
+func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
 
 	// create a reverse proxy that catches "/v1/jobs" post calls
 	// and forwards them to the jobs service
 	// create a new reverse proxy
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
+	if transport != nil {
+		proxy.Transport = transport
+	}
 
 	originalDirector := proxy.Director
 
@@ -370,7 +376,14 @@ func main() {
 		appLogger.Error("Failed to parse nomad address", "error", err)
 		os.Exit(1)
 	}
-
+	var transport *http.Transport
+	if c.Nomad.TLS != nil {
+		transport, err = buildCustomTransport(*c.Nomad.TLS)
+		if err != nil {
+			appLogger.Error("Failed to create custom transport", "error", err)
+			os.Exit(1)
+		}
+	}
 	jobMutators, err := createMutatators(c, appLogger)
 	if err != nil {
 		appLogger.Error("Failed to create mutators", "error", err)
@@ -389,7 +402,7 @@ func main() {
 		appLogger.Named("handler"),
 	)
 
-	proxy := NewProxyHandler(backend, handler, appLogger)
+	proxy := NewProxyHandler(backend, handler, appLogger, transport)
 
 	http.HandleFunc("/", proxy)
 
@@ -446,4 +459,33 @@ func createValidators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 		}
 	}
 	return jobValidators, nil
+}
+
+func buildCustomTransport(config config.NomadServerTLS) (*http.Transport, error) {
+	// Create a custom transport to allow for self-signed certs
+	// and to allow for a custom timeout
+
+	//load key pair
+	cert, err := tls.LoadX509KeyPair(config.CertFile, config.KeyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// create CA pool
+	caCert, err := ioutil.ReadFile(config.CaFile)
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: config.InsecureSkipVerify,
+
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		},
+	}
+	return transport, err
 }

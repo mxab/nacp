@@ -21,11 +21,15 @@ type Mutator struct {
 	OpaRules []OpaRule `hcl:"opa_rule,block"`
 }
 
+type NomadServerTLS struct {
+	CaFile             string `hcl:"ca_file"`
+	CertFile           string `hcl:"cert_file"`
+	KeyFile            string `hcl:"key_file"`
+	InsecureSkipVerify bool   `hcl:"insecure_skip_verify,optional"`
+}
 type NomadServer struct {
-	Address string `hcl:"address"`
-	// CaFile   string `hcl:"ca_file"`
-	// CertFile string `hcl:"cert_file"`
-	// KeyFile  string `hcl:"key_file"`
+	Address string          `hcl:"address"`
+	TLS     *NomadServerTLS `hcl:"tls,block"`
 }
 type Config struct {
 	Port int    `hcl:"port,optional"`
@@ -55,6 +59,7 @@ func DefaultConfig() *Config {
 func LoadConfig(name string) (*Config, error) {
 
 	c := DefaultConfig()
+
 	evalContext := &hcl.EvalContext{}
 	err := hclsimple.DecodeFile(name, evalContext, c)
 	if err != nil {

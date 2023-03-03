@@ -236,7 +236,7 @@ func TestProxy(t *testing.T) {
 				tc.validators,
 				hclog.NewNullLogger(),
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger())
+			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -319,7 +319,7 @@ func TestJobUpdateProxy(t *testing.T) {
 				tc.validators,
 				hclog.NewNullLogger(),
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger())
+			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -414,7 +414,7 @@ func TestAdmissionControllerErrors(t *testing.T) {
 		[]admissionctrl.JobValidator{validator},
 		hclog.NewNullLogger(),
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger())
+	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 
