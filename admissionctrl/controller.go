@@ -43,12 +43,12 @@ func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclo
 func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warnings []error, err error) {
 	// Mutators run first before validators, so validators view the final rendered job.
 	// So, mutators must handle invalid jobs.
-	out, warnings, err = j.admissionMutators(job)
+	out, warnings, err = j.AdmissionMutators(job)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	validateWarnings, err := j.admissionValidators(job)
+	validateWarnings, err := j.AdmissionValidators(job)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,7 +58,7 @@ func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warn
 }
 
 // admissionMutator returns an updated job as well as warnings or an error.
-func (j *JobHandler) admissionMutators(job *api.Job) (_ *api.Job, warnings []error, err error) {
+func (j *JobHandler) AdmissionMutators(job *api.Job) (_ *api.Job, warnings []error, err error) {
 	var w []error
 	for _, mutator := range j.mutators {
 		job, w, err = mutator.Mutate(job)
@@ -71,9 +71,9 @@ func (j *JobHandler) admissionMutators(job *api.Job) (_ *api.Job, warnings []err
 	return job, warnings, err
 }
 
-// admissionValidators returns a slice of validation warnings and a multierror
+// AdmissionValidators returns a slice of validation warnings and a multierror
 // of validation failures.
-func (j *JobHandler) admissionValidators(origJob *api.Job) ([]error, error) {
+func (j *JobHandler) AdmissionValidators(origJob *api.Job) ([]error, error) {
 	// ensure job is not mutated
 
 	job := copyJob(origJob)

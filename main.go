@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/opa"
@@ -59,6 +60,8 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 				response, warningsGetter, warningsSetter, err = getRegisterResponseParts(resp, appLogger)
 			} else if isPlan(resp.Request) {
 				response, warningsGetter, warningsSetter, err = getJobPlanResponseParts(resp, appLogger)
+			} else if isValidate(resp.Request) {
+				response, warningsGetter, warningsSetter, err = getJobValidateResponseParts(resp, appLogger)
 			}
 			if err != nil {
 				appLogger.Error("Preparing response failed", "error", err)
@@ -82,6 +85,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		ctx := r.Context()
 
+		//var err error
 		if isRegister(r) {
 			data, warnings, err := handleRegister(r, appLogger, jobHandler)
 			if err != nil {
@@ -110,6 +114,19 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			appLogger.Info("Job after admission controllers", "job", string(data))
 			rewriteRequest(r, data)
 
+		} else if isValidate(r) {
+			data, warnings, err := handleValidate(r, appLogger, jobHandler)
+			if err != nil {
+				appLogger.Warn("Error applying admission controllers", "error", err)
+				writeError(w, err)
+				return
+			}
+			if len(warnings) > 0 {
+				ctx = context.WithValue(ctx, ctxWarnings, warnings)
+
+			}
+			// appLogger.Info("Job after admission controllers", "job", string(data))
+			rewriteRequest(r, data)
 		}
 		r = r.WithContext(ctx)
 		proxy.ServeHTTP(w, r)
@@ -151,7 +168,22 @@ func getJobPlanResponseParts(resp *http.Response, appLogger hclog.Logger) (inter
 	}
 	return response, warningsGetter, warningsSetter, nil
 }
+func getJobValidateResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+	response := &api.JobValidateResponse{}
+	err := json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		appLogger.Error("Error decoding job", "error", err)
+		return nil, nil, nil, err
+	}
 
+	warningsGetter := func() string {
+		return response.Warnings
+	}
+	warningsSetter := func(warnings string) {
+		response.Warnings = warnings
+	}
+	return response, warningsGetter, warningsSetter, nil
+}
 func appendWarnings(response interface{}, warnings []error, warningsGetter func() string, warningsSetter func(string)) ([]byte, error) {
 	allWarnings := &multierror.Error{}
 
@@ -161,7 +193,7 @@ func appendWarnings(response interface{}, warnings []error, warningsGetter func(
 	}
 	allWarnings = multierror.Append(allWarnings, warnings...)
 
-	warningsSetter(allWarnings.Error())
+	warningsSetter(helper.MergeMultierrorWarnings(allWarnings))
 
 	newResponeData, err := json.Marshal(response)
 	if err != nil {
@@ -231,6 +263,55 @@ func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionct
 	return data, warnings, nil
 }
 
+func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+
+	body := r.Body
+	jobValidateRequest := &api.JobValidateRequest{}
+	err := json.NewDecoder(body).Decode(jobValidateRequest)
+	if err != nil {
+		appLogger.Error("Error decoding job", "error", err)
+		return nil, nil, err
+	}
+	job := jobValidateRequest.Job
+
+	job, mutateWarnings, err := jobHandler.AdmissionMutators(job)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	jobValidateRequest.Job = job
+
+	// args.Job = job
+
+	// // Validate the job and capture any warnings
+	// TODO: handle err
+	validateWarnings, err := jobHandler.AdmissionValidators(job)
+	// copied from https: //github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint.go#L574
+	// if err != nil {
+	// 	if merr, ok := err.(*multierror.Error); ok {
+	// 		for _, err := range merr.Errors {
+	// 			reply.ValidationErrors = append(reply.ValidationErrors, err.Error())
+	// 		}
+	// 		reply.Error = merr.Error()
+	// 	} else {
+	// 		reply.ValidationErrors = append(reply.ValidationErrors, err.Error())
+	// 		reply.Error = err.Error()
+	// 	}
+	// }
+
+	validateWarnings = append(validateWarnings, mutateWarnings...)
+
+	// // Set the warning message
+
+	// reply.DriverConfigValidated = true
+	data, err := json.Marshal(jobValidateRequest)
+	if err != nil {
+		return nil, nil, err
+	}
+	return data, validateWarnings, nil
+
+}
+
 func writeError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write([]byte(err.Error()))
@@ -250,6 +331,10 @@ func isUpdate(r *http.Request) bool {
 func isPlan(r *http.Request) bool {
 
 	return r.Method == "PUT" && jobPlanPathRegex.MatchString(r.URL.Path)
+}
+func isValidate(r *http.Request) bool {
+
+	return r.Method == "PUT" && r.URL.Path == "/v1/validate/job"
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html

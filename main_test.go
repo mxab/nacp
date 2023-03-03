@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/testutil"
@@ -91,7 +93,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobRegisterResponse{
-				Warnings: "1 error occurred:\n\t* some warning\n\n",
+				Warnings: "1 warning:\n\n* some warning",
 			},
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
@@ -112,7 +114,8 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobRegisterResponse{
-				Warnings: "2 errors occurred:\n\t* 1 error occurred:\n\t* some warning\n\n\n\t* some warning\n\n",
+				// TODO: rework error concatination
+				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
 			},
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{
@@ -134,7 +137,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobPlanResponse{
-				Warnings: "1 error occurred:\n\t* some warning\n\n",
+				Warnings: "1 warning:\n\n* some warning",
 			},
 
 			nomadResponse: toJson(t, &api.JobPlanResponse{}),
@@ -143,24 +146,44 @@ func TestProxy(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
-		// {
-		// 	name:   "validate job adds hello meta",
-		// 	path:   "/v1/validate/jobs",
-		// 	method: "PUT",
+		{
+			name:   "validate job adds hello meta",
+			path:   "/v1/validate/job",
+			method: "PUT",
 
-		// 	requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
-		// 		return c.Jobs().Validate(testutil.ReadJob(t, "job.json"), nil)
-		// 	},
-		// 	wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: jobWithHelloWorldMeta(t)}),
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Validate(testutil.ReadJob(t, "job.json"), nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: jobWithHelloWorldMeta(t)}),
 
-		// 	wantProxyResponse: &api.JobPlanResponse{},
+			wantProxyResponse: &api.JobValidateResponse{},
 
-		// 	nomadResponse: toJson(t, &api.JobRegisterResponse{}),
-		// 	validators:    []admissionctrl.JobValidator{},
-		// 	mutators: []admissionctrl.JobMutator{
-		// 		&mutator.HelloMutator{},
-		// 	},
-		// },
+			nomadResponse: toJson(t, &api.JobValidateResponse{}),
+			validators:    []admissionctrl.JobValidator{},
+			mutators: []admissionctrl.JobMutator{
+				&mutator.HelloMutator{},
+			},
+		},
+		{
+			name:   "validate job appends warnings",
+			path:   "/v1/validate/job",
+			method: "PUT",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Validate(&api.Job{}, nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+
+			wantProxyResponse: &api.JobValidateResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse: toJson(t, &api.JobValidateResponse{}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 		//Validate
 		// {
 		// 	name:        "validate job adds warnings",
@@ -329,6 +352,7 @@ func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 	return validator
 
 }
+
 func readClosterToString(t *testing.T, rc io.ReadCloser) string {
 	t.Helper()
 	data, err := io.ReadAll(rc)
