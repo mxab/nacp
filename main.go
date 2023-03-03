@@ -430,7 +430,7 @@ func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 			if err != nil {
 				return nil, err
 			}
-			jobMutators = append(jobMutators, mutator, mutator)
+			jobMutators = append(jobMutators, mutator)
 
 		}
 
