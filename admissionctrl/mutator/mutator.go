@@ -1,8 +1,11 @@
 package mutator
 
-import "github.com/hashicorp/nomad/api"
+import (
+	"github.com/hashicorp/nomad/api"
+)
 
 type HelloMutator struct {
+	MutatorName string
 }
 
 func (h *HelloMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
@@ -17,5 +20,5 @@ func (h *HelloMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err
 }
 
 func (h *HelloMutator) Name() string {
-	return "hello"
+	return h.MutatorName
 }
