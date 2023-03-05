@@ -28,11 +28,14 @@ import (
 )
 
 type contextKeyWarnings struct{}
+type contextKeyValidationErrors struct{}
+type contextKeyValidationError struct{}
 
 var (
-	ctxWarnings      = contextKeyWarnings{}
-	jobPathRegex     = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
-	jobPlanPathRegex = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
+	ctxWarnings        = contextKeyWarnings{}
+	ctxValidationError = contextKeyValidationError{}
+	jobPathRegex       = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
+	jobPlanPathRegex   = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
 )
 
 func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
@@ -54,34 +57,33 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
 
-		warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
-		if ok && len(warnings) > 0 {
-			appLogger.Warn("Warnings applying admission controllers", "warnings", warnings)
+		var response interface{}
+		var err error
 
-			var response interface{}
-			var warningsGetter func() string
-			var warningsSetter func(string)
-			var err error
-			if isRegister(resp.Request) {
-				response, warningsGetter, warningsSetter, err = getRegisterResponseParts(resp, appLogger)
-			} else if isPlan(resp.Request) {
-				response, warningsGetter, warningsSetter, err = getJobPlanResponseParts(resp, appLogger)
-			} else if isValidate(resp.Request) {
-				response, warningsGetter, warningsSetter, err = getJobValidateResponseParts(resp, appLogger)
-			}
-			if err != nil {
-				appLogger.Error("Preparing response failed", "error", err)
-
-				return err
-			}
-			newResponeData, err := appendWarnings(response, warnings, warningsGetter, warningsSetter)
-			if err != nil {
-				appLogger.Error("Error marshalling job", "error", err)
-				return err
-			}
-			rewriteResponse(resp, newResponeData)
-
+		if isRegister(resp.Request) {
+			response, err = handRegisterResponse(resp, appLogger)
+		} else if isPlan(resp.Request) {
+			response, err = handleJobPlanResponse(resp, appLogger)
+		} else if isValidate(resp.Request) {
+			response, err = handleJobValdidateResponse(resp, appLogger)
 		}
+		if err != nil {
+			appLogger.Error("Preparing response failed", "error", err)
+			return err
+		}
+		if response == nil {
+			return nil
+		}
+
+		responeData, err := json.Marshal(response)
+
+		if err != nil {
+			appLogger.Error("Error marshalling job", "error", err)
+			return err
+		}
+
+		rewriteResponse(resp, responeData)
+
 		return nil
 	}
 
@@ -89,125 +91,116 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
 
-		ctx := r.Context()
-
+		var err error
 		//var err error
 		if isRegister(r) {
-			data, warnings, err := handleRegister(r, appLogger, jobHandler)
-			if err != nil {
-				appLogger.Warn("Error applying admission controllers", "error", err)
-				writeError(w, err)
-				return
-			}
-			if len(warnings) > 0 {
-				ctx = context.WithValue(ctx, ctxWarnings, warnings)
-			}
-			appLogger.Info("Job after admission controllers", "job", string(data))
-			rewriteRequest(r, data)
+			r, err = handleRegister(r, appLogger, jobHandler)
 
 		} else if isPlan(r) {
 
-			data, warnings, err := handlePlan(r, appLogger, jobHandler)
-			if err != nil {
-				appLogger.Warn("Error applying admission controllers", "error", err)
-				writeError(w, err)
-				return
-			}
-			if len(warnings) > 0 {
-				ctx = context.WithValue(ctx, ctxWarnings, warnings)
-
-			}
-			appLogger.Info("Job after admission controllers", "job", string(data))
-			rewriteRequest(r, data)
+			r, err = handlePlan(r, appLogger, jobHandler)
 
 		} else if isValidate(r) {
-			data, warnings, err := handleValidate(r, appLogger, jobHandler)
-			if err != nil {
-				appLogger.Warn("Error applying admission controllers", "error", err)
-				writeError(w, err)
-				return
-			}
-			if len(warnings) > 0 {
-				ctx = context.WithValue(ctx, ctxWarnings, warnings)
+			r, err = handleValidate(r, appLogger, jobHandler)
 
-			}
-			// appLogger.Info("Job after admission controllers", "job", string(data))
-			rewriteRequest(r, data)
 		}
-		r = r.WithContext(ctx)
-		proxy.ServeHTTP(w, r)
+		if err != nil {
+			appLogger.Warn("Error applying admission controllers", "error", err)
+			writeError(w, err)
+
+		} else {
+			proxy.ServeHTTP(w, r)
+		}
+
 	}
 
 }
 
-func getRegisterResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+
+	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
+	if !ok && len(warnings) == 0 {
+		return nil, nil
+	}
 	response := &api.JobRegisterResponse{}
 	err := json.NewDecoder(resp.Body).Decode(response)
 	if err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, nil, nil, err
+		return nil, err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
-	warningsGetter := func() string {
-		return response.Warnings
-	}
-	warningsSetter := func(warnings string) {
-		response.Warnings = warnings
-	}
-	return response, warningsGetter, warningsSetter, nil
+	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
+
+	return response, nil
 }
-func getJobPlanResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
+	if !ok && len(warnings) == 0 {
+		return nil, nil
+	}
+
 	response := &api.JobPlanResponse{}
 	err := json.NewDecoder(resp.Body).Decode(response)
 	if err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, nil, nil, err
+		return nil, err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
-	warningsGetter := func() string {
-		return response.Warnings
-	}
-	warningsSetter := func(warnings string) {
-		response.Warnings = warnings
-	}
-	return response, warningsGetter, warningsSetter, nil
+	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
+
+	return response, nil
 }
-func getJobValidateResponseParts(resp *http.Response, appLogger hclog.Logger) (interface{}, func() string, func(warnings string), error) {
+func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+
+	ctx := resp.Request.Context()
+	validationErr, okErr := ctx.Value(ctxValidationError).(error)
+	warnings, okWarnings := resp.Request.Context().Value(ctxWarnings).([]error)
+	if !okErr && !okWarnings {
+		return nil, nil
+	}
+
 	response := &api.JobValidateResponse{}
 	err := json.NewDecoder(resp.Body).Decode(response)
 	if err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, nil, nil, err
+		return nil, err
 	}
 
-	warningsGetter := func() string {
-		return response.Warnings
+	if validationErr != nil {
+		validationErrors := []string{}
+		var validationError string
+		if merr, ok := validationErr.(*multierror.Error); ok {
+			for _, err := range merr.Errors {
+				validationErrors = append(validationErrors, err.Error())
+			}
+			validationError = merr.Error()
+		} else {
+			validationErrors = append(validationErrors, validationErr.Error())
+			validationError = err.Error()
+		}
+
+		response.ValidationErrors = validationErrors
+		response.Error = validationError
 	}
-	warningsSetter := func(warnings string) {
-		response.Warnings = warnings
+
+	if len(warnings) > 0 {
+		response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 	}
-	return response, warningsGetter, warningsSetter, nil
+
+	return response, nil
 }
-func appendWarnings(response interface{}, warnings []error, warningsGetter func() string, warningsSetter func(string)) ([]byte, error) {
+
+func buildFullWarningMsg(upstreamResponseWarnings string, warnings []error) string {
 	allWarnings := &multierror.Error{}
 
-	upstreamResponseWarnings := warningsGetter()
 	if upstreamResponseWarnings != "" {
 		multierror.Append(allWarnings, fmt.Errorf("%s", upstreamResponseWarnings))
 	}
 	allWarnings = multierror.Append(allWarnings, warnings...)
-
-	warningsSetter(helper.MergeMultierrorWarnings(allWarnings))
-
-	newResponeData, err := json.Marshal(response)
-	if err != nil {
-
-		return nil, err
-	}
-
-	return newResponeData, nil
+	warningMsg := helper.MergeMultierrorWarnings(allWarnings)
+	return warningMsg
 }
 
 func rewriteResponse(resp *http.Response, newResponeData []byte) {
@@ -222,41 +215,50 @@ func rewriteRequest(r *http.Request, data []byte) {
 	r.Body = io.NopCloser(bytes.NewBuffer(data))
 }
 
-func handleRegister(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+func handleRegister(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 	body := r.Body
 	jobRegisterRequest := &api.JobRegisterRequest{}
 
 	if err := json.NewDecoder(body).Decode(jobRegisterRequest); err != nil {
 
-		return nil, nil, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
+		return r, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
 	}
 	orginalJob := jobRegisterRequest.Job
 
 	job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
 	if err != nil {
-		return nil, nil, fmt.Errorf("admission controllers send an error, returning error: %w", err)
+		return r, fmt.Errorf("admission controllers send an error, returning error: %w", err)
 	}
 	jobRegisterRequest.Job = job
 
 	data, err := json.Marshal(jobRegisterRequest)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("error marshalling job: %w", err)
+		return r, fmt.Errorf("error marshalling job: %w", err)
 	}
-	return data, warnings, nil
+
+	ctx := r.Context()
+	if len(warnings) > 0 {
+		ctx = context.WithValue(ctx, ctxWarnings, warnings)
+	}
+
+	appLogger.Info("Job after admission controllers", "job", string(data))
+	r = r.WithContext(ctx)
+	rewriteRequest(r, data)
+	return r, nil
 }
-func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 	body := r.Body
 	jobPlanRequest := &api.JobPlanRequest{}
 
 	if err := json.NewDecoder(body).Decode(jobPlanRequest); err != nil {
-		return nil, nil, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
+		return r, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
 	}
 	orginalJob := jobPlanRequest.Job
 
 	job, warnings, err := jobHandler.ApplyAdmissionControllers(orginalJob)
 	if err != nil {
-		return nil, nil, fmt.Errorf("admission controllers send an error, returning error: %w", err)
+		return r, fmt.Errorf("admission controllers send an error, returning error: %w", err)
 	}
 
 	jobPlanRequest.Job = job
@@ -264,26 +266,34 @@ func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionct
 	data, err := json.Marshal(jobPlanRequest)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("error marshalling job: %w", err)
+		return r, fmt.Errorf("error marshalling job: %w", err)
 	}
-	return data, warnings, nil
+	ctx := r.Context()
+	if len(warnings) > 0 {
+		ctx = context.WithValue(ctx, ctxWarnings, warnings)
+
+	}
+	r = r.WithContext(ctx)
+	appLogger.Info("Job after admission controllers", "job", string(data))
+	rewriteRequest(r, data)
+	return r, nil
 }
 
-func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) ([]byte, []error, error) {
+func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 
 	body := r.Body
 	jobValidateRequest := &api.JobValidateRequest{}
 	err := json.NewDecoder(body).Decode(jobValidateRequest)
 	if err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, nil, err
+		return r, err
 	}
 	job := jobValidateRequest.Job
 
 	job, mutateWarnings, err := jobHandler.AdmissionMutators(job)
 
 	if err != nil {
-		return nil, nil, err
+		return r, err
 	}
 	jobValidateRequest.Job = job
 
@@ -292,17 +302,21 @@ func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 	// // Validate the job and capture any warnings
 	// TODO: handle err
 	validateWarnings, err := jobHandler.AdmissionValidators(job)
-	// copied from https: //github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint.go#L574
+	//copied from https: //github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint.go#L574
+
+	ctx := r.Context()
 	// if err != nil {
+	ctx = context.WithValue(ctx, ctxValidationError, err)
 	// 	if merr, ok := err.(*multierror.Error); ok {
 	// 		for _, err := range merr.Errors {
-	// 			reply.ValidationErrors = append(reply.ValidationErrors, err.Error())
+	// 			validationErrors = append(validationErrors, err.Error())
 	// 		}
-	// 		reply.Error = merr.Error()
+	// 		errs = merr.Error()
 	// 	} else {
-	// 		reply.ValidationErrors = append(reply.ValidationErrors, err.Error())
-	// 		reply.Error = err.Error()
+	// 		validationErrors = append(validationErrors, err.Error())
+	// 		errs = err.Error()
 	// 	}
+
 	// }
 
 	validateWarnings = append(validateWarnings, mutateWarnings...)
@@ -312,9 +326,17 @@ func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 	// reply.DriverConfigValidated = true
 	data, err := json.Marshal(jobValidateRequest)
 	if err != nil {
-		return nil, nil, err
+		return r, err
 	}
-	return data, validateWarnings, nil
+
+	if len(validateWarnings) > 0 {
+		ctx = context.WithValue(ctx, ctxWarnings, validateWarnings)
+
+	}
+	r = r.WithContext(ctx)
+	// appLogger.Info("Job after admission controllers", "job", string(data))
+	rewriteRequest(r, data)
+	return r, nil
 
 }
 

@@ -184,25 +184,27 @@ func TestProxy(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
-		//Validate
-		// {
-		// 	name:        "validate job adds warnings",
-		// 	path:        "/v1/validate/job",
-		// 	method:      "POST",
-		// 	requestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+		{
+			name:   "validate job appends validation errors",
+			path:   "/v1/validate/job",
+			method: "PUT",
 
-		// 	wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
-		// 	wantProxyResponseJson: toJson(t, &api.JobValidateResponse{
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Validate(&api.Job{}, nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
 
-		// 		Warnings: "1 error occurred:\n\t* some warning\n\n",
-		// 	}),
+			wantProxyResponse: &api.JobValidateResponse{
+				ValidationErrors: []string{"some error"},
+				Error:            "1 error occurred:\n\t* some error\n\n",
+			},
 
-		// 	nomadResponse: toJson(t, &api.JobValidateResponse{}),
-		// 	validators: []admissionctrl.JobValidator{
-		// 		mockValidatorReturningWarnings("some warning"),
-		// 	},
-		// 	mutators: []admissionctrl.JobMutator{},
-		// },
+			nomadResponse: toJson(t, &api.JobValidateResponse{}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningError("some error"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 	}
 
 	for _, tc := range tests {
@@ -350,7 +352,12 @@ func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 	validator := new(testutil.MockValidator)
 	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf(warning)}, nil)
 	return validator
+}
+func mockValidatorReturningError(err string) admissionctrl.JobValidator {
 
+	validator := new(testutil.MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf(err))
+	return validator
 }
 
 func readClosterToString(t *testing.T, rc io.ReadCloser) string {
