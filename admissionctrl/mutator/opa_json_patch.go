@@ -54,7 +54,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (out *api.Job, warnings []err
 			if err != nil {
 				return nil, nil, err
 			}
-			j.logger.Debug("Got patch fom rule", "rule", ruleSet.Name(), "patch", patchJSON)
+			j.logger.Debug("Got patch fom rule", "rule", ruleSet.Name(), "patch", string(patchJSON))
 			jobJson, err := json.Marshal(job)
 			if err != nil {
 				return nil, nil, err
