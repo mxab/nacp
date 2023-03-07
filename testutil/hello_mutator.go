@@ -1,8 +1,6 @@
-package mutator
+package testutil
 
-import (
-	"github.com/hashicorp/nomad/api"
-)
+import "github.com/hashicorp/nomad/api"
 
 type HelloMutator struct {
 	MutatorName string

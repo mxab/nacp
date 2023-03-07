@@ -436,8 +436,6 @@ func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 	var jobMutators []admissionctrl.JobMutator
 	for _, m := range c.Mutators {
 		switch m.Type {
-		case "hello":
-			jobMutators = append(jobMutators, &mutator.HelloMutator{})
 
 		case "opa_jsonpatch":
 

@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
-	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -57,7 +56,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators:    []admissionctrl.JobValidator{},
 			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
+				&testutil.HelloMutator{},
 			},
 		},
 
@@ -78,7 +77,7 @@ func TestProxy(t *testing.T) {
 
 			validators: []admissionctrl.JobValidator{},
 			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
+				&testutil.HelloMutator{},
 			},
 		},
 		{
@@ -161,7 +160,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse: toJson(t, &api.JobValidateResponse{}),
 			validators:    []admissionctrl.JobValidator{},
 			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
+				&testutil.HelloMutator{},
 			},
 		},
 		{
@@ -285,7 +284,7 @@ func TestJobUpdateProxy(t *testing.T) {
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators:    []admissionctrl.JobValidator{},
 			mutators: []admissionctrl.JobMutator{
-				&mutator.HelloMutator{},
+				&testutil.HelloMutator{},
 			},
 		},
 	}
