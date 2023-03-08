@@ -8,12 +8,13 @@ import (
 	"net/url"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/api"
 )
 
 type JsonPatchWebhookMutator struct {
-	name string
-
+	name     string
+	logger   hclog.Logger
 	endpoint *url.URL
 	method   string
 }
@@ -23,12 +24,17 @@ type jsonPatchWebhookResponse struct {
 	Errors   []string      `json:"errors"`
 }
 
-func NewJsonPatchWebhookMutator(name string, endpoint *url.URL, method string) *JsonPatchWebhookMutator {
+func NewJsonPatchWebhookMutator(name string, endpoint string, method string, logger hclog.Logger) (*JsonPatchWebhookMutator, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
 	return &JsonPatchWebhookMutator{
 		name:     name,
-		endpoint: endpoint,
+		logger:   logger,
+		endpoint: u,
 		method:   method,
-	}
+	}, nil
 }
 func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 
@@ -66,6 +72,7 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	if err != nil {
 		return nil, nil, err
 	}
+	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson))
 	patchedJobJson, err := patch.Apply(jobJson)
 
 	if err != nil {
@@ -78,4 +85,7 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	}
 	return &patchedJob, warnings, nil
 
+}
+func (j *JsonPatchWebhookMutator) Name() string {
+	return j.name
 }

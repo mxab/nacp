@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 )
 
 type WebhookValidator struct {
 	endpoint *url.URL
+	logger   hclog.Logger
 	method   string
 	name     string
 }
@@ -23,9 +25,6 @@ type validationWebhookResponse struct {
 }
 
 func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
-	//calls and endpoint with a job, returns a json response with result.errors and result.warnings fields
-	//if result.errors is not empty, return an error
-	//if result.warnings is not empty, return a all warnings
 
 	data, err := json.Marshal(job)
 	if err != nil {
@@ -41,8 +40,6 @@ func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 		return nil, err
 	}
 
-	//check if result.errors is not empty, return an error
-	//check if result.warnings is not empty, return a all warnings
 	valdationResult := &validationWebhookResponse{}
 	err = json.NewDecoder(resp.Body).Decode(valdationResult)
 
@@ -69,4 +66,19 @@ func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 
 	}
 	return warnings, nil
+}
+func (w *WebhookValidator) Name() string {
+	return w.name
+}
+func NewWebhookValidator(name string, endpoint string, method string, logger hclog.Logger) (*WebhookValidator, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return &WebhookValidator{
+		name:     name,
+		logger:   logger,
+		endpoint: u,
+		method:   method,
+	}, nil
 }

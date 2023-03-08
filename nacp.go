@@ -452,6 +452,12 @@ func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 			}
 			jobMutators = append(jobMutators, mutator)
 
+		case "json_patch_webhook":
+			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, appLogger.Named("json_patch_webhook_mutator"))
+			if err != nil {
+				return nil, err
+			}
+			jobMutators = append(jobMutators, mutator)
 		}
 
 	}
@@ -476,6 +482,12 @@ func createValidators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 			}
 			jobValidators = append(jobValidators, opaValidator)
 
+		case "webhook":
+			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, appLogger.Named("webhook_validator"))
+			if err != nil {
+				return nil, err
+			}
+			jobValidators = append(jobValidators, validator)
 		}
 	}
 	return jobValidators, nil

@@ -5,6 +5,10 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsimple"
 )
 
+type Webhook struct {
+	Endpoint string `hcl:"endpoint"`
+	Method   string `hcl:"method"`
+}
 type OpaRule struct {
 	Query    string `hcl:"query"`
 	Filename string `hcl:"filename"`
@@ -14,11 +18,13 @@ type Validator struct {
 	Type     string    `hcl:"type,label"`
 	Name     string    `hcl:"name,label"`
 	OpaRules []OpaRule `hcl:"opa_rule,block"`
+	Webhook  *Webhook  `hcl:"webhook,block"`
 }
 type Mutator struct {
 	Type     string    `hcl:"type,label"`
 	Name     string    `hcl:"name,label"`
 	OpaRules []OpaRule `hcl:"opa_rule,block"`
+	Webhook  *Webhook  `hcl:"webhook,block"`
 }
 
 type NomadServerTLS struct {
