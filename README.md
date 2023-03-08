@@ -15,12 +15,12 @@ Warnings are attached to the Nomad response when they come back from the actual 
 
 flowchart LR
 
-    Client(Client registers Nomad Job) ---> NACP
-    NACP(mutates Job Data) ---> NACP
-    NACP(validates Job Data) ---> NACP
-    NACP(sends enhanced job) ---> Nomad
-    Nomad ---> NACP(attaches potential warnings)
-    NACP ---> Client
+    Client -->|Client registers Nomad Job| NACP
+    NACP -->|mutates Job Data| NACP
+    NACP -->|validates Job Data| NACP
+    NACP -->|sends enhanced Job Data| Nomad
+    Nomad --> NACP
+    NACP -->|With attached warnings| Client
 
 ```
 
