@@ -14,12 +14,12 @@ Warnings are attached to the Nomad response when they come back from the actual 
 ```mermaid
 
 flowchart LR
-    Start ---> Client
+
     Client(Client registers Nomad Job) ---> NACP
-    NACP ---> NACP(NACP mutates Job Data)
-    NACP ---> NACP(NACP validates Job Data)
-    NACP ---> Nomad
-    Nomad ---> NACP
+    NACP(mutates Job Data) ---> NACP
+    NACP(validates Job Data) ---> NACP
+    NACP(sends enhanced job) ---> Nomad
+    Nomad ---> NACP(attaches potential warnings)
     NACP ---> Client
 
 ```
