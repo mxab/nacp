@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -92,10 +92,8 @@ func TestJsonPatchMutator(t *testing.T) {
 			}))
 			defer webhookServer.Close()
 
-			endpoint, err := url.Parse(webhookServer.URL + tc.endpointPath)
+			mutator, err := NewJsonPatchWebhookMutator(tc.name, webhookServer.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
 			require.NoError(t, err)
-
-			mutator := NewJsonPatchWebhookMutator(tc.name, endpoint, tc.method)
 
 			job, warnings, err := mutator.Mutate(tc.job)
 
