@@ -31,6 +31,19 @@ Currently it supports following mutator and validators:
 
 
 ## Usage
+### Run Proxy
+
+```bash
+$ nacp -config config.hcl
+```
+
+It will launch per default on port 6464.
+
+### Send Job to Nomad via Proxy
+
+```bash
+NOMAD_ADDR=http://localhost:6464 nomad job run job.hcl
+```
 
 ### Configuration
 
