@@ -17,6 +17,11 @@ type WebhookValidator struct {
 	name     string
 }
 
+type validationWebhookResponse struct {
+	Errors   []string `json:"errors"`
+	Warnings []string `json:"warnings"`
+}
+
 func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 	//calls and endpoint with a job, returns a json response with result.errors and result.warnings fields
 	//if result.errors is not empty, return an error
@@ -38,32 +43,30 @@ func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 
 	//check if result.errors is not empty, return an error
 	//check if result.warnings is not empty, return a all warnings
-	var respData map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&respData)
+	valdationResult := &validationWebhookResponse{}
+	err = json.NewDecoder(resp.Body).Decode(valdationResult)
 
 	if err != nil {
 		return nil, err
 	}
 
-	errors, ok := respData["result"].(map[string]interface{})["errors"].([]interface{})
-	if ok && len(errors) > 0 {
+	if len(valdationResult.Errors) > 0 {
 		oneError := &multierror.Error{}
-		for _, e := range errors {
+		for _, e := range valdationResult.Errors {
 
 			oneError = multierror.Append(oneError, fmt.Errorf("%v", e))
 		}
 		return nil, oneError
 	}
 
-	warnings, ok := respData["result"].(map[string]interface{})["warnings"].([]interface{})
-	var warns []error
-	if ok && len(warnings) > 0 {
+	var warnings []error
+	if len(valdationResult.Warnings) > 0 {
 
-		for _, w := range warnings {
-			warns = append(warns, fmt.Errorf("%v", w))
+		for _, w := range valdationResult.Warnings {
+			warnings = append(warnings, fmt.Errorf("%v", w))
 		}
-		return warns, nil
+		return warnings, nil
 
 	}
-	return warns, nil
+	return warnings, nil
 }

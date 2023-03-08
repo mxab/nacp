@@ -37,7 +37,7 @@ func TestWebhookValidator(t *testing.T) {
 			endpointPath: "/validate",
 			method:       "POST",
 
-			response:     ``,
+			response:     `{}`,
 			wantErr:      nil,
 			wantWarnings: nil,
 		},
@@ -46,7 +46,7 @@ func TestWebhookValidator(t *testing.T) {
 			endpointPath: "/validate",
 
 			method:       "POST",
-			response:     `{"result": {"errors": [], "warnings": []}}`,
+			response:     `{"errors": [], "warnings": []}`,
 			wantErr:      nil,
 			wantWarnings: nil,
 		},
@@ -55,16 +55,16 @@ func TestWebhookValidator(t *testing.T) {
 			endpointPath: "/validate",
 
 			method:       "POST",
-			response:     `{"result": {"errors": ["error1", "error2"], "warnings": []}}`,
+			response:     `{"errors": ["error1", "error2"], "warnings": []}`,
 			wantErr:      multierror.Append(fmt.Errorf("error1"), fmt.Errorf("error2")),
-			wantWarnings: []error{},
+			wantWarnings: nil,
 		},
 		{
 			name:         "warnings",
 			endpointPath: "/validate",
 
 			method:       "POST",
-			response:     `{"result": {"errors": [], "warnings": ["warning1", "warning2"]}}`,
+			response:     `{"errors": [], "warnings": ["warning1", "warning2"]}`,
 			wantErr:      nil,
 			wantWarnings: []error{fmt.Errorf("warning1"), fmt.Errorf("warning2")},
 		},
@@ -87,7 +87,7 @@ func TestWebhookValidator(t *testing.T) {
 				require.NoError(t, err)
 				assert.JSONEq(t, string(expectedJobJsonData), string(data))
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"result": {"errors": [], "warnings": []}}`))
+				w.Write([]byte(tc.response))
 
 			}))
 			defer server.Close()
