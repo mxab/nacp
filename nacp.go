@@ -375,8 +375,6 @@ func main() {
 		Output: os.Stdout,
 	})
 
-	appLogger.Info("Starting Nomad Admission Control Proxy")
-
 	// and forwards them to the jobs service
 	// create a new reverse proxy
 	configPtr := flag.String("config", "", "point to a nacp config file")
@@ -389,7 +387,9 @@ func main() {
 			appLogger.Error("Failed to load config", "error", err)
 			os.Exit(1)
 		}
+		appLogger.Info("Loaded config", "config", c)
 	} else {
+		appLogger.Debug("No config file found, using default config")
 		c = config.DefaultConfig()
 	}
 
@@ -426,13 +426,54 @@ func main() {
 
 	proxy := NewProxyHandler(backend, handler, appLogger, transport)
 
-	http.HandleFunc("/", proxy)
+	//http.HandleFunc("/", proxy)
 
-	appLogger.Info("Started Nomad Admission Control Proxy", "bind", c.Bind, "port", c.Port)
-	appLogger.Error("NACP stopped", "error", http.ListenAndServe(fmt.Sprintf("%s:%d", c.Bind, c.Port), nil))
+	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
+	var end error
+
+	var tlsConfig *tls.Config
+
+	if c.Tls != nil && c.Tls.CaFile != "" {
+
+		tlsConfig, err = createTlsConfig(c.Tls.CaFile)
+		if err != nil {
+			appLogger.Error("Failed to create tls config", "error", err)
+			os.Exit(1)
+		}
+
+	}
+
+	server := &http.Server{
+		Addr:      bind,
+		TLSConfig: tlsConfig,
+		Handler:   http.HandlerFunc(proxy),
+	}
+
+	if c.Tls != nil {
+		appLogger.Info("Starting NACP with TLS", "bind", c.Bind, "port", c.Port)
+		end = server.ListenAndServeTLS(c.Tls.CertFile, c.Tls.KeyFile)
+	} else {
+		appLogger.Info("Starting NACP", "bind", c.Bind, "port", c.Port)
+		end = server.ListenAndServe()
+	}
+	appLogger.Error("NACP stopped", "error", end)
 }
 
-func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl.JobMutator, error) {
+func createTlsConfig(caFile string) (*tls.Config, error) {
+	caCert, err := os.ReadFile(caFile)
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig := &tls.Config{
+		ClientCAs:  caCertPool,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+	return tlsConfig, nil
+}
+
+func createMutatators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobMutator, error) {
 	var jobMutators []admissionctrl.JobMutator
 	for _, m := range c.Mutators {
 		switch m.Type {
@@ -446,14 +487,14 @@ func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 					Query:    r.Query,
 				})
 			}
-			mutator, err := mutator.NewOpaJsonPatchMutator(opaRules, appLogger.Named("opa_mutator"))
+			mutator, err := mutator.NewOpaJsonPatchMutator(opaRules, logger.Named("opa_mutator"))
 			if err != nil {
 				return nil, err
 			}
 			jobMutators = append(jobMutators, mutator)
 
 		case "json_patch_webhook":
-			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, appLogger.Named("json_patch_webhook_mutator"))
+			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, logger.Named("json_patch_webhook_mutator"))
 			if err != nil {
 				return nil, err
 			}
@@ -463,7 +504,7 @@ func createMutatators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 	}
 	return jobMutators, nil
 }
-func createValidators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl.JobValidator, error) {
+func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobValidator, error) {
 	var jobValidators []admissionctrl.JobValidator
 	for _, v := range c.Validators {
 		switch v.Type {
@@ -476,14 +517,14 @@ func createValidators(c *config.Config, appLogger hclog.Logger) ([]admissionctrl
 					Query:    r.Query,
 				})
 			}
-			opaValidator, err := validator.NewOpaValidator(opaRules, appLogger.Named("opa_validator"))
+			opaValidator, err := validator.NewOpaValidator(opaRules, logger.Named("opa_validator"))
 			if err != nil {
 				return nil, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
 
 		case "webhook":
-			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, appLogger.Named("webhook_validator"))
+			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, logger.Named("webhook_validator"))
 			if err != nil {
 				return nil, err
 			}

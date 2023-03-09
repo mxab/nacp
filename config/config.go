@@ -37,13 +37,16 @@ type NomadServer struct {
 	Address string          `hcl:"address"`
 	TLS     *NomadServerTLS `hcl:"tls,block"`
 }
+type ProxyTLS struct {
+	CertFile string `hcl:"cert_file"`
+	KeyFile  string `hcl:"key_file"`
+	CaFile   string `hcl:"ca_file"`
+}
 type Config struct {
 	Port int    `hcl:"port,optional"`
 	Bind string `hcl:"bind,optional"`
 
-	// CaFile   string `hcl:"ca_file"`
-	// CertFile string `hcl:"cert_file"`
-	// KeyFile  string `hcl:"key_file"`
+	Tls *ProxyTLS `hcl:"tls,block"`
 
 	Nomad      *NomadServer `hcl:"nomad,block"`
 	Validators []Validator  `hcl:"validator,block"`
