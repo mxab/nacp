@@ -29,6 +29,7 @@ Currently it supports following mutator and validators:
 - Webhook for the validation and mutation.
 
 
+This work was inspired by the internal [Nomad Admission Controller](https://github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint_hooks.go#L74)
 
 ## Usage
 ### Run Proxy
