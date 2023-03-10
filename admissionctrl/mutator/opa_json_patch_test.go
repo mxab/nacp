@@ -51,7 +51,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 				job: &api.Job{},
 			},
 			wantOut:      &api.Job{},
-			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "jsonpatch")},
+			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "testopavalidator")},
 			wantErr:      false,
 		},
 		{
@@ -71,7 +71,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 					"hello": "world",
 				},
 			},
-			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "jsonpatch")},
+			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "testopavalidator")},
 			wantErr:      false,
 		},
 		{
@@ -102,7 +102,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 
 func newMutator(t *testing.T, filename, query string) *OpaJsonPatchMutator {
 	t.Helper()
-	m, err := NewOpaJsonPatchMutator(filename, query, hclog.NewNullLogger())
+	m, err := NewOpaJsonPatchMutator("testopavalidator", filename, query, hclog.NewNullLogger())
 	require.NoError(t, err)
 	return m
 }

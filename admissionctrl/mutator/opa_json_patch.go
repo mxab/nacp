@@ -16,6 +16,7 @@ import (
 type OpaJsonPatchMutator struct {
 	query  *rego.PreparedEvalQuery
 	logger hclog.Logger
+	name   string
 }
 
 func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
@@ -77,10 +78,10 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	return job, allWarnings, nil
 }
 func (j *OpaJsonPatchMutator) Name() string {
-	return "jsonpatch"
+	return j.name
 }
 
-func NewOpaJsonPatchMutator(filename, query string, logger hclog.Logger) (*OpaJsonPatchMutator, error) {
+func NewOpaJsonPatchMutator(name, filename, query string, logger hclog.Logger) (*OpaJsonPatchMutator, error) {
 
 	ctx := context.TODO()
 	// read the policy file
@@ -91,6 +92,7 @@ func NewOpaJsonPatchMutator(filename, query string, logger hclog.Logger) (*OpaJs
 	return &OpaJsonPatchMutator{
 		query:  preparedQuery,
 		logger: logger,
+		name:   name,
 	}, nil
 
 }

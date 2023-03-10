@@ -14,7 +14,7 @@ func TestOpaValidator(t *testing.T) {
 	// create a context with a timeout
 
 	// create a new OPA object
-	opa, err := NewOpaValidator(testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
+	opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
 		"errors = data.prefixed_policies.errors", hclog.NewNullLogger())
 
 	require.Equal(t, nil, err)
@@ -90,7 +90,7 @@ func TestOpaValidatorSimple(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			opa, err := NewOpaValidator(testutil.Filepath(t, "opa/errors.rego"),
+			opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/errors.rego"),
 				tt.query, hclog.NewNullLogger())
 			require.NoError(t, err)
 			warnings, err := opa.Validate(dummyJob)

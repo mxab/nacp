@@ -14,6 +14,7 @@ import (
 type OpaValidator struct {
 	query  *rego.PreparedEvalQuery
 	logger hclog.Logger
+	name   string
 }
 
 func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
@@ -61,10 +62,10 @@ func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 
 // Name
 func (v *OpaValidator) Name() string {
-	return "opa"
+	return v.name
 }
 
-func NewOpaValidator(filename, query string, logger hclog.Logger) (*OpaValidator, error) {
+func NewOpaValidator(name, filename, query string, logger hclog.Logger) (*OpaValidator, error) {
 
 	ctx := context.TODO()
 
@@ -76,6 +77,7 @@ func NewOpaValidator(filename, query string, logger hclog.Logger) (*OpaValidator
 	return &OpaValidator{
 		query:  ruleSets,
 		logger: logger,
+		name:   name,
 	}, nil
 
 }
