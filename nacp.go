@@ -296,33 +296,14 @@ func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 	}
 	jobValidateRequest.Job = job
 
-	// args.Job = job
-
-	// // Validate the job and capture any warnings
-	// TODO: handle err
 	validateWarnings, err := jobHandler.AdmissionValidators(job)
 	//copied from https: //github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint.go#L574
 
 	ctx := r.Context()
-	// if err != nil {
 	ctx = context.WithValue(ctx, ctxValidationError, err)
-	// 	if merr, ok := err.(*multierror.Error); ok {
-	// 		for _, err := range merr.Errors {
-	// 			validationErrors = append(validationErrors, err.Error())
-	// 		}
-	// 		errs = merr.Error()
-	// 	} else {
-	// 		validationErrors = append(validationErrors, err.Error())
-	// 		errs = err.Error()
-	// 	}
-
-	// }
 
 	validateWarnings = append(validateWarnings, mutateWarnings...)
 
-	// // Set the warning message
-
-	// reply.DriverConfigValidated = true
 	data, err := json.Marshal(jobValidateRequest)
 	if err != nil {
 		return r, err
@@ -333,7 +314,6 @@ func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 
 	}
 	r = r.WithContext(ctx)
-	// appLogger.Info("Job after admission controllers", "job", string(data))
 	rewriteRequest(r, data)
 	return r, nil
 
