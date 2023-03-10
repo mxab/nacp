@@ -376,21 +376,7 @@ func main() {
 
 	// and forwards them to the jobs service
 	// create a new reverse proxy
-	configPtr := flag.String("config", "", "point to a nacp config file")
-	flag.Parse()
-	var c *config.Config
-
-	if _, err := os.Stat(*configPtr); err == nil && *configPtr != "" {
-		c, err = config.LoadConfig(*configPtr)
-		if err != nil {
-			appLogger.Error("Failed to load config", "error", err)
-			os.Exit(1)
-		}
-		appLogger.Info("Loaded config", "config", c)
-	} else {
-		appLogger.Debug("No config file found, using default config")
-		c = config.DefaultConfig()
-	}
+	c := buildConfig(appLogger)
 
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
@@ -425,21 +411,16 @@ func main() {
 
 	proxy := NewProxyHandler(backend, handler, appLogger, transport)
 
-	//http.HandleFunc("/", proxy)
-
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
+	var tlsConfig *tls.Config
 	var end error
 
-	var tlsConfig *tls.Config
-
 	if c.Tls != nil && c.Tls.CaFile != "" {
-
 		tlsConfig, err = createTlsConfig(c.Tls.CaFile)
 		if err != nil {
 			appLogger.Error("Failed to create tls config", "error", err)
 			os.Exit(1)
 		}
-
 	}
 
 	server := &http.Server{
@@ -456,6 +437,26 @@ func main() {
 		end = server.ListenAndServe()
 	}
 	appLogger.Error("NACP stopped", "error", end)
+}
+
+func buildConfig(logger hclog.Logger) *config.Config {
+
+	configPtr := flag.String("config", "", "point to a nacp config file")
+	flag.Parse()
+	var c *config.Config
+
+	if _, err := os.Stat(*configPtr); err == nil && *configPtr != "" {
+		c, err = config.LoadConfig(*configPtr)
+		if err != nil {
+			logger.Error("Failed to load config", "error", err)
+			os.Exit(1)
+		}
+		logger.Info("Loaded config", "config", c)
+	} else {
+		logger.Debug("No config file found, using default config")
+		c = config.DefaultConfig()
+	}
+	return c
 }
 
 func createTlsConfig(caFile string) (*tls.Config, error) {
