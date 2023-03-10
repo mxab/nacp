@@ -25,9 +25,3 @@ func CreateQuery(filename string, query string, ctx context.Context) (*rego.Prep
 
 	return &preparedQuery, nil
 }
-
-// func (r *OpaRuleSet) Eval(ctx context.Context, job *api.Job) (rego.ResultSet, error) {
-
-// 	results, err := r.prepared.Eval(ctx, rego.EvalInput(job))
-// 	return results, err
-// }
