@@ -1,4 +1,4 @@
-# Nomad Admission Control Proxy (NACP)
+# NACP - Nomad Admission Control Proxy
 
 This proxy acts as a middleman between the Nomad API and the Nomad client.
 ![nacp](https://user-images.githubusercontent.com/1607547/224442234-685950f7-43ff-4570-91d1-fe004827caef.png)
@@ -42,6 +42,11 @@ validator "opa" "some_opa_validator" {
     }
 }
 
+validator "webhook" "some_webhook_validator" {
+    endpoint = "http://example.org/send/job/here"
+    method = "POST"
+}
+
 mutator "opa_jsonpatch" "some_opa_mutator" {
 
     opa_rule {
@@ -49,5 +54,48 @@ mutator "opa_jsonpatch" "some_opa_mutator" {
         filename = "testdata/opa/mutators/hello_world_meta.rego"
     }
 }
+mutator "json_patch_webhook" "some_json_patch_webhook" {
+    endpoint = "http://example.org/send/job/here"
+    method = "POST"
+}
+```
 
+### Webhooks
+
+#### Mutator Webhook
+
+Returns an object with a JSONPatch `patch` and its operations plus potential `errors` and `warnings`:
+
+```json
+{
+  "patch": [
+    {
+      "op": "add",
+      "path": "/TaskGroups/0/Count",
+      "value": 3
+    }
+  ],
+  "errors": [
+    "some error"
+  ],
+  "warnings": [
+    "some warning"
+  ]
+}
+```
+Usually errors will ignore the other fields.
+
+#### Validator Webhook
+
+Returns an object with potential `errors` and `warnings`:
+
+```json
+{
+  "errors": [
+    "some error"
+  ],
+  "warnings": [
+    "some warning"
+  ]
+}
 ```
