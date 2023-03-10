@@ -1,6 +1,7 @@
 # Nomad Admission Control Proxy (NACP)
 
 This proxy acts as a middleman between the Nomad API and the Nomad client.
+![nacp](https://user-images.githubusercontent.com/1607547/224442234-685950f7-43ff-4570-91d1-fe004827caef.png)
 
 It intercepts the Nomad API calls that include job data (plan, register, validate) and performs the following actions:
 
