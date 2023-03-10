@@ -3,27 +3,11 @@
 This proxy acts as a middleman between the Nomad API and the Nomad client.
 ![nacp](https://user-images.githubusercontent.com/1607547/224442234-685950f7-43ff-4570-91d1-fe004827caef.png)
 
-It intercepts the Nomad API calls that include job data (plan, register, validate) and performs the following actions:
-
-1. Mutate the Job Data
-2. Validate the mutated Job Data
+It intercepts the Nomad API calls that include job data (plan, register, validate) and performs mutation and validation on the job data.
 
 If any errors occur the proxy will return the error to the Nomad API caller.
 
 Warnings are attached to the Nomad response when they come back from the actual Nomad API.
-
-```mermaid
-
-flowchart LR
-
-    Client -->|Client registers Nomad Job| NACP
-    NACP -->|mutates Job Data| NACP
-    NACP -->|validates Job Data| NACP
-    NACP -->|sends enhanced Job Data| Nomad
-    Nomad --> NACP
-    NACP -->|With attached warnings| Client
-
-```
 
 Currently it supports following mutator and validators:
 - Opa Engine for the validation and mutation.
