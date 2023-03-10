@@ -70,12 +70,12 @@ func NewOpaValidator(name, filename, query string, logger hclog.Logger) (*OpaVal
 	ctx := context.TODO()
 
 	// read the policy file
-	ruleSets, err := opa.CreateQuery(filename, query, ctx)
+	preparedEvalQuery, err := opa.CreateQuery(filename, query, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return &OpaValidator{
-		query:  ruleSets,
+		query:  preparedEvalQuery,
 		logger: logger,
 		name:   name,
 	}, nil
