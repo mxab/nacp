@@ -7,3 +7,7 @@ errors[errMsg] {
 warnings[warnMsg] {
 	warnMsg := "This is a warning message"
 }
+main := {
+	errors: errors,
+	warnings: warnings
+}
