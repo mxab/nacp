@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -92,13 +92,10 @@ func TestWebhookValidator(t *testing.T) {
 			}))
 			defer server.Close()
 			//Test
-			endpoint, err := url.Parse(server.URL + tc.endpointPath)
+
+			validator, err := NewWebhookValidator("test", server.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
 			require.NoError(t, err)
-			validator := WebhookValidator{
-				endpoint: endpoint,
-				name:     "test",
-				method:   tc.method,
-			}
+
 			warnings, err := validator.Validate(&api.Job{ID: &tc.name})
 
 			require.True(t, webhookCalled, "webhook was not called")
