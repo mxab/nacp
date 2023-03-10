@@ -22,7 +22,6 @@ import (
 	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
-	"github.com/mxab/nacp/admissionctrl/opa"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
 )
@@ -479,15 +478,8 @@ func createMutatators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 		switch m.Type {
 
 		case "opa_jsonpatch":
-
-			opaRules := []opa.OpaQueryAndModule{}
-			for _, r := range m.OpaRules {
-				opaRules = append(opaRules, opa.OpaQueryAndModule{
-					Filename: r.Filename,
-					Query:    r.Query,
-				})
-			}
-			mutator, err := mutator.NewOpaJsonPatchMutator(opaRules, logger.Named("opa_mutator"))
+			//TODO: use name
+			mutator, err := mutator.NewOpaJsonPatchMutator(m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"))
 			if err != nil {
 				return nil, err
 			}
@@ -509,15 +501,8 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 	for _, v := range c.Validators {
 		switch v.Type {
 		case "opa":
-
-			opaRules := []opa.OpaQueryAndModule{}
-			for _, r := range v.OpaRules {
-				opaRules = append(opaRules, opa.OpaQueryAndModule{
-					Filename: r.Filename,
-					Query:    r.Query,
-				})
-			}
-			opaValidator, err := validator.NewOpaValidator(opaRules, logger.Named("opa_validator"))
+			//TODO: use name
+			opaValidator, err := validator.NewOpaValidator(v.OpaRule.Filename, v.OpaRule.Query, logger.Named("opa_validator"))
 			if err != nil {
 				return nil, err
 			}

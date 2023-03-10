@@ -53,11 +53,10 @@ func TestLoadConfig(t *testing.T) {
 					{
 						Type: "opa",
 						Name: "some_opa_validator",
-						OpaRules: []OpaRule{
-							{
-								Query:    "errors = data.costcenter_meta.errors",
-								Filename: "testdata/opa/validators/costcenter_meta.rego",
-							},
+						OpaRule: &OpaRule{
+
+							Query:    "errors = data.costcenter_meta.errors",
+							Filename: "testdata/opa/validators/costcenter_meta.rego",
 						},
 					},
 				},
@@ -65,11 +64,10 @@ func TestLoadConfig(t *testing.T) {
 					{
 						Type: "opa_jsonpatch",
 						Name: "some_opa_mutator",
-						OpaRules: []OpaRule{
-							{
-								Query:    "patch = data.hello_world_meta.patch",
-								Filename: "testdata/opa/mutators/hello_world_meta.rego",
-							},
+						OpaRule: &OpaRule{
+
+							Query:    "patch = data.hello_world_meta.patch",
+							Filename: "testdata/opa/mutators/hello_world_meta.rego",
 						},
 					},
 				},

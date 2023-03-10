@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/api"
-	"github.com/mxab/nacp/admissionctrl/opa"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,25 +23,45 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		wantWarnings []error
 		wantErr      bool
 	}{
+
 		{
-			name: "nothing",
-			j:    newMutator(t, []opa.OpaQueryAndModule{}),
+			name: "hello world",
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+				"patch = data.opajsonpatchtesting.patch",
+			),
+
+			args: args{
+				job: &api.Job{},
+			},
+			wantOut: &api.Job{
+				Meta: map[string]string{
+					"hello": "world",
+				},
+			},
+			wantWarnings: []error{},
+			wantErr:      false,
+		},
+		{
+			name: "warning",
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+				`warnings = data.opajsonpatchtesting.warnings`,
+			),
 
 			args: args{
 				job: &api.Job{},
 			},
 			wantOut:      &api.Job{},
-			wantWarnings: []error{},
+			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "jsonpatch")},
 			wantErr:      false,
 		},
 		{
-			name: "hello world",
-			j: newMutator(t, []opa.OpaQueryAndModule{
-				{
-					Filename: testutil.Filepath(t, "opa/mutators/hello_world_meta.rego"),
-					Query:    "patch = data.hello_world_meta.patch",
-				},
-			}),
+			name: "warning and hello world",
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+				`
+				patch = data.opajsonpatchtesting.patch
+				warnings = data.opajsonpatchtesting.warnings
+				`,
+			),
 
 			args: args{
 				job: &api.Job{},
@@ -52,51 +71,14 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 					"hello": "world",
 				},
 			},
-			wantWarnings: []error{},
+			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "jsonpatch")},
 			wantErr:      false,
 		},
 		{
-			name: "warning and world",
-			j: newMutator(t, []opa.OpaQueryAndModule{
-				{
-					Filename: testutil.Filepath(t, "opa/mutators/hello_world_meta.rego"),
-					Query:    `patch = data.hello_world_meta.patch`,
-				},
-				{
-					Filename: testutil.Filepath(t, "opa/errors.rego"),
-					Query: `
-
-					warnings = data.dummy.warnings
-					`,
-				},
-			}),
-
-			args: args{
-				job: &api.Job{},
-			},
-			wantOut: &api.Job{
-				Meta: map[string]string{
-					"hello": "world",
-				},
-			},
-			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", testutil.Filepath(t, "opa/errors.rego"))},
-			wantErr:      false,
-		},
-		{
-			name: "error and world",
-			j: newMutator(t, []opa.OpaQueryAndModule{
-				{
-					Filename: testutil.Filepath(t, "opa/mutators/hello_world_meta.rego"),
-					Query:    `patch = data.hello_world_meta.patch`,
-				},
-				{
-					Filename: testutil.Filepath(t, "opa/errors.rego"),
-					Query: `
-
-					errors = data.dummy.errors
-					`,
-				},
-			}),
+			name: "error",
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+				`errors = data.opajsonpatchtesting.errors`,
+			),
 
 			args: args{
 				job: &api.Job{},
@@ -118,9 +100,9 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 	}
 }
 
-func newMutator(t *testing.T, rules []opa.OpaQueryAndModule) *OpaJsonPatchMutator {
+func newMutator(t *testing.T, filename, query string) *OpaJsonPatchMutator {
 	t.Helper()
-	m, err := NewOpaJsonPatchMutator(rules, hclog.NewNullLogger())
+	m, err := NewOpaJsonPatchMutator(filename, query, hclog.NewNullLogger())
 	require.NoError(t, err)
 	return m
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/api"
-	"github.com/mxab/nacp/admissionctrl/opa"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,12 +14,8 @@ func TestOpaValidator(t *testing.T) {
 	// create a context with a timeout
 
 	// create a new OPA object
-	opa, err := NewOpaValidator([]opa.OpaQueryAndModule{
-		{
-			Filename: testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
-			Query:    "errors = data.prefixed_policies.errors",
-		},
-	}, hclog.NewNullLogger())
+	opa, err := NewOpaValidator(testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
+		"errors = data.prefixed_policies.errors", hclog.NewNullLogger())
 
 	require.Equal(t, nil, err)
 
@@ -95,12 +90,8 @@ func TestOpaValidatorSimple(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			opa, err := NewOpaValidator([]opa.OpaQueryAndModule{
-				{
-					Filename: testutil.Filepath(t, "opa/errors.rego"),
-					Query:    tt.query,
-				},
-			}, hclog.NewNullLogger())
+			opa, err := NewOpaValidator(testutil.Filepath(t, "opa/errors.rego"),
+				tt.query, hclog.NewNullLogger())
 			require.NoError(t, err)
 			warnings, err := opa.Validate(dummyJob)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
