@@ -478,7 +478,7 @@ func createMutatators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 		switch m.Type {
 
 		case "opa_jsonpatch":
-			//TODO: use name
+
 			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"))
 			if err != nil {
 				return nil, err
@@ -501,7 +501,7 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 	for _, v := range c.Validators {
 		switch v.Type {
 		case "opa":
-			//TODO: use name
+
 			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, logger.Named("opa_validator"))
 			if err != nil {
 				return nil, err
