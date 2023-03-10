@@ -444,3 +444,12 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 	req.Header.Set("Content-Type", "application/json")
 	return http.DefaultClient.Do(req)
 }
+
+func TestDefaultBuildServer(t *testing.T) {
+	logger := hclog.NewNullLogger()
+	c := buildConfig(logger)
+	server := buildServer(c, logger)
+
+	assert.NotNil(t, server)
+
+}

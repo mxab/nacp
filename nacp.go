@@ -378,6 +378,20 @@ func main() {
 	// create a new reverse proxy
 	c := buildConfig(appLogger)
 
+	server := buildServer(c, appLogger)
+
+	var end error
+	if c.Tls != nil {
+		appLogger.Info("Starting NACP with TLS", "bind", c.Bind, "port", c.Port)
+		end = server.ListenAndServeTLS(c.Tls.CertFile, c.Tls.KeyFile)
+	} else {
+		appLogger.Info("Starting NACP", "bind", c.Bind, "port", c.Port)
+		end = server.ListenAndServe()
+	}
+	appLogger.Error("NACP stopped", "error", end)
+}
+
+func buildServer(c *config.Config, appLogger hclog.Logger) *http.Server {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		appLogger.Error("Failed to parse nomad address", "error", err)
@@ -413,7 +427,6 @@ func main() {
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
-	var end error
 
 	if c.Tls != nil && c.Tls.CaFile != "" {
 		tlsConfig, err = createTlsConfig(c.Tls.CaFile)
@@ -428,15 +441,7 @@ func main() {
 		TLSConfig: tlsConfig,
 		Handler:   http.HandlerFunc(proxy),
 	}
-
-	if c.Tls != nil {
-		appLogger.Info("Starting NACP with TLS", "bind", c.Bind, "port", c.Port)
-		end = server.ListenAndServeTLS(c.Tls.CertFile, c.Tls.KeyFile)
-	} else {
-		appLogger.Info("Starting NACP", "bind", c.Bind, "port", c.Port)
-		end = server.ListenAndServe()
-	}
-	appLogger.Error("NACP stopped", "error", end)
+	return server
 }
 
 func buildConfig(logger hclog.Logger) *config.Config {
