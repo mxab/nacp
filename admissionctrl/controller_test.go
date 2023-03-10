@@ -14,7 +14,6 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	type fields struct {
 		mutator   JobMutator
 		validator JobValidator
-		logger    hclog.Logger
 	}
 	type args struct {
 		job *api.Job
@@ -38,7 +37,6 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			fields: fields{
 				mutator:   mutator,
 				validator: validator,
-				logger:    hclog.NewNullLogger(),
 			},
 			args: args{
 				job: job,
@@ -51,11 +49,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &JobHandler{
-				mutators:   []JobMutator{tt.fields.mutator},
-				validators: []JobValidator{tt.fields.validator},
-				logger:     tt.fields.logger,
-			}
+			j := NewJobHandler([]JobMutator{tt.fields.mutator}, []JobValidator{tt.fields.validator}, hclog.NewNullLogger())
 			_, warnings, err := j.ApplyAdmissionControllers(tt.args.job)
 			assert.Empty(t, warnings, "No Warnings")
 
