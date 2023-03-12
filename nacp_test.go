@@ -117,7 +117,7 @@ func TestProxy(t *testing.T) {
 				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
 			},
 
-			wantNomadRequestJson: planRequestJson(t, jobWithHelloWorldMeta(t)),
+			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobPlanResponse{
 				// TODO: rework error concatination
