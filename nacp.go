@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -15,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
@@ -56,32 +58,19 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
 
-		var response interface{}
 		var err error
 
 		if isRegister(resp.Request) {
-			response, err = handRegisterResponse(resp, appLogger)
+			err = handRegisterResponse(resp, appLogger)
 		} else if isPlan(resp.Request) {
-			response, err = handleJobPlanResponse(resp, appLogger)
+			err = handleJobPlanResponse(resp, appLogger)
 		} else if isValidate(resp.Request) {
-			response, err = handleJobValdidateResponse(resp, appLogger)
+			err = handleJobValdidateResponse(resp, appLogger)
 		}
 		if err != nil {
 			appLogger.Error("Preparing response failed", "error", err)
 			return err
 		}
-		if response == nil {
-			return nil
-		}
-
-		responeData, err := json.Marshal(response)
-
-		if err != nil {
-			appLogger.Error("Error marshalling job", "error", err)
-			return err
-		}
-
-		rewriteResponse(resp, responeData)
 
 		return nil
 	}
@@ -115,56 +104,113 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 }
 
-func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) error {
 
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
 	if !ok && len(warnings) == 0 {
-		return nil, nil
+		return nil
 	}
+
 	response := &api.JobRegisterResponse{}
-	err := json.NewDecoder(resp.Body).Decode(response)
+	reader := resp.Body
+
+	isGzip, reader, err := checkIfGzipAndTransformReader(resp, reader)
 	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	if err := json.NewDecoder(reader).Decode(response); err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, err
+		return err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
-	return response, nil
+	//TODO: marshal response with gzip
+	responeData, err := json.Marshal(response)
+
+	if err != nil {
+		appLogger.Error("Error marshalling job", "error", err)
+		return err
+	}
+
+	if isGzip {
+		rewriteResponseGzip(resp, responeData)
+	} else {
+		rewriteResponse(resp, responeData)
+	}
+
+	return nil
 }
-func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+
+func checkIfGzipAndTransformReader(resp *http.Response, reader io.ReadCloser) (bool, io.ReadCloser, error) {
+	enc := resp.Header.Get("Content-Encoding")
+	isGzip := enc == "gzip"
+	if isGzip {
+		gzipReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return false, nil, err
+		}
+
+		reader = gzipReader
+	}
+	return isGzip, reader, nil
+}
+func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) error {
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
 	if !ok && len(warnings) == 0 {
-		return nil, nil
+		return nil
 	}
+
+	isGzip, reader, err := checkIfGzipAndTransformReader(resp, resp.Body)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
 
 	response := &api.JobPlanResponse{}
-	err := json.NewDecoder(resp.Body).Decode(response)
-	if err != nil {
+	if err := json.NewDecoder(reader).Decode(response); err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, err
+		return err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
+	// TODO: marshal response with gzip
+	responeData, err := json.Marshal(response)
 
-	return response, nil
+	if err != nil {
+		appLogger.Error("Error marshalling job", "error", err)
+		return err
+	}
+
+	if isGzip {
+		rewriteResponseGzip(resp, responeData)
+	} else {
+		rewriteResponse(resp, responeData)
+	}
+	return nil
 }
-func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) (interface{}, error) {
+func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) error {
 
 	ctx := resp.Request.Context()
 	validationErr, okErr := ctx.Value(ctxValidationError).(error)
 	warnings, okWarnings := resp.Request.Context().Value(ctxWarnings).([]error)
 	if !okErr && !okWarnings {
-		return nil, nil
+		return nil
 	}
 
 	response := &api.JobValidateResponse{}
-	err := json.NewDecoder(resp.Body).Decode(response)
+	isGzip, reader, err := checkIfGzipAndTransformReader(resp, resp.Body)
 	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	if err := json.NewDecoder(reader).Decode(response); err != nil {
 		appLogger.Error("Error decoding job", "error", err)
-		return nil, err
+		return err
 	}
 
 	if validationErr != nil {
@@ -188,7 +234,21 @@ func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) (in
 		response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 	}
 
-	return response, nil
+	//TODO: marshal response with gzip
+	responeData, err := json.Marshal(response)
+
+	if err != nil {
+		appLogger.Error("Error marshalling job", "error", err)
+		return err
+	}
+
+	if isGzip {
+		rewriteResponseGzip(resp, responeData)
+	} else {
+		rewriteResponse(resp, responeData)
+	}
+
+	return nil
 }
 
 func buildFullWarningMsg(upstreamResponseWarnings string, warnings []error) string {
@@ -204,10 +264,22 @@ func buildFullWarningMsg(upstreamResponseWarnings string, warnings []error) stri
 
 func rewriteResponse(resp *http.Response, newResponeData []byte) {
 	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newResponeData)))
+
 	resp.ContentLength = int64(len(newResponeData))
 	resp.Body = io.NopCloser(bytes.NewBuffer(newResponeData))
 }
+func rewriteResponseGzip(resp *http.Response, newResponeData []byte) {
 
+	var compressed bytes.Buffer
+	gz := gzip.NewWriter(&compressed)
+	gz.Write(newResponeData)
+	gz.Close()
+
+	resp.Header.Set("Content-Length", strconv.Itoa(compressed.Len()))
+	resp.ContentLength = int64(compressed.Len())
+
+	resp.Body = io.NopCloser(&compressed)
+}
 func rewriteRequest(r *http.Request, data []byte) {
 
 	r.ContentLength = int64(len(data))

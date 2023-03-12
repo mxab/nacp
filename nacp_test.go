@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
@@ -30,10 +32,11 @@ func TestProxy(t *testing.T) {
 		path   string
 		method string
 
-		requestSender        func(*api.Client) (interface{}, *api.WriteMeta, error)
-		wantNomadRequestJson string
-		wantProxyResponse    interface{}
-		nomadResponse        string
+		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
+		wantNomadRequestJson  string
+		wantProxyResponse     interface{}
+		nomadResponse         string
+		nomadResponseEncoding string
 		//	responseWarnings []error
 		validators []admissionctrl.JobValidator
 		mutators   []admissionctrl.JobMutator
@@ -81,6 +84,57 @@ func TestProxy(t *testing.T) {
 			},
 		},
 		{
+			name:   "plan job appends warning",
+			path:   "/v1/job/example/plan",
+			method: "PUT",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
+			},
+
+			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantProxyResponse: &api.JobPlanResponse{
+				// TODO: rework error concatination
+				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
+			},
+
+			nomadResponse: toJson(t, &api.JobPlanResponse{
+				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
+			}),
+
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+			name:   "plan job appends warning with gzip encoding",
+			path:   "/v1/job/example/plan",
+			method: "PUT",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
+			},
+
+			wantNomadRequestJson: planRequestJson(t, jobWithHelloWorldMeta(t)),
+
+			wantProxyResponse: &api.JobPlanResponse{
+				// TODO: rework error concatination
+				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
+			},
+
+			nomadResponse: toJson(t, &api.JobPlanResponse{
+				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
+			}),
+			nomadResponseEncoding: "gzip",
+
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
 			name:   "create job adds warnings",
 			path:   "/v1/jobs",
 			method: "PUT",
@@ -120,6 +174,31 @@ func TestProxy(t *testing.T) {
 			nomadResponse: toJson(t, &api.JobRegisterResponse{
 				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
 			}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+			name:   "create job concats warnings if encoding is gzip",
+			path:   "/v1/jobs",
+			method: "PUT",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
+			},
+
+			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				// TODO: rework error concatination
+				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
+			},
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{
+				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
+			}),
+			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
 				mockValidatorReturningWarnings("some warning"),
 			},
@@ -204,6 +283,27 @@ func TestProxy(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
+		{
+			name:   "validate job appends warnings and handles gzip",
+			path:   "/v1/validate/job",
+			method: "PUT",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Validate(&api.Job{}, nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+
+			wantProxyResponse: &api.JobValidateResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 	}
 
 	for _, tc := range tests {
@@ -221,7 +321,20 @@ func TestProxy(t *testing.T) {
 				json := string(jsonData)
 				assert.JSONEq(t, tc.wantNomadRequestJson, json, "Body matches")
 
-				_, _ = rw.Write([]byte(tc.nomadResponse))
+				//set encoding to gzip
+				if tc.nomadResponseEncoding == "gzip" {
+					rw.Header().Set("Content-Encoding", "gzip")
+					rw.WriteHeader(http.StatusOK)
+					//write gzip response
+					gzipWriter := gzip.NewWriter(rw)
+					defer gzipWriter.Close()
+					gzipWriter.Write([]byte(tc.nomadResponse))
+
+				} else {
+					rw.WriteHeader(http.StatusOK)
+					rw.Write([]byte(tc.nomadResponse))
+				}
+
 			}))
 			// Close the server when test finishes
 			defer nomadDummy.Close()
