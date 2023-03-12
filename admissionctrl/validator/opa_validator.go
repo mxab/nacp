@@ -8,11 +8,10 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/opa"
-	"github.com/open-policy-agent/opa/rego"
 )
 
 type OpaValidator struct {
-	query  *rego.PreparedEvalQuery
+	query  *opa.OpaQuery
 	logger hclog.Logger
 	name   string
 }
@@ -28,25 +27,25 @@ func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 
 	// evaluate the query
 
-	results, err := v.query.Eval(ctx, rego.EvalInput(job))
+	results, err := v.query.Query(ctx, job)
 
 	if err != nil {
 		return nil, err
 	}
 
 	// aggregate warnings
-	warnings, ok := results[0].Bindings["warnings"].([]interface{})
-	v.logger.Trace("Warnings", "warnings", warnings, "ok", ok)
-	if ok && len(warnings) > 0 {
+	warnings := results.GetWarnings()
+	v.logger.Trace("Warnings", "warnings", warnings)
+	if len(warnings) > 0 {
 
 		for _, warn := range warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, v.Name()))
 		}
 	}
 
-	errors, ok := results[0].Bindings["errors"].([]interface{})
-	v.logger.Trace("Errors", "errors", errors, "ok", ok)
-	if ok || len(errors) > 0 { // no errors is ok
+	errors := results.GetErrors()
+	v.logger.Trace("Errors", "errors", errors)
+	if len(errors) > 0 { // no errors is ok
 		errsForRule := &multierror.Error{}
 		for _, err := range errors {
 			errsForRule = multierror.Append(errsForRule, fmt.Errorf("%s (%s)", err, v.Name()))
