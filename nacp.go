@@ -41,10 +41,6 @@ var (
 
 func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
 
-	// create a reverse proxy that catches "/v1/jobs" post calls
-	// and forwards them to the jobs service
-	// create a new reverse proxy
-
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 	if transport != nil {
 		proxy.Transport = transport
