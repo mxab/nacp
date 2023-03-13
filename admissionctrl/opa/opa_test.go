@@ -43,3 +43,45 @@ func TestOpa(t *testing.T) {
 		},
 	}, patch, "Patch is correct")
 }
+func TestFailOnEmptyResultSet(t *testing.T) {
+	ctx := context.Background()
+
+	path := testutil.Filepath(t, "opa/test.rego")
+	query, err := CreateQuery(path, `
+		errors = data.opatest.notexisting
+
+
+	`, ctx)
+	require.Nil(t, err, "No error creating query")
+	assert.NotNil(t, query, "Query is not nil")
+
+	job := &api.Job{}
+	result, err := query.Query(ctx, job)
+	assert.Error(t, err, "Error executing query")
+	assert.Nil(t, result, "Result is nil")
+
+}
+func TestReturnsEmptyIfNotExisting(t *testing.T) {
+	ctx := context.Background()
+
+	path := testutil.Filepath(t, "opa/test.rego")
+	query, err := CreateQuery(path, `
+		notimportant = data.opatest.errors
+
+
+	`, ctx)
+	require.Nil(t, err, "No error creating query")
+	assert.NotNil(t, query, "Query is not nil")
+	job := &api.Job{}
+	result, err := query.Query(ctx, job)
+	assert.Nil(t, err, "No error executing query")
+	assert.NotNil(t, result, "Result is not nil")
+
+	warnings := result.GetWarnings()
+	assert.Equal(t, []interface{}{}, warnings, "Warnings are correct")
+	errors := result.GetErrors()
+	assert.Equal(t, []interface{}{}, errors, "Errors are correct")
+	patch := result.GetPatch()
+	assert.Equal(t, []interface{}{}, patch, "Patch is correct")
+
+}

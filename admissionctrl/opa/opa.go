@@ -2,6 +2,7 @@ package opa
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/hashicorp/nomad/api"
@@ -40,6 +41,9 @@ func (q *OpaQuery) Query(ctx context.Context, input *api.Job) (*OpaQueryResult, 
 	resultSet, err := q.query.Eval(ctx, rego.EvalInput(input))
 	if err != nil {
 		return nil, err
+	}
+	if len(resultSet) == 0 {
+		return nil, errors.New("no result set returned, maybe the query is wrong?")
 	}
 	return &OpaQueryResult{&resultSet}, nil
 }
