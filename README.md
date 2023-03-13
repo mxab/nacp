@@ -3,18 +3,182 @@
 This proxy acts as a middleman between the Nomad API and the Nomad client.
 ![nacp](https://user-images.githubusercontent.com/1607547/224442234-685950f7-43ff-4570-91d1-fe004827caef.png)
 
-It intercepts the Nomad API calls that include job data (plan, register, validate) and performs mutation and validation on the job data.
-
+## How
+It intercepts the Nomad API calls that include job data (plan, register, validate) and performs mutation and validation on the job data. The job data is at that point is already transformed from HCL to JSON.
 If any errors occur the proxy will return the error to the Nomad API caller.
-
 Warnings are attached to the Nomad response when they come back from the actual Nomad API.
 
-Currently it supports following mutator and validators:
-- Opa Engine for the validation and mutation.
-- Webhook for the validation and mutation.
+Currently validation comes into two flavors:
+- Embedded OPA rules
+- Webhooks
+
+## Mutation
+
+During the mutation phase the job data is modified by the configured mutators.
+### OPA
+The opa mutator uses the [OPA](https://www.openpolicyagent.org/) policy engine to perform the mutation.
+The OPA rule is expects to return a [JSONPatch](https://jsonpatch.com/) object. The JSONPatch object is then applied to the job data.
+It can also return errors and warnings.
+An example rego could look like this:
+
+```rego
+package hello_world_meta
+
+default patch = []
+
+patch := [
+    {
+        "op": "add",
+        "path": "/Meta",
+        "value": {
+            "hello": "world"
+        }
+    }
+]
+
+errors := [
+    "some error"
+]
+
+warnings := [
+    "some warning"
+]
+```
+
+For the embedded you also have to define the query that is used to extract the patch from the OPA response:
+
+```hcl
+mutator "opa_jsonpatch" "hello_world_opa_mutator" {
+
+    opa_rule {
+        query = <<EOH
+        patch = data.hello_world_meta.patch
+        errors = data.hello_world_meta.errors
+        warnings = data.hello_world_meta.warnings
+        EOH
+        filename = "hello_world_meta.rego"
+    }
+}
+```
+
+### Webhook
+
+The webhook mutator sends the job data to a configured endpoint and expects a JSONPatch object in return.
+It can also return errors and warnings.
+The JSONPatch object is then applied to the job data.
+An example response could look like this:
+
+```json
+{
+  "patch": [
+    {
+      "op": "add",
+      "path": "/Meta",
+      "value": {
+        "hello": "world"
+      }
+    }
+  ],
+  "errors": [
+    "some error"
+  ],
+  "warnings": [
+    "some warning"
+  ]
+}
+```
+
+The webhook mutator can be configured with the following options:
+
+```hcl
+mutator "json_patch_webhook" "hello_world_webhook_mutator" {
+
+  webhook {
+    endpoint = "http://example.org/send/job/here"
+    method = "POST"
+  }
+
+}
+```
+
+Hint: You can also setup the OPA server as a webhook mutator. You can use the [system main package](https://www.openpolicyagent.org/docs/latest/rest-api/#execute-a-simple-query) to run the OPA server as a webhook mutator.
+
+## Validation
+
+During the validation phase the job data is validated by the configured validators. If any errors occur the proxy will return the error to the Nomad API caller.
+Warnings are attached to the Nomad response when they come back from the actual Nomad API.
+
+### OPA
+
+The opa validator uses the [OPA](https://www.openpolicyagent.org/) policy engine to perform the validation.
+The OPA rule is expects to return a list of errors and warnings.
+An example rego could look like this:
+
+```rego
+package costcenter_meta
+
+import future.keywords.contains
+import future.keywords.if
+
+errors contains msg if {
+
+	not input.Meta.costcenter
+	msg := "Every job must have a costcenter metadata label"
+}
+
+errors contains msg if {
+	value := input.Meta.costcenter
+
+	not startswith(value, "cccode-")
+	msg := sprintf("Costcenter code must start with `cccode-`; found `%v`", [value])
+}
+```
+
+Then configure the validator in the config file:
+
+```hcl
+validator "opa" "costcenter_opa_validator" {
+
+    opa_rule {
+        query = <<EOH
+        errors = data.costcenter_meta.errors
+        warnings = data.costcenter_meta.warnings
+        EOH
+        filename = "costcenter_meta.rego"
+    }
+}
+```
+
+### Webhook
+
+The webhook validator sends the job data to a configured endpoint and expects a list of errors and warnings in return.
+
+The response should include potential `errors` and `warnings`:
+
+```json
+{
+  "errors": [
+    "some error"
+  ],
+  "warnings": [
+    "some warning"
+  ]
+}
+```
+
+The webhook validator can be configured with the following options:
 
 
-This work was inspired by the internal [Nomad Admission Controller](https://github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint_hooks.go#L74)
+```hcl
+validator "webhook" "some_webhook_validator" {
+
+  webhook {
+    endpoint = "http://example.org/send/job/here"
+    method = "POST"
+  }
+
+}
+```
 
 ## Usage
 ### Run Proxy
@@ -31,71 +195,50 @@ It will launch per default on port 6464.
 NOMAD_ADDR=http://localhost:6464 nomad job run job.hcl
 ```
 
-### Configuration
+### Other Configuration
+
+### NACP Server
+
+The NACP server can be configured with the following options:
 
 ```hcl
-validator "opa" "some_opa_validator" {
+server {
+  # The address the server will listen on
+  bind = "0.0.0.0"
+  port = 6464
 
-    opa_rule {
-        query = "errors = data.costcenter_meta.errors"
-        filename = "testdata/opa/validators/costcenter_meta.rego"
-    }
-}
+  tls { # If this is present nomad will use TLS
+    # The path to the certificate file
+    cert_file = "cert.pem"
+    # The path to the private key file
+    key_file = "key.pem"
 
-validator "webhook" "some_webhook_validator" {
-    endpoint = "http://example.org/send/job/here"
-    method = "POST"
-}
-
-mutator "opa_jsonpatch" "some_opa_mutator" {
-
-    opa_rule {
-        query = "patch = data.hello_world_meta.patch"
-        filename = "testdata/opa/mutators/hello_world_meta.rego"
-    }
-}
-mutator "json_patch_webhook" "some_json_patch_webhook" {
-    endpoint = "http://example.org/send/job/here"
-    method = "POST"
+    # The path to the CA certificate file
+    ca_file = "ca.pem"
+  }
 }
 ```
 
-### Webhooks
+### Nomad Upstream
 
-#### Mutator Webhook
+The Nomad upstream can be configured with the following options:
 
-Returns an object with a JSONPatch `patch` and its operations plus potential `errors` and `warnings`:
+```hcl
+nomad {
+  # The address of the Nomad API
+  address = "http://localhost:4646"
 
-```json
-{
-  "patch": [
-    {
-      "op": "add",
-      "path": "/TaskGroups/0/Count",
-      "value": 3
-    }
-  ],
-  "errors": [
-    "some error"
-  ],
-  "warnings": [
-    "some warning"
-  ]
+  tls { # If this is present nomad will use TLS
+    # The path to the certificate file
+    cert_file = "cert.pem"
+    # The path to the private key file
+    key_file = "key.pem"
+
+    # The path to the CA certificate file
+    ca_file = "ca.pem"
+  }
 }
 ```
-Usually errors will ignore the other fields.
 
-#### Validator Webhook
-
-Returns an object with potential `errors` and `warnings`:
-
-```json
-{
-  "errors": [
-    "some error"
-  ],
-  "warnings": [
-    "some warning"
-  ]
-}
-```
+# Note
+This work was inspired by the internal [Nomad Admission Controller](https://github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint_hooks.go#L74)
