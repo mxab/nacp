@@ -48,7 +48,7 @@ warnings := [
 For the embedded you also have to define the query that is used to extract the patch from the OPA response:
 
 ```hcl
-mutator "opa_jsonpatch" "hello_world_opa_mutator" {
+mutator "opa_json_patch" "hello_world_opa_mutator" {
 
     opa_rule {
         query = <<EOH

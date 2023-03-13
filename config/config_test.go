@@ -62,7 +62,7 @@ func TestLoadConfig(t *testing.T) {
 				},
 				Mutators: []Mutator{
 					{
-						Type: "opa_jsonpatch",
+						Type: "opa_json_patch",
 						Name: "some_opa_mutator",
 						OpaRule: &OpaRule{
 

@@ -7,7 +7,7 @@ validator "opa" "some_opa_validator" {
     }
 }
 
-mutator "opa_jsonpatch" "some_opa_mutator" {
+mutator "opa_json_patch" "some_opa_mutator" {
 
     opa_rule {
         query = "patch = data.hello_world_meta.patch"

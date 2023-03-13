@@ -18,6 +18,9 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
+	"github.com/mxab/nacp/admissionctrl/mutator"
+	"github.com/mxab/nacp/admissionctrl/validator"
+	"github.com/mxab/nacp/config"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -565,4 +568,142 @@ func TestDefaultBuildServer(t *testing.T) {
 
 	assert.NotNil(t, server)
 
+}
+
+func TestCreateValidators(t *testing.T) {
+
+	tt := []struct {
+		name       string
+		validators config.Validator
+		want       admissionctrl.JobValidator
+		wantErr    bool
+	}{
+
+		{
+			name: "opa validator",
+			validators: config.Validator{
+
+				Type: "opa",
+				Name: "test",
+				OpaRule: &config.OpaRule{
+					Query:    "errors = data.dummy.errors",
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
+				},
+			},
+			want: &validator.OpaValidator{},
+		},
+		{
+			name: "webhook validator",
+			validators: config.Validator{
+
+				Type: "webhook",
+				Name: "test",
+				Webhook: &config.Webhook{
+					Endpoint: "http://example.com",
+					Method:   "PUT",
+				},
+			},
+			want: &validator.WebhookValidator{},
+		},
+		{
+			name: "invalid validator type",
+			validators: config.Validator{
+
+				Type: "invalid",
+				Name: "test",
+				OpaRule: &config.OpaRule{
+					Query:    "errors = data.dummy.errors",
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &config.Config{
+				Validators: []config.Validator{tc.validators},
+			}
+
+			validators, err := createValidators(c, hclog.NewNullLogger())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.IsType(t, tc.want, validators[0])
+
+		})
+
+	}
+}
+
+func TestCreateMutatators(t *testing.T) {
+	tt := []struct {
+		name     string
+		mutators config.Mutator
+		want     admissionctrl.JobMutator
+		wantErr  bool
+	}{
+		{
+			name: "opa json patch mutator",
+			mutators: config.Mutator{
+
+				Type: "opa_json_patch",
+				Name: "test",
+				OpaRule: &config.OpaRule{
+					Query:    "errors = data.dummy.errors",
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
+				},
+			},
+			want: &mutator.OpaJsonPatchMutator{},
+		},
+		{
+			name: "webhook json patch mutator",
+			mutators: config.Mutator{
+
+				Type: "json_patch_webhook",
+				Name: "test",
+				Webhook: &config.Webhook{
+					Endpoint: "http://example.com",
+					Method:   "PUT",
+				},
+			},
+			want: &mutator.JsonPatchWebhookMutator{},
+		},
+		{
+			name: "invalid mutator type",
+			mutators: config.Mutator{
+
+				Type: "invalid",
+				Name: "test",
+				OpaRule: &config.OpaRule{
+					Query:    "errors = data.dummy.errors",
+					Filename: testutil.Filepath(t, "opa/errors.rego"),
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &config.Config{
+				Mutators: []config.Mutator{tc.mutators},
+			}
+
+			mutators, err := createMutators(c, hclog.NewNullLogger())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.IsType(t, tc.want, mutators[0])
+
+		})
+
+	}
 }

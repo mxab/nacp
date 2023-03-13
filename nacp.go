@@ -422,8 +422,6 @@ func main() {
 		Output: os.Stdout,
 	})
 
-	// and forwards them to the jobs service
-	// create a new reverse proxy
 	c := buildConfig(appLogger)
 
 	server := buildServer(c, appLogger)
@@ -453,7 +451,7 @@ func buildServer(c *config.Config, appLogger hclog.Logger) *http.Server {
 			os.Exit(1)
 		}
 	}
-	jobMutators, err := createMutatators(c, appLogger)
+	jobMutators, err := createMutators(c, appLogger)
 	if err != nil {
 		appLogger.Error("Failed to create mutators", "error", err)
 		os.Exit(1)
@@ -526,12 +524,12 @@ func createTlsConfig(caFile string) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutatators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobMutator, error) {
+func createMutators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobMutator, error) {
 	var jobMutators []admissionctrl.JobMutator
 	for _, m := range c.Mutators {
 		switch m.Type {
 
-		case "opa_jsonpatch":
+		case "opa_json_patch":
 
 			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"))
 			if err != nil {
@@ -545,6 +543,9 @@ func createMutatators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 				return nil, err
 			}
 			jobMutators = append(jobMutators, mutator)
+
+		default:
+			return nil, fmt.Errorf("unknown mutator type %s", m.Type)
 		}
 
 	}
@@ -568,7 +569,10 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 				return nil, err
 			}
 			jobValidators = append(jobValidators, validator)
+		default:
+			return nil, fmt.Errorf("unknown validator type %s", v.Type)
 		}
+
 	}
 	return jobValidators, nil
 }
