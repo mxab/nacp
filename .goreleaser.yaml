@@ -79,7 +79,7 @@ dockers:
     image_templates:
 
     - "ghcr.io/mxab/nacp:latest"
-    - "ghcr.io/mxab/nacp::{{ .Tag }}"
+    - "ghcr.io/mxab/nacp:{{ .Tag }}"
 
 
     # Skips the docker build.
