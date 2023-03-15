@@ -60,7 +60,9 @@ func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warn
 // admissionMutator returns an updated job as well as warnings or an error.
 func (j *JobHandler) AdmissionMutators(job *api.Job) (_ *api.Job, warnings []error, err error) {
 	var w []error
+	j.logger.Debug("applying job mutators", "mutators", len(j.mutators), "job", job.ID)
 	for _, mutator := range j.mutators {
+		j.logger.Debug("applying job mutator", "mutator", mutator.Name(), "job", job.ID)
 		job, w, err = mutator.Mutate(job)
 		j.logger.Trace("job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
 		if err != nil {
@@ -75,13 +77,14 @@ func (j *JobHandler) AdmissionMutators(job *api.Job) (_ *api.Job, warnings []err
 // of validation failures.
 func (j *JobHandler) AdmissionValidators(origJob *api.Job) ([]error, error) {
 	// ensure job is not mutated
-
+	j.logger.Debug("applying job validators", "validators", len(j.validators), "job", origJob.ID)
 	job := copyJob(origJob)
 
 	var warnings []error
 	var errs error
 
 	for _, validator := range j.validators {
+		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
 		w, err := validator.Validate(job)
 		j.logger.Trace("job validate results", "validator", validator.Name(), "warnings", w, "error", err)
 		if err != nil {
