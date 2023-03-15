@@ -35,17 +35,18 @@ func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 
 	// aggregate warnings
 	warnings := results.GetWarnings()
-	v.logger.Trace("Warnings", "warnings", warnings)
-	if len(warnings) > 0 {
 
+	if len(warnings) > 0 {
+		v.logger.Debug("Got warnings from rule", "rule", v.Name(), "warnings", warnings, "job", job.ID)
 		for _, warn := range warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, v.Name()))
 		}
 	}
 
 	errors := results.GetErrors()
-	v.logger.Trace("Errors", "errors", errors)
+
 	if len(errors) > 0 { // no errors is ok
+		v.logger.Debug("Got errors from rule", "rule", v.Name(), "errors", errors, "job", job.ID)
 		errsForRule := &multierror.Error{}
 		for _, err := range errors {
 			errsForRule = multierror.Append(errsForRule, fmt.Errorf("%s (%s)", err, v.Name()))

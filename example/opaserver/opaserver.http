@@ -1,0 +1,21 @@
+POST http://localhost:8181/v1/data/dummy HTTP/1.1
+content-type: application/json
+
+{
+    "input" : {
+        "name": "John Doe",
+        "age": 42
+    }
+}
+
+
+######################
+POST http://localhost:8181 HTTP/1.1
+content-type: application/json
+
+{
+    "input" : {
+        "name": "John Doe",
+        "age": 42
+    }
+}

@@ -48,9 +48,9 @@ func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 	}
 
 	if len(valdationResult.Errors) > 0 {
+		w.logger.Error("validation errors", "errors", valdationResult.Errors, "rule", w.name, "job", job.ID)
 		oneError := &multierror.Error{}
 		for _, e := range valdationResult.Errors {
-
 			oneError = multierror.Append(oneError, fmt.Errorf("%v", e))
 		}
 		return nil, oneError

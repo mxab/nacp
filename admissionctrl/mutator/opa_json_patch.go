@@ -30,6 +30,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	errors := results.GetErrors()
 
 	if len(errors) > 0 {
+		j.logger.Debug("Got errors from rule", "rule", j.Name(), "errors", errors, "job", job.ID)
 		allErrors := multierror.Append(nil)
 		for _, warn := range errors {
 			allErrors = multierror.Append(allErrors, fmt.Errorf("%s (%s)", warn, j.Name()))
@@ -40,6 +41,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	warnings := results.GetWarnings()
 
 	if len(warnings) > 0 {
+		j.logger.Debug("Got warnings from rule", "rule", j.Name(), "warnings", warnings, "job", job.ID)
 		for _, warn := range warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, j.Name()))
 		}
@@ -54,7 +56,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON))
+	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON), "job", job.ID)
 	jobJson, err := json.Marshal(job)
 	if err != nil {
 		return nil, nil, err

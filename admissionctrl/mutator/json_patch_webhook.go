@@ -60,8 +60,11 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	}
 
 	var warnings []error
-	for _, warning := range patchResponse.Warnings {
-		warnings = append(warnings, fmt.Errorf(warning))
+	if len(patchResponse.Warnings) > 0 {
+		j.logger.Debug("Got errors from rule", "rule", j.name, "warnings", patchResponse.Warnings, "job", job.ID)
+		for _, warning := range patchResponse.Warnings {
+			warnings = append(warnings, fmt.Errorf(warning))
+		}
 	}
 
 	patchJson, err := json.Marshal(patchResponse.Patch)
@@ -72,7 +75,7 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	if err != nil {
 		return nil, nil, err
 	}
-	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson))
+	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson), "job", job.ID)
 	patchedJobJson, err := patch.Apply(jobJson)
 
 	if err != nil {
