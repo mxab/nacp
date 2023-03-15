@@ -1,3 +1,4 @@
 FROM scratch
-ENTRYPOINT ["/nacp"]
+
 COPY nacp /
+ENTRYPOINT ["/nacp"]
