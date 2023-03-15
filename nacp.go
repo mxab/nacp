@@ -123,7 +123,6 @@ func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) error {
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
-	//TODO: marshal response with gzip
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
@@ -230,7 +229,6 @@ func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) err
 		response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 	}
 
-	//TODO: marshal response with gzip
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
