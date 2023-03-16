@@ -172,7 +172,7 @@ func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) error {
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
-	// TODO: marshal response with gzip
+
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
