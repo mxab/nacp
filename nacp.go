@@ -421,8 +421,13 @@ func main() {
 	})
 
 	c := buildConfig(appLogger)
+	appLogger.SetLevel(hclog.LevelFromString(c.LogLevel))
+	server, err := buildServer(c, appLogger)
 
-	server := buildServer(c, appLogger)
+	if err != nil {
+		appLogger.Error("Failed to build server", "error", err)
+		os.Exit(1)
+	}
 
 	var end error
 	if c.Tls != nil {
@@ -435,29 +440,29 @@ func main() {
 	appLogger.Error("NACP stopped", "error", end)
 }
 
-func buildServer(c *config.Config, appLogger hclog.Logger) *http.Server {
+func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
-		appLogger.Error("Failed to parse nomad address", "error", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
+
 	}
 	var transport *http.Transport
 	if c.Nomad.TLS != nil {
 		transport, err = buildCustomTransport(*c.Nomad.TLS)
 		if err != nil {
-			appLogger.Error("Failed to create custom transport", "error", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("failed to create custom transport: %w", err)
+
 		}
 	}
-	jobMutators, err := createMutators(c, appLogger)
+	jobMutators, err := createMutators(c, appLogger.Named("mutators"))
 	if err != nil {
-		appLogger.Error("Failed to create mutators", "error", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to create mutators: %w", err)
+
 	}
-	jobValidators, err := createValidators(c, appLogger)
+	jobValidators, err := createValidators(c, appLogger.Named("validators"))
 	if err != nil {
-		appLogger.Error("Failed to create validators", "error", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to create validators: %w", err)
+
 	}
 
 	handler := admissionctrl.NewJobHandler(
@@ -475,8 +480,8 @@ func buildServer(c *config.Config, appLogger hclog.Logger) *http.Server {
 	if c.Tls != nil && c.Tls.CaFile != "" {
 		tlsConfig, err = createTlsConfig(c.Tls.CaFile)
 		if err != nil {
-			appLogger.Error("Failed to create tls config", "error", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("failed to create tls config: %w", err)
+
 		}
 	}
 
@@ -485,7 +490,7 @@ func buildServer(c *config.Config, appLogger hclog.Logger) *http.Server {
 		TLSConfig: tlsConfig,
 		Handler:   http.HandlerFunc(proxy),
 	}
-	return server
+	return server, nil
 }
 
 func buildConfig(logger hclog.Logger) *config.Config {
@@ -502,7 +507,7 @@ func buildConfig(logger hclog.Logger) *config.Config {
 		}
 		logger.Info("Loaded config", "config", c)
 	} else {
-		logger.Debug("No config file found, using default config")
+		logger.Info("No config file found, using default config")
 		c = config.DefaultConfig()
 	}
 	return c
@@ -519,6 +524,7 @@ func createTlsConfig(caFile string) (*tls.Config, error) {
 		ClientCAs:  caCertPool,
 		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
+
 	return tlsConfig, nil
 }
 

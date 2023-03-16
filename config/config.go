@@ -46,7 +46,8 @@ type Config struct {
 	Port int    `hcl:"port,optional"`
 	Bind string `hcl:"bind,optional"`
 
-	Tls *ProxyTLS `hcl:"tls,block"`
+	LogLevel string    `hcl:"log_level,optional"`
+	Tls      *ProxyTLS `hcl:"tls,block"`
 
 	Nomad      *NomadServer `hcl:"nomad,block"`
 	Validators []Validator  `hcl:"validator,block"`
@@ -60,6 +61,7 @@ func DefaultConfig() *Config {
 		Nomad: &NomadServer{
 			Address: "http://localhost:4646",
 		},
+		LogLevel:   "info",
 		Validators: []Validator{},
 		Mutators:   []Mutator{},
 	}

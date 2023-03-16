@@ -2,13 +2,16 @@ package main
 
 import (
 	"compress/gzip"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -17,6 +20,8 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
+	"github.com/hashicorp/nomad/helper/tlsutil"
+	"github.com/hashicorp/nomad/lib/file"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/validator"
@@ -564,7 +569,8 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 func TestDefaultBuildServer(t *testing.T) {
 	logger := hclog.NewNullLogger()
 	c := buildConfig(logger)
-	server := buildServer(c, logger)
+	server, err := buildServer(c, logger)
+	assert.NoError(t, err)
 
 	assert.NotNil(t, server)
 
@@ -705,5 +711,113 @@ func TestCreateMutatators(t *testing.T) {
 
 		})
 
+	}
+}
+
+func TestCreateTlsConfig(t *testing.T) {
+	caCertFileName, _, _, _, cleanup := generateTLSData(t)
+	defer cleanup()
+	config, err := createTlsConfig(caCertFileName)
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+}
+func TestBuildCustomTransport(t *testing.T) {
+
+	caCertFileName, _, certFileName, pkFileName, cleanup := generateTLSData(t)
+	defer cleanup()
+
+	tls := config.NomadServerTLS{
+		CaFile:   caCertFileName,
+		CertFile: certFileName,
+		KeyFile:  pkFileName,
+	}
+	transport, err := buildCustomTransport(tls)
+	assert.NoError(t, err)
+	assert.NotNil(t, transport)
+
+}
+
+func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, pkFileName string, cleanup func()) {
+	t.Helper()
+
+	dir := t.TempDir()
+	cleanup = func() {
+		os.RemoveAll(dir)
+	}
+	domain := "nomad"
+	days := 1
+
+	caCertFileName = fmt.Sprintf("%s/%s-agent-ca.pem", dir, domain)
+	caPkFileName = fmt.Sprintf("%s/%s-agent-ca-key.pem", dir, domain)
+
+	//	constraints := []string{}
+	constraints := []string{domain, "localhost"}
+	commonName := ""
+
+	ca, caPk, err := tlsutil.GenerateCA(tlsutil.CAOpts{Name: commonName, Days: days, Domain: domain, PermittedDNSDomains: constraints})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	writeTLSStuff(t, caCertFileName, ca)
+	writeTLSStuff(t, caPkFileName, caPk)
+
+	cluster_region := "global"
+
+	var DNSNames []string
+	var IPAddresses []net.IP
+	var extKeyUsage []x509.ExtKeyUsage
+	var name, prefix string
+
+	server := true
+	client := false
+	if server {
+		name = fmt.Sprintf("server.%s.%s", cluster_region, domain)
+		DNSNames = append(DNSNames, name)
+		DNSNames = append(DNSNames, "localhost")
+
+		IPAddresses = append(IPAddresses, net.ParseIP("127.0.0.1"))
+		extKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
+		prefix = fmt.Sprintf("%s-server-%s", cluster_region, domain)
+
+	} else if client {
+		name = fmt.Sprintf("client.%s.%s", cluster_region, domain)
+		DNSNames = append(DNSNames, []string{name, "localhost"}...)
+		IPAddresses = append(IPAddresses, net.ParseIP("127.0.0.1"))
+		extKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth}
+		prefix = fmt.Sprintf("%s-client-%s", cluster_region, domain)
+	}
+
+	certFileName = fmt.Sprintf("%s/%s.pem", dir, prefix)
+	pkFileName = fmt.Sprintf("%s/%s-key.pem", dir, prefix)
+
+	signer, err := tlsutil.ParseSigner(string(caPk))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pub, priv, err := tlsutil.GenerateCert(tlsutil.CertOpts{
+		Signer: signer, CA: ca, Name: name, Days: days,
+		DNSNames: DNSNames, IPAddresses: IPAddresses, ExtKeyUsage: extKeyUsage,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = tlsutil.Verify(ca, pub, name); err != nil {
+		t.Fatal(err)
+	}
+
+	writeTLSStuff(t, certFileName, pub)
+
+	writeTLSStuff(t, pkFileName, priv)
+	return
+
+}
+func writeTLSStuff(t *testing.T, name, data string) {
+	t.Helper()
+	if err := file.WriteAtomicWithPerms(name, []byte(data), 0755, 0600); err != nil {
+		t.Fatal(err)
 	}
 }
