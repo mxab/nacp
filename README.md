@@ -1,6 +1,11 @@
 # NACP - Nomad Admission Control Proxy
 
-This proxy acts as a middleman between the Nomad API and the Nomad client.
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mxab_nacp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=mxab_nacp)
+
+A proxy infront of the Nomad API that allows to perform mutation and validation on the job data.
+
+
+
 ![nacp](https://user-images.githubusercontent.com/1607547/224442234-685950f7-43ff-4570-91d1-fe004827caef.png)
 
 ## How
