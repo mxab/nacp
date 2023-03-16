@@ -116,7 +116,6 @@ func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) error {
 	}
 	defer reader.Close()
 	if err := json.NewDecoder(reader).Decode(response); err != nil {
-		appLogger.Error("Error decoding job", "error", err)
 		return err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
@@ -126,7 +125,6 @@ func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) error {
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
-		appLogger.Error("Error marshalling job", "error", err)
 		return err
 	}
 
@@ -166,7 +164,6 @@ func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) error {
 
 	response := &api.JobPlanResponse{}
 	if err := json.NewDecoder(reader).Decode(response); err != nil {
-		appLogger.Error("Error decoding job", "error", err)
 		return err
 	}
 	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
@@ -176,7 +173,6 @@ func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) error {
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
-		appLogger.Error("Error marshalling job", "error", err)
 		return err
 	}
 
@@ -204,7 +200,6 @@ func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) err
 	defer reader.Close()
 
 	if err := json.NewDecoder(reader).Decode(response); err != nil {
-		appLogger.Error("Error decoding job", "error", err)
 		return err
 	}
 
@@ -350,7 +345,6 @@ func handleValidate(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 	jobValidateRequest := &api.JobValidateRequest{}
 	err := json.NewDecoder(body).Decode(jobValidateRequest)
 	if err != nil {
-		appLogger.Error("Error decoding job", "error", err)
 		return r, err
 	}
 	job := jobValidateRequest.Job
