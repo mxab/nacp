@@ -10,7 +10,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -29,7 +28,6 @@ import (
 )
 
 type contextKeyWarnings struct{}
-type contextKeyValidationErrors struct{}
 type contextKeyValidationError struct{}
 
 var (
@@ -499,7 +497,7 @@ func buildConfig(logger hclog.Logger) *config.Config {
 			logger.Error("Failed to load config", "error", err)
 			os.Exit(1)
 		}
-		logger.Info("Loaded config", "config", c)
+		logger.Info("Loaded config", "config", *configPtr)
 	} else {
 		logger.Info("No config file found, using default config")
 		c = config.DefaultConfig()
@@ -586,7 +584,7 @@ func buildCustomTransport(config config.NomadServerTLS) (*http.Transport, error)
 	}
 
 	// create CA pool
-	caCert, err := ioutil.ReadFile(config.CaFile)
+	caCert, err := os.ReadFile(config.CaFile)
 	if err != nil {
 		return nil, err
 	}
