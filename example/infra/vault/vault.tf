@@ -24,7 +24,7 @@ resource "vault_database_secret_backend_connection" "postgres" {
   allowed_roles = ["dev", "prod"]
 
   postgresql {
-    connection_url = "postgres://postgres:secret@localhost:5432/postgres"
+    connection_url = "postgres://postgres:secret@postgres.nomad.local:5432/postgres"
   }
 }
 

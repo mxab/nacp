@@ -12,7 +12,7 @@ job "app" {
       config { # a very simple docker container
         image = "busybox:latest"
         command = "sh"
-        args = ["-c", "while true; do echo \"hello @ $(date)\"; sleep 5; done"]
+        args = ["-c", "echo \"Environment:\"; env | sort; while true; do echo .; sleep 100; done"]
       }
     }
   }
