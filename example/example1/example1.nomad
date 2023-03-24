@@ -1,9 +1,5 @@
 job "app" {
 
-  meta {
-    costcenter = "cccode-my-cost-center"
-  }
-
   group "app" {
 
     task "app" {
