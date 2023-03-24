@@ -1,0 +1,116 @@
+[
+    {
+        "op": "add",
+        "path": "/TaskGroups/0/Tasks/1",
+        "value": {
+            "Affinities": null,
+            "Artifacts": null,
+            "CSIPluginConfig": null,
+            "Config": {
+                "args": [
+                    "--config",
+                    "/local/config.cfg"
+                ],
+                "image": "bitnami/oauth2-proxy:7.4.0",
+                "ports": [
+                    "auth"
+                ]
+            },
+            "Constraints": null,
+            "DispatchPayload": null,
+            "Driver": "docker",
+            "Env": null,
+            "Identity": null,
+            "KillSignal": "",
+            "KillTimeout": 5000000000,
+            "Kind": "",
+            "Leader": false,
+            "Lifecycle": null,
+            "LogConfig": {
+                "MaxFileSizeMB": 10,
+                "MaxFiles": 10
+            },
+            "Meta": null,
+            "Name": "auth",
+            "Resources": {
+                "CPU": 100,
+                "Cores": 0,
+                "Devices": null,
+                "DiskMB": 0,
+                "IOPS": 0,
+                "MemoryMB": 300,
+                "MemoryMaxMB": 0,
+                "Networks": null
+            },
+            "RestartPolicy": {
+                "Attempts": 2,
+                "Delay": 15000000000,
+                "Interval": 1800000000000,
+                "Mode": "fail"
+            },
+            "ScalingPolicies": null,
+            "Services": null,
+            "ShutdownDelay": 0,
+            "Templates": [
+                {
+                    "ChangeMode": "restart",
+                    "ChangeScript": null,
+                    "ChangeSignal": "",
+                    "DestPath": "${NOMAD_TASK_DIR}/config.cfg",
+                    "EmbeddedTmpl": "          \nprovider = \"keycloak-oidc\"\nclient_id = \"webapp\"\nclient_secret = \"secret\"\nredirect_url = \"http://webapp.nomad.local/oauth2/callback\"\noidc_issuer_url = \"http://keycloak.nomad.local/realms/demo\"\nemail_domains = [\"*\"]\ncookie_secret=\"TEktZxl3wbO9cL3mkm-DyMRvjhhJqxf7Xk8fcZQFq-U=\"\nhttp_address=\"http://0.0.0.0:4180\"\noidc_extra_audiences=[\"account\"]\ncookie_secure=false\n{{ range nomadService \"internal-webapp\" }}\nupstreams = [\n  \"http://{{ .Address }}:{{ .Port }}\"\n]\n{{ end }}\n          \n\n",
+                    "Envvars": false,
+                    "ErrMissingKey": false,
+                    "Gid": null,
+                    "LeftDelim": "{{",
+                    "Perms": "0644",
+                    "RightDelim": "}}",
+                    "SourcePath": "",
+                    "Splay": 5000000000,
+                    "Uid": null,
+                    "VaultGrace": 0,
+                    "Wait": null
+                }
+            ],
+            "User": "",
+            "Vault": null,
+            "VolumeMounts": null
+        }
+    },
+    {
+        "op": "replace",
+        "path": "/TaskGroups/0/Services/0/Name",
+        "value": "internal-webapp"
+    },
+    {
+        "op": "add",
+        "path": "/TaskGroups/0/Services/1",
+        "value": {
+            "Address": "",
+            "AddressMode": "auto",
+            "CanaryMeta": null,
+            "CanaryTags": null,
+            "Checks": null,
+            "Connect": null,
+            "EnableTagOverride": false,
+            "Meta": null,
+            "Name": "webapp",
+            "Namespace": "default",
+            "OnUpdate": "require_healthy",
+            "PortLabel": "auth",
+            "Provider": "nomad",
+            "TaggedAddresses": null,
+            "Tags": null,
+            "TaskName": ""
+        }
+    },
+    {
+        "op": "add",
+        "path": "/TaskGroups/0/Networks/0/DynamicPorts/1",
+        "value": {
+            "HostNetwork": "default",
+            "Label": "auth",
+            "To": 4180,
+            "Value": 0
+        }
+    }
+]
