@@ -7,8 +7,15 @@ server {
 
 client {
   enabled       = true
-}
 
+}
+plugin "docker" {
+  config {
+    gc {
+      image = false
+    }
+  }
+}
 vault {
   enabled = true
   address = "http://localhost:8200"

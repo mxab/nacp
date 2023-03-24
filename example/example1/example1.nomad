@@ -1,14 +1,21 @@
 job "app" {
 
+  meta {
+    costcenter = "cccode-my-cost-center"
+  }
+
   group "app" {
 
     task "app" {
       driver = "docker"
 
       config { # a very simple docker container
-        image = "busybox:latest"
+        image = "busybox:1.34.1"
         command = "sh"
-        args = ["-c", "while true; do echo \"hello @ $(date)\"; sleep 5; done"]
+        args = [
+          "-c",
+          "while true; do echo \"hello @ $(date)\"; sleep 5; done"
+        ]
       }
     }
   }

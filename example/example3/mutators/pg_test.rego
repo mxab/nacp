@@ -85,7 +85,7 @@ test_pginject if {
 						"while true; do echo 'hello $(date)'; sleep 5; done",
 					],
 					"command": "sh",
-					"image": "busybox:latest",
+					"image": "busybox:1.34.1",
 				},
 				"Constraints": null,
 				"DispatchPayload": null,
