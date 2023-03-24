@@ -1,13 +1,9 @@
 job "webapp" {
 
-  datacenters = ["dc1"]
-
-  type = "service"
-
   group "webapp" {
 
     meta {
-        secure = "webapp"
+     # secure = "webapp"
     }
     network {
       port "http" {
@@ -15,7 +11,6 @@ job "webapp" {
       }
     }
     task "webapp" {
-
 
       driver = "docker"
 
@@ -30,21 +25,16 @@ job "webapp" {
         data        = file("webapp.js")
         destination = "local/webapp.js"
       }
-
-
-
       resources {
         memory = 256
       }
     }
 
     service {
-
         name = "webapp"
-
         provider = "nomad"
         port     = "http"
 
-      }
+    }
   }
 }

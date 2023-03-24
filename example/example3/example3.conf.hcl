@@ -1,4 +1,4 @@
-mutator "opa_json_patch" "hello_world_opa_mutator" {
+mutator "opa_json_patch" "pginject" {
 
     opa_rule {
         query = <<EOH
