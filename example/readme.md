@@ -46,7 +46,7 @@ https://user-images.githubusercontent.com/1607547/227664271-cc1b82a2-d5ec-4afe-9
 
 
 
-### Postgre Env Template Injection
+### Postgres Env Template Injection
 
 In this example the mutator checks weather a task of a job contains a `postgres` metadata field. If so, the mutator injects a template block and a vault policy into the task that renders the postgres connection details.
 
