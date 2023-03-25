@@ -192,7 +192,7 @@ validator "webhook" "some_webhook_validator" {
 
 ## More Examples
 
-Checkout the [examples](./examples) folder for more examples.
+Checkout the [examples](./example) folder for more examples.
 
 ## Usage
 ### Run Proxy
