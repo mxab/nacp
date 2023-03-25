@@ -19,6 +19,11 @@ nacp -config example1.conf.hcl
 NOMAD_ADDR=http://localhost:6464 nomad run example1.nomad
 ```
 
+
+https://user-images.githubusercontent.com/1607547/227664253-d65cd5d4-12e4-4b99-9143-4a346911b7dd.mov
+
+
+
 ## Mutator
 
 ### Simple Hello World
@@ -34,6 +39,12 @@ nacp -config example2.conf.hcl
 ```bash
 NOMAD_ADDR=http://localhost:6464 nomad run example2.nomad
 ```
+
+
+
+https://user-images.githubusercontent.com/1607547/227664271-cc1b82a2-d5ec-4afe-94df-b6702700cf98.mov
+
+
 
 ### Postgre Env Template Injection
 
@@ -52,6 +63,12 @@ nacp -config example3.conf.hcl
 ```bash
 NOMAD_ADDR=http://localhost:6464 nomad run example3.nomad
 ```
+
+
+
+https://user-images.githubusercontent.com/1607547/227664282-e2ee22fc-946f-4b0f-9bfc-d275300dcec5.mov
+
+
 
 ### OAuth2 Proxy Injection
 
@@ -72,6 +89,10 @@ NOMAD_ADDR=http://localhost:6464 nomad run example4.nomad
 ```
 
 [oauth2-proxy mutator](example4/mutators/secure.rego)
+
+
+
+https://user-images.githubusercontent.com/1607547/227664325-768c8b5f-a991-4467-89e5-26a211c3511c.mov
 
 
 
