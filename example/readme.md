@@ -54,7 +54,7 @@ If the `postgres` metadata equals `native` it creates a template that renders th
 
 If the `postgres` metadata equals `springboot` it creates a template that renders the environment variables `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
 
-[postgres env template mutator](example3/mutators/postgres_env_template.rego)
+[postgres env template mutator](example3/mutators/pg.rego)
 
 ```bash
 nacp -config example3.conf.hcl
@@ -64,10 +64,7 @@ nacp -config example3.conf.hcl
 NOMAD_ADDR=http://localhost:6464 nomad run example3.nomad
 ```
 
-
-
 https://user-images.githubusercontent.com/1607547/227664282-e2ee22fc-946f-4b0f-9bfc-d275300dcec5.mov
-
 
 
 ### OAuth2 Proxy Injection
