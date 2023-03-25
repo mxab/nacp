@@ -1,0 +1,12 @@
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+# nomad services
+{{ range nomadServices }}
+
+# {{ .Name }}
+{{ range nomadService .Name }}
+{{- .Address }} {{ .Name }}.nomad.local
+{{- end }}
+{{- end }}
