@@ -28,11 +28,12 @@ An example rego could look like this:
 
 ```rego
 package hello_world_meta
+import future.keywords
 
-default patch = []
+patch contains ops if [
 
-patch := [
-    {
+   input.Name == "greeting_job"
+   ops:= {
         "op": "add",
         "path": "/Meta",
         "value": {
@@ -41,13 +42,17 @@ patch := [
     }
 ]
 
-errors := [
-    "some error"
-]
+errors contains msg if {
 
-warnings := [
-    "some warning"
-]
+    input.Name == "silent_job"
+    msg := "cannot greet"
+}
+
+warnings contains msg if {
+
+  input.Name == "had_no_coffee_yet_job"
+  msg := "you should have coffee first"
+}
 ```
 
 For the embedded you also have to define the query that is used to extract the patch from the OPA response:
@@ -184,6 +189,10 @@ validator "webhook" "some_webhook_validator" {
 
 }
 ```
+
+## More Examples
+
+Checkout the [examples](./examples) folder for more examples.
 
 ## Usage
 ### Run Proxy
