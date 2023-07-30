@@ -754,7 +754,7 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 	constraints := []string{domain, "localhost"}
 	commonName := ""
 
-	ca, caPk, err := tlsutil.GenerateCA(tlsutil.CAOpts{Name: commonName, Days: days, Domain: domain, PermittedDNSDomains: constraints})
+	ca, caPk, err := tlsutil.GenerateCA(tlsutil.CAOpts{Name: commonName, Days: days, PermittedDNSDomains: constraints})
 
 	if err != nil {
 		t.Fatal(err)
