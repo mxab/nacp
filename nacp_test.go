@@ -717,7 +717,7 @@ func TestCreateMutatators(t *testing.T) {
 func TestCreateTlsConfig(t *testing.T) {
 	caCertFileName, _, _, _, cleanup := generateTLSData(t)
 	defer cleanup()
-	config, err := createTlsConfig(caCertFileName)
+	config, err := createTlsConfig(caCertFileName, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, config)
 }
