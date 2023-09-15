@@ -512,13 +512,13 @@ func createTlsConfig(c *config.Config) (*tls.Config, error) {
 	}
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
-	tlsConfig := &tls.Config{
-		ClientCAs: caCertPool,
-	}
+	clientAuth := tls.RequireAndVerifyClientCert
 	if c.Tls.NoClientCert {
-		tlsConfig.ClientAuth = tls.NoClientCert
-	} else {
-		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		clientAuth = tls.NoClientCert
+	}
+	tlsConfig := &tls.Config{
+		ClientCAs:  caCertPool,
+		ClientAuth: clientAuth,
 	}
 
 	return tlsConfig, nil
