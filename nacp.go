@@ -470,7 +470,7 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 	var tlsConfig *tls.Config
 
 	if c.Tls != nil && c.Tls.CaFile != "" {
-		tlsConfig, err = createTlsConfig(c.Tls.CaFile)
+		tlsConfig, err = createTlsConfig(c)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create tls config: %w", err)
 
@@ -505,16 +505,20 @@ func buildConfig(logger hclog.Logger) *config.Config {
 	return c
 }
 
-func createTlsConfig(caFile string) (*tls.Config, error) {
-	caCert, err := os.ReadFile(caFile)
+func createTlsConfig(c *config.Config) (*tls.Config, error) {
+	caCert, err := os.ReadFile(c.Tls.CaFile)
 	if err != nil {
 		return nil, err
 	}
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
+	clientAuth := tls.RequireAndVerifyClientCert
+	if c.Tls.NoClientCert {
+		clientAuth = tls.NoClientCert
+	}
 	tlsConfig := &tls.Config{
 		ClientCAs:  caCertPool,
-		ClientAuth: tls.RequireAndVerifyClientCert,
+		ClientAuth: clientAuth,
 	}
 
 	return tlsConfig, nil
