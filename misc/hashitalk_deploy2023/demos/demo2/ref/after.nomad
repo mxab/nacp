@@ -13,7 +13,7 @@ job "my-app" {
       }
 
       config {
-        image = "my-fastapi-app:v1"
+        image = "my-app:v1"
         ports = ["app"]
       }
       vault {

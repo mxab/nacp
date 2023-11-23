@@ -23,7 +23,7 @@
           "User": "",
           "Lifecycle": null,
           "Config": {
-            "image": "my-fastapi-app:v1",
+            "image": "my-app:v1",
             "ports": [
               "app"
             ]

@@ -26,7 +26,7 @@ ENV VIRTUAL_ENV=/app/.venv \
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-COPY my_fastapi_app ./my_fastapi_app
+COPY my_app ./my_app
 
 
-ENTRYPOINT ["python", "-m", "my_fastapi_app.main"]
+ENTRYPOINT ["python", "-m", "my_app.main"]
