@@ -1,0 +1,22 @@
+
+local.file_match "logs" {
+  path_targets = [
+    {__path__ = env("NOMAD_ALLOC_DIR")+ "/logs/*.{stderr,stdout}.*"},
+  ]
+}
+
+loki.source.file "logfiles" {
+  targets    = local.file_match.logs.targets
+  forward_to = [loki.write.local.receiver]
+  decompression {
+    enabled       = true
+    initial_delay = "10s"
+    format        = "gz"
+  }
+}
+
+loki.write "cloud" {
+  endpoint {
+    url = "loki:3100/api/v1/push"
+  }
+}

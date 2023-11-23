@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "my-fastapi-app"
+version = "0.1.0"
+description = ""
+authors = ["Max Fröhlich <maxbruchmann@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.104.1"
+pydantic = "^2.5.1"
+sqlalchemy = "^2.0.23"
+uvicorn = "^0.24.0.post1"
+psycopg2-binary = "^2.9.9"
+
+[tool.poetry.group.dev.dependencies]
+types-psycopg2 = "^2.9.21.16"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

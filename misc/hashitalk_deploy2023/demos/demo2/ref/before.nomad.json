@@ -1,0 +1,120 @@
+{
+  "Region": null,
+  "Namespace": null,
+  "ID": "my-app",
+  "Name": "my-app",
+  "Type": null,
+  "Priority": null,
+  "AllAtOnce": null,
+  "Datacenters": null,
+  "NodePool": null,
+  "Constraints": null,
+  "Affinities": null,
+  "TaskGroups": [
+    {
+      "Name": "app",
+      "Count": null,
+      "Constraints": null,
+      "Affinities": null,
+      "Tasks": [
+        {
+          "Name": "main",
+          "Driver": "docker",
+          "User": "",
+          "Lifecycle": null,
+          "Config": {
+            "image": "my-fastapi-app:v1",
+            "ports": [
+              "app"
+            ]
+          },
+          "Constraints": null,
+          "Affinities": null,
+          "Env": null,
+          "Services": null,
+          "Resources": null,
+          "RestartPolicy": null,
+          "Meta": {
+            "postgres": "native"
+          },
+          "KillTimeout": null,
+          "LogConfig": null,
+          "Artifacts": null,
+          "Vault": null,
+          "Consul": null,
+          "Templates": null,
+          "DispatchPayload": null,
+          "VolumeMounts": null,
+          "Leader": false,
+          "ShutdownDelay": 0,
+          "KillSignal": "",
+          "Kind": "",
+          "ScalingPolicies": null,
+          "Identity": null,
+          "Identities": null,
+          "Actions": null
+        }
+      ],
+      "Spreads": null,
+      "Volumes": null,
+      "RestartPolicy": null,
+      "ReschedulePolicy": null,
+      "EphemeralDisk": null,
+      "Update": null,
+      "Migrate": null,
+      "Networks": [
+        {
+          "Mode": "",
+          "Device": "",
+          "CIDR": "",
+          "IP": "",
+          "DNS": null,
+          "ReservedPorts": null,
+          "DynamicPorts": [
+            {
+              "Label": "app",
+              "Value": 0,
+              "To": 8000,
+              "HostNetwork": ""
+            }
+          ],
+          "Hostname": "",
+          "MBits": null
+        }
+      ],
+      "Meta": null,
+      "Services": null,
+      "ShutdownDelay": null,
+      "StopAfterClientDisconnect": null,
+      "MaxClientDisconnect": null,
+      "Scaling": null,
+      "Consul": null
+    }
+  ],
+  "Update": null,
+  "Multiregion": null,
+  "Spreads": null,
+  "Periodic": null,
+  "ParameterizedJob": null,
+  "Reschedule": null,
+  "Migrate": null,
+  "Meta": null,
+  "ConsulToken": null,
+  "VaultToken": null,
+  "Stop": null,
+  "ParentID": null,
+  "Dispatched": false,
+  "DispatchIdempotencyToken": null,
+  "Payload": null,
+  "ConsulNamespace": null,
+  "VaultNamespace": null,
+  "NomadTokenID": null,
+  "Status": null,
+  "StatusDescription": null,
+  "Stable": null,
+  "Version": null,
+  "SubmitTime": null,
+  "CreateIndex": null,
+  "ModifyIndex": null,
+  "JobModifyIndex": null
+}

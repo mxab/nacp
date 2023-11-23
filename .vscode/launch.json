@@ -9,9 +9,9 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "nacp.go",
-            "args": [],
-            "cwd": "${workspaceFolder}"
+            "program": "cmd/nacp/nacp.go",
+            "args": ["-config=nacp.conf.hcl"],
+            "cwd": "${workspaceFolder}/misc/hashitalk_deploy2023/demos"
         }
     ]
 }

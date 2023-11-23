@@ -11,5 +11,6 @@
         "coveredGutterStyle": "blockgreen",
         "uncoveredGutterStyle": "blockred"
     },
-    "go.coverOnSingleTest": true
+    "go.coverOnSingleTest": true,
+    "python.terminal.activateEnvironment": false
 }

@@ -386,20 +386,21 @@ func isRegister(r *http.Request) bool {
 	return isRegister
 }
 
+// cli does PUT, browser does POST :/
 func isCreate(r *http.Request) bool {
-	return r.Method == "PUT" && r.URL.Path == "/v1/jobs"
+	return (r.Method == "PUT" || r.Method == "POST") && r.URL.Path == "/v1/jobs"
 }
 func isUpdate(r *http.Request) bool {
 
-	return r.Method == "PUT" && jobPathRegex.MatchString(r.URL.Path)
+	return (r.Method == "PUT" || r.Method == "POST") && jobPathRegex.MatchString(r.URL.Path)
 }
 func isPlan(r *http.Request) bool {
 
-	return r.Method == "PUT" && jobPlanPathRegex.MatchString(r.URL.Path)
+	return (r.Method == "PUT" || r.Method == "POST") && jobPlanPathRegex.MatchString(r.URL.Path)
 }
 func isValidate(r *http.Request) bool {
 
-	return r.Method == "PUT" && r.URL.Path == "/v1/validate/job"
+	return (r.Method == "PUT" || r.Method == "POST") && r.URL.Path == "/v1/validate/job"
 }
 
 // https://www.codedodle.com/go-reverse-proxy-example.html

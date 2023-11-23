@@ -61,3 +61,6 @@ override.tf.json
 terraform.rc
 /nacp
 /patchutil
+
+__debug_bin*
+misc/hashitalk_deploy2023/demos/setup/infra/ip_address.txt
