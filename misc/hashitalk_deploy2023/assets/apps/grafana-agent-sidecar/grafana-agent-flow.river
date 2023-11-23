@@ -1,0 +1,38 @@
+
+local.file_match "logs" {
+  path_targets = [
+    {__path__ = env("NOMAD_ALLOC_DIR") + "/logs/"+env("TASK_TO_LOG")+".{stderr,stdout}.*"},
+  ]
+  sync_period = "2s"
+}
+
+loki.source.file "logfiles" {
+  targets    = local.file_match.logs.targets
+  forward_to = [loki.echo.debug.receiver, loki.process.nomad.receiver]
+}
+loki.echo "debug" {}
+
+loki.process "nomad" {
+
+  forward_to = [loki.write.cloud.receiver]
+
+  stage.static_labels {
+    values = {
+      job = env("NOMAD_JOB_NAME"),
+      alloc_name = env("NOMAD_ALLOC_NAME"),
+    }
+}
+}
+loki.write "cloud" {
+  endpoint {
+    url = env("LOKI_URL")
+    basic_auth {
+        username = env("LOKI_USERNAME")
+        password = env("LOKI_API_TOKEN")
+    }
+  }
+}
+logging {
+  level  = "debug"
+  format = "logfmt"
+}

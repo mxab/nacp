@@ -32,7 +32,7 @@ func main() {
 	}
 
 	// read two contents of two files
-	path := "misc/hashitalk_deploy2023/demos/demo2/ref"
+	path := "misc/hashitalk_deploy2023/demos/demo3/ref"
 
 	beforeJob, err := do(nomadClient, path+"/before.nomad")
 	if err != nil {

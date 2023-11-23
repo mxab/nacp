@@ -16,3 +16,12 @@ mutator "opa_json_patch" "postgres" {
         filename = "demo2/postgres.rego"
     }
 }
+mutator "opa_json_patch" "logging" {
+
+    opa_rule {
+        query = <<EOH
+        patch = data.logging.patch
+        EOH
+        filename = "demo3/logging.rego"
+    }
+}

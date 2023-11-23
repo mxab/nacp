@@ -1,0 +1,210 @@
+{
+  "Region": null,
+  "Namespace": null,
+  "ID": "my-app",
+  "Name": "my-app",
+  "Type": null,
+  "Priority": null,
+  "AllAtOnce": null,
+  "Datacenters": null,
+  "NodePool": null,
+  "Constraints": null,
+  "Affinities": null,
+  "TaskGroups": [
+    {
+      "Name": "app",
+      "Count": null,
+      "Constraints": null,
+      "Affinities": null,
+      "Tasks": [
+        {
+          "Name": "main",
+          "Driver": "docker",
+          "User": "",
+          "Lifecycle": null,
+          "Config": {
+            "image": "my-app:v1",
+            "ports": [
+              "app"
+            ]
+          },
+          "Constraints": null,
+          "Affinities": null,
+          "Env": null,
+          "Services": null,
+          "Resources": null,
+          "RestartPolicy": null,
+          "Meta": {
+            "logging": "true",
+            "postgres": "native"
+          },
+          "KillTimeout": null,
+          "LogConfig": null,
+          "Artifacts": null,
+          "Vault": {
+            "Policies": [
+              "my-app-db-access"
+            ],
+            "Role": "",
+            "Namespace": null,
+            "Cluster": "",
+            "Env": true,
+            "DisableFile": false,
+            "ChangeMode": "restart",
+            "ChangeSignal": null
+          },
+          "Consul": null,
+          "Templates": [
+            {
+              "SourcePath": null,
+              "DestPath": "secrets/postgres.env",
+              "EmbeddedTmpl": "PGDATABASE=my_app\n{{ with secret \"db/my_app/creds/admin\" }}\nPGPASSWORD={{ .Data.password }}\nPGUSER={{ .Data.username }}\n{{ end }}\n{{ range nomadService \"postgres\" }}\nPGHOST={{ .Address }}\nPGPORT={{ .Port }}\n{{ end}}\n",
+              "ChangeMode": "restart",
+              "ChangeScript": null,
+              "ChangeSignal": null,
+              "Splay": 5000000000,
+              "Perms": "0644",
+              "Uid": null,
+              "Gid": null,
+              "LeftDelim": null,
+              "RightDelim": null,
+              "Envvars": true,
+              "VaultGrace": null,
+              "Wait": null,
+              "ErrMissingKey": false
+            }
+          ],
+          "DispatchPayload": null,
+          "VolumeMounts": null,
+          "Leader": true,
+          "ShutdownDelay": 0,
+          "KillSignal": "",
+          "Kind": "",
+          "ScalingPolicies": null,
+          "Identity": null,
+          "Identities": null,
+          "Actions": null
+        },
+        {
+          "Name": "grafanaagent",
+          "Driver": "docker",
+          "User": "",
+          "Lifecycle": {
+            "Hook": "prestart",
+            "Sidecar": true
+          },
+          "Config": {
+            "args": [
+              "run"
+            ],
+            "image": "grafana-agent-sidecar:v1"
+          },
+          "Constraints": null,
+          "Affinities": null,
+          "Env": null,
+          "Services": null,
+          "Resources": null,
+          "RestartPolicy": null,
+          "Meta": null,
+          "KillTimeout": null,
+          "LogConfig": null,
+          "Artifacts": null,
+          "Vault": null,
+          "Consul": null,
+          "Templates": [
+            {
+              "SourcePath": null,
+              "DestPath": "secrets/grafanaagent.env",
+              "EmbeddedTmpl": "{{ with nomadVar \"grafana\" }}\nLOKI_URL={{ .loki_endpoint }}\nLOKI_USERNAME={{ .loki_username }}\nLOKI_API_TOKEN={{ .loki_api_token }}\n{{ end }}\n",
+              "ChangeMode": "restart",
+              "ChangeScript": null,
+              "ChangeSignal": null,
+              "Splay": 5000000000,
+              "Perms": "0644",
+              "Uid": null,
+              "Gid": null,
+              "LeftDelim": null,
+              "RightDelim": null,
+              "Envvars": true,
+              "VaultGrace": null,
+              "Wait": null,
+              "ErrMissingKey": false
+            }
+          ],
+          "DispatchPayload": null,
+          "VolumeMounts": null,
+          "Leader": false,
+          "ShutdownDelay": 0,
+          "KillSignal": "",
+          "Kind": "",
+          "ScalingPolicies": null,
+          "Identity": null,
+          "Identities": null,
+          "Actions": null
+        }
+      ],
+      "Spreads": null,
+      "Volumes": null,
+      "RestartPolicy": null,
+      "ReschedulePolicy": null,
+      "EphemeralDisk": null,
+      "Update": null,
+      "Migrate": null,
+      "Networks": [
+        {
+          "Mode": "",
+          "Device": "",
+          "CIDR": "",
+          "IP": "",
+          "DNS": null,
+          "ReservedPorts": null,
+          "DynamicPorts": [
+            {
+              "Label": "app",
+              "Value": 0,
+              "To": 8000,
+              "HostNetwork": ""
+            }
+          ],
+          "Hostname": "",
+          "MBits": null
+        }
+      ],
+      "Meta": null,
+      "Services": null,
+      "ShutdownDelay": null,
+      "StopAfterClientDisconnect": null,
+      "MaxClientDisconnect": null,
+      "Scaling": null,
+      "Consul": null
+    }
+  ],
+  "Update": null,
+  "Multiregion": null,
+  "Spreads": null,
+  "Periodic": null,
+  "ParameterizedJob": null,
+  "Reschedule": null,
+  "Migrate": null,
+  "Meta": {
+    "owner": "hr"
+  },
+  "ConsulToken": null,
+  "VaultToken": null,
+  "Stop": null,
+  "ParentID": null,
+  "Dispatched": false,
+  "DispatchIdempotencyToken": null,
+  "Payload": null,
+  "ConsulNamespace": null,
+  "VaultNamespace": null,
+  "NomadTokenID": null,
+  "Status": null,
+  "StatusDescription": null,
+  "Stable": null,
+  "Version": null,
+  "SubmitTime": null,
+  "CreateIndex": null,
+  "ModifyIndex": null,
+  "JobModifyIndex": null
+}
