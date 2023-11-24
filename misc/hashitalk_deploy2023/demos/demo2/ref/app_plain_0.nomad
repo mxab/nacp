@@ -1,7 +1,4 @@
 job "my-app" {
-  meta {
-    owner = "hr"
-  }
   group "app" {
     network {
       port "app" {
@@ -10,11 +7,6 @@ job "my-app" {
     }
     task "main" {
       driver = "docker"
-
-      meta {
-        postgres = "libpq"
-        logging = true
-      }
 
       config {
         image = "my-app:v1"

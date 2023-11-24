@@ -12,5 +12,7 @@
         "uncoveredGutterStyle": "blockred"
     },
     "go.coverOnSingleTest": true,
-    "python.terminal.activateEnvironment": false
+    "python.terminal.activateEnvironment": false,
+    "workbench.preferredDarkColorTheme": "Default Dark Modern",
+    "workbench.colorTheme": "Default Dark Modern"
 }

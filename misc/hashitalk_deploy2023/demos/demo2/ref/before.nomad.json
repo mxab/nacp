@@ -35,7 +35,7 @@
           "Resources": null,
           "RestartPolicy": null,
           "Meta": {
-            "postgres": "native"
+            "postgres": "libpq"
           },
           "KillTimeout": null,
           "LogConfig": null,

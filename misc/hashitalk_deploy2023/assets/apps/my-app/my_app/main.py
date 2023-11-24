@@ -16,7 +16,7 @@ def hello(name: str = "World"):
 
     sql("INSERT INTO greetings (message) VALUES (%(message)s)", {"message": message})
 
-    return {"message": message}
+    return message
 
 
 @app.get("/greetings")
@@ -25,8 +25,8 @@ def greetings():
     return sql("SELECT * FROM greetings", fetch=True)
 
 
-def create_schema():
-    logger.info("Creating table if not exists...")
+def create_table():
+    logger.info("Creating table if not exist...")
     sql(
         """
         CREATE TABLE IF NOT EXISTS greetings
@@ -53,6 +53,6 @@ if __name__ == "__main__":
     import uvicorn
 
     logging.basicConfig(level=logging.INFO)
-    create_schema()
+    create_table()
     logger.info("Starting my app...")
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -26,3 +26,11 @@ resource "nomad_variable" "grafana" {
     loki_endpoint = var.grafana_loki_endpoint
   }
 }
+
+
+// my_app.tf
+resource "nomad_job" "my_app" {
+ jobspec = templatefile("my-app.hcl", {
+   	app_version = "v1.1.0"
+ })
+}
