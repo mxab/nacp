@@ -1,10 +1,11 @@
-validator "opa" "department" {
+validator "opa" "owner" {
 
     opa_rule {
         query = <<EOH
-        errors = data.department.errors
+        errors = data.owner.errors
+        warnings = data.owner.warnings
         EOH
-        filename = "demo1/department.rego"
+        filename = "demo1/owner.rego"
     }
 }
 mutator "opa_json_patch" "postgres" {
