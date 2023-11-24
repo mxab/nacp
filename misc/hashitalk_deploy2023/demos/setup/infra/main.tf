@@ -27,10 +27,3 @@ resource "nomad_variable" "grafana" {
   }
 }
 
-
-// my_app.tf
-resource "nomad_job" "my_app" {
- jobspec = templatefile("my-app.hcl", {
-   	app_version = "v1.1.0"
- })
-}
