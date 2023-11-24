@@ -1,6 +1,7 @@
 package owner
 
 import future.keywords
+# "input" is a nomad job
 
 errors contains "Whoopsi, it looks like you forgot to set a team email for emergency contacts. Please put 'owner=\"<yourteam>@example.com\" in the meta block of the job.'" if {
 	not input.Meta.owner
