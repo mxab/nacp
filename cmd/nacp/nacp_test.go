@@ -575,7 +575,32 @@ func TestDefaultBuildServer(t *testing.T) {
 	assert.NotNil(t, server)
 
 }
+func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
+	logger := hclog.NewNullLogger()
+	c := config.DefaultConfig()
+	c.Nomad.Address = ":localhost:4646"
+	_, err := buildServer(c, logger)
+	assert.Error(t, err)
 
+}
+func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
+	logger := hclog.NewNullLogger()
+	c := config.DefaultConfig()
+	c.Validators = append(c.Validators, config.Validator{
+		Type: "doesnotexit",
+	})
+	_, err := buildServer(c, logger)
+	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
+}
+func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
+	logger := hclog.NewNullLogger()
+	c := config.DefaultConfig()
+	c.Mutators = append(c.Mutators, config.Mutator{
+		Type: "doesnotexit",
+	})
+	_, err := buildServer(c, logger)
+	assert.Error(t, err, "failed to create mutators: unknown mutator type doesnotexit")
+}
 func TestCreateValidators(t *testing.T) {
 
 	tt := []struct {

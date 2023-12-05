@@ -79,7 +79,6 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			r, err = handleRegister(r, appLogger, jobHandler)
 
 		} else if isPlan(r) {
-
 			r, err = handlePlan(r, appLogger, jobHandler)
 
 		} else if isValidate(r) {
@@ -209,7 +208,7 @@ func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) err
 				validationErrors = append(validationErrors, err.Error())
 			}
 			validationError = merr.Error()
-		} else {
+		} else { // This should happen
 			validationErrors = append(validationErrors, validationErr.Error())
 			validationError = err.Error()
 		}
@@ -437,7 +436,6 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
-
 	}
 	var transport *http.Transport
 	if c.Nomad.TLS != nil {
@@ -450,12 +448,10 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 	jobMutators, err := createMutators(c, appLogger.Named("mutators"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create mutators: %w", err)
-
 	}
 	jobValidators, err := createValidators(c, appLogger.Named("validators"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create validators: %w", err)
-
 	}
 
 	handler := admissionctrl.NewJobHandler(
