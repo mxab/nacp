@@ -4,22 +4,22 @@
 
 ### Cluster
 
-Starts the nomad dev cluster
+Starts the nomad dev cluster (assuming mac and en0 network)
 
-```
+```bash
 sudo misc/hashitalk_deploy2023/demos/setup/infra
 /start_nomad.sh
 ```
 
 ### Support Infra
 
-```
+```bash
 cd misc/hashitalk_deploy2023/demos/setup/infra
 terraform init
 terraform apply -auto-approve
 ```
 
-```
+```bash
 cd misc/hashitalk_deploy2023/demos/setup/vault
 terraform init
 terraform apply -auto-approve
@@ -27,25 +27,27 @@ terraform apply -auto-approve
 
 ### Images
 
-```
+```bash
 cd misc/hashitalk_deploy2023/assets/apps/my-app
 docker build -t my-app:v1 .
 ```
 
-```
+```bash
 cd misc/hashitalk_deploy2023/assets/apps/grafana-agent-sidecar
 docker build -t grafana-agent-sidecar:v1 .
 ```
 
 ### Finally run NACP
-```
+
+```bash
 nacp -config=nacp.conf.hcl
 ```
 
 ## Demo
 
 Point the nomad cli to the proxy
-```
+```bash
+cd demos
 export NOMAD_ADDR='http://localhost:6464'
 
 nomad run my-app.nomad
