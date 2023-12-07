@@ -52,3 +52,11 @@ export NOMAD_ADDR='http://localhost:6464'
 
 nomad run my-app.nomad
 ```
+
+
+## Rego Files
+
+1. validate meta `owner` field: `demos/demo1/owner.rego`
+2. add `PG...` env vars: `demos/demo2/postgres.rego`
+3. add log shipper side car: `demos/demo3/logging.rego`
+
