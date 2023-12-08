@@ -10,12 +10,14 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
@@ -35,6 +37,8 @@ var (
 	ctxValidationError = contextKeyValidationError{}
 	jobPathRegex       = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
 	jobPlanPathRegex   = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
+
+	nomadTimeout = 310 * time.Second
 )
 
 func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
@@ -437,13 +441,20 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
 	}
-	var transport *http.Transport
+	proxyTransport := http.DefaultTransport.(*http.Transport).Clone()
+	proxyTransport.DialContext = (&net.Dialer{
+		Timeout:   nomadTimeout,
+		KeepAlive: nomadTimeout,
+	}).DialContext
+	proxyTransport.TLSHandshakeTimeout = nomadTimeout
+
 	if c.Nomad.TLS != nil {
-		transport, err = buildCustomTransport(*c.Nomad.TLS)
+		nomadTlsConfig, err := buildTlsConfig(*c.Nomad.TLS)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create custom transport: %w", err)
 
 		}
+		proxyTransport.TLSClientConfig = nomadTlsConfig
 	}
 	jobMutators, err := createMutators(c, appLogger.Named("mutators"))
 	if err != nil {
@@ -461,7 +472,7 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 		appLogger.Named("handler"),
 	)
 
-	proxy := NewProxyHandler(backend, handler, appLogger, transport)
+	proxy := NewProxyHandler(backend, handler, appLogger, proxyTransport)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -475,9 +486,11 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 	}
 
 	server := &http.Server{
-		Addr:      bind,
-		TLSConfig: tlsConfig,
-		Handler:   http.HandlerFunc(proxy),
+		Addr:         bind,
+		TLSConfig:    tlsConfig,
+		Handler:      http.HandlerFunc(proxy),
+		ReadTimeout:  nomadTimeout,
+		WriteTimeout: nomadTimeout,
 	}
 	return server, nil
 }
@@ -574,7 +587,7 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 	return jobValidators, nil
 }
 
-func buildCustomTransport(config config.NomadServerTLS) (*http.Transport, error) {
+func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	// Create a custom transport to allow for self-signed certs
 	// and to allow for a custom timeout
 
@@ -592,13 +605,11 @@ func buildCustomTransport(config config.NomadServerTLS) (*http.Transport, error)
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: config.InsecureSkipVerify,
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: config.InsecureSkipVerify,
 
-			Certificates: []tls.Certificate{cert},
-			RootCAs:      caCertPool,
-		},
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
 	}
-	return transport, err
+	return tlsConfig, err
 }

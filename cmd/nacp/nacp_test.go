@@ -756,7 +756,7 @@ func TestBuildCustomTransport(t *testing.T) {
 		CertFile: certFileName,
 		KeyFile:  pkFileName,
 	}
-	transport, err := buildCustomTransport(tls)
+	transport, err := buildTlsConfig(tls)
 	assert.NoError(t, err)
 	assert.NotNil(t, transport)
 
