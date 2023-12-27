@@ -19,6 +19,8 @@ type Validator struct {
 	Name    string   `hcl:"name,label"`
 	OpaRule *OpaRule `hcl:"opa_rule,block"`
 	Webhook *Webhook `hcl:"webhook,block"`
+
+	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
 type Mutator struct {
 	Type    string   `hcl:"type,label"`
@@ -43,6 +45,13 @@ type ProxyTLS struct {
 	CaFile       string `hcl:"ca_file"`
 	NoClientCert bool   `hcl:"no_client_cert,optional"`
 }
+type NotationVerifierConfig struct {
+	TrustPolicyFile string `hcl:"trust_policy_file"`
+	TrustStoreDir   string `hcl:"trust_store_dir"`
+	RepoPlainHTTP   bool   `hcl:"repo_plain_http,optional"`
+	MaxSigAttempts  int    `hcl:"max_sig_attempts,optional"`
+}
+
 type Config struct {
 	Port int    `hcl:"port,optional"`
 	Bind string `hcl:"bind,optional"`

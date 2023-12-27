@@ -25,8 +25,11 @@ import (
 	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/admissionctrl"
 	"github.com/mxab/nacp/admissionctrl/mutator"
+	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
+	"github.com/notaryproject/notation-go/dir"
+	"github.com/notaryproject/notation-go/verifier/truststore"
 )
 
 type contextKeyWarnings struct{}
@@ -119,7 +122,6 @@ func handRegisterResponse(resp *http.Response, appLogger hclog.Logger) error {
 	if err := json.NewDecoder(reader).Decode(response); err != nil {
 		return err
 	}
-	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
@@ -167,7 +169,6 @@ func handleJobPlanResponse(resp *http.Response, appLogger hclog.Logger) error {
 	if err := json.NewDecoder(reader).Decode(response); err != nil {
 		return err
 	}
-	appLogger.Info("Job after admission controllers", "job", response.JobModifyIndex)
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
@@ -212,7 +213,7 @@ func handleJobValdidateResponse(resp *http.Response, appLogger hclog.Logger) err
 				validationErrors = append(validationErrors, err.Error())
 			}
 			validationError = merr.Error()
-		} else { // This should happen
+		} else { // This should never happen, but just in case
 			validationErrors = append(validationErrors, validationErr.Error())
 			validationError = err.Error()
 		}
@@ -303,7 +304,7 @@ func handleRegister(r *http.Request, appLogger hclog.Logger, jobHandler *admissi
 		ctx = context.WithValue(ctx, ctxWarnings, warnings)
 	}
 
-	appLogger.Info("Job after admission controllers", "job", string(data))
+	appLogger.Debug("Job after admission controllers", "job", string(data))
 	r = r.WithContext(ctx)
 	rewriteRequest(r, data)
 	return r, nil
@@ -335,7 +336,7 @@ func handlePlan(r *http.Request, appLogger hclog.Logger, jobHandler *admissionct
 
 	}
 	r = r.WithContext(ctx)
-	appLogger.Info("Job after admission controllers", "job", string(data))
+	appLogger.Debug("Job after admission controllers", "job", string(data))
 	rewriteRequest(r, data)
 	return r, nil
 }
@@ -579,12 +580,32 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 				return nil, err
 			}
 			jobValidators = append(jobValidators, validator)
+		case "notation":
+			notationVerifier, err := buildVerifier(v.Notation, logger.Named("notation_verifier"))
+			if err != nil {
+				return nil, err
+			}
+			validator := validator.NewNotationValidator(logger.Named("notation_validator"), v.Name, notationVerifier)
+
+			jobValidators = append(jobValidators, validator)
+
 		default:
 			return nil, fmt.Errorf("unknown validator type %s", v.Type)
 		}
 
 	}
 	return jobValidators, nil
+}
+
+func buildVerifier(notationVerifierConfig *config.NotationVerifierConfig, logger hclog.Logger) (notation.ImageVerifier, error) {
+
+	policy, err := notation.LoadTrustPolicyDocument(notationVerifierConfig.TrustPolicyFile)
+	if err != nil {
+		return nil, err
+	}
+	ts := truststore.NewX509TrustStore(dir.NewSysFS(notationVerifierConfig.TrustStoreDir))
+
+	return notation.NewImageVerifier(policy, ts, notationVerifierConfig.RepoPlainHTTP, logger)
 }
 
 func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {

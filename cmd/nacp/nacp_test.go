@@ -670,6 +670,57 @@ func TestCreateValidators(t *testing.T) {
 
 	}
 }
+func TestNotationValidatorConfig(t *testing.T) {
+
+	policyDir := t.TempDir()
+
+	policyJson := `
+	{
+		"version": "1.0",
+		"trustPolicies": [
+			{
+				"name": "wabbit-networks-images",
+				"registryScopes": [ "*" ],
+				"signatureVerification": {
+					"level" : "strict"
+				},
+				"trustStores": [ "ca:wabbit-networks.io" ],
+				"trustedIdentities": [
+					"*"
+				]
+			}
+		]
+	}`
+
+	policyPath := fmt.Sprintf("%s/policy.json", policyDir)
+	err := os.WriteFile(policyPath, []byte(policyJson), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	truststoreDir := t.TempDir()
+
+	c := &config.Config{
+		Validators: []config.Validator{
+			{
+
+				Type: "notation",
+				Name: "test",
+				Notation: &config.NotationVerifierConfig{
+					TrustPolicyFile: policyPath,
+					TrustStoreDir:   truststoreDir,
+					RepoPlainHTTP:   true,
+					MaxSigAttempts:  1,
+				},
+			},
+		},
+	}
+
+	validators, err := createValidators(c, hclog.NewNullLogger())
+
+	assert.NoError(t, err)
+	assert.IsType(t, &validator.NotationValidator{}, validators[0])
+
+}
 
 func TestCreateMutatators(t *testing.T) {
 	tt := []struct {
