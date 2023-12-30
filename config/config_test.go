@@ -61,6 +61,17 @@ func TestLoadConfig(t *testing.T) {
 							Filename: "testdata/opa/validators/costcenter_meta.rego",
 						},
 					},
+					{
+						Type: "notation",
+						Name: "some_notation_validator",
+
+						Notation: &NotationVerifierConfig{
+							TrustPolicyFile: "testdata/notation/validators/trust_policy.json",
+							TrustStoreDir:   "testdata/notation/validators/trust_store",
+							RepoPlainHTTP:   false,
+							MaxSigAttempts:  50,
+						},
+					},
 				},
 				Mutators: []Mutator{
 					{
