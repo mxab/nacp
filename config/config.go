@@ -86,5 +86,14 @@ func LoadConfig(name string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// set default on all Notation Verifiers, is there a better way to do this?
+	for _, v := range c.Validators {
+		if v.Notation != nil && v.Notation.MaxSigAttempts == 0 {
+			v.Notation.MaxSigAttempts = 50
+
+		}
+	}
+
 	return c, nil
 }

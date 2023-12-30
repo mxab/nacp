@@ -6,6 +6,13 @@ validator "opa" "some_opa_validator" {
         filename = "testdata/opa/validators/costcenter_meta.rego"
     }
 }
+validator "notation" "some_notation_validator" {
+
+    notation {
+        trust_policy_file =  "testdata/notation/validators/trust_policy.json"
+		trust_store_dir =  "testdata/notation/validators/trust_store"
+    }
+}
 
 mutator "opa_json_patch" "some_opa_mutator" {
 
