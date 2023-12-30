@@ -45,7 +45,7 @@ func LoadTrustPolicyDocument(path string) (*trustpolicy.Document, error) {
 
 // NewImageVerifier creates a new ImageVerifier instance with the given trust policy, trust store, and repoPlainHTTP flag.
 // It returns the ImageVerifier instance or an error if the verifier cannot be created.
-func NewImageVerifier(policy *trustpolicy.Document, truststore truststore.X509TrustStore, repoPlainHTTP bool, logger hclog.Logger) (ImageVerifier, error) {
+func NewImageVerifier(policy *trustpolicy.Document, truststore truststore.X509TrustStore, repoPlainHTTP bool, maxSignatureAttempts int, logger hclog.Logger) (ImageVerifier, error) {
 
 	verifier, err := verifier.New(policy, truststore, nil)
 	if err != nil {
@@ -55,7 +55,7 @@ func NewImageVerifier(policy *trustpolicy.Document, truststore truststore.X509Tr
 		verifier:             verifier,
 		repoPlainHTTP:        repoPlainHTTP,
 		logger:               logger,
-		maxSignatureAttempts: 50,
+		maxSignatureAttempts: maxSignatureAttempts,
 	}, nil
 
 }
