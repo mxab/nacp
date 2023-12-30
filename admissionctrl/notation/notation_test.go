@@ -91,7 +91,7 @@ func TestVerifyImage(t *testing.T) {
 
 	truststore := truststore.NewX509TrustStore(dir.NewSysFS(truststoreDir))
 
-	imageVerifer, err := NewImageVerifier(policy(), truststore, true, hclog.NewNullLogger())
+	imageVerifer, err := NewImageVerifier(policy(), truststore, true, 50, hclog.NewNullLogger())
 	require.NoError(t, err)
 
 	err = imageVerifer.VerifyImage(context.Background(), digest)
