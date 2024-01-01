@@ -7,78 +7,133 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/api"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type MockVerifier struct {
-	mock.Mock
+type DummyVerifier struct {
 }
 
-func (m *MockVerifier) VerifyImage(ctx context.Context, imageReference string) error {
-	args := m.Called(ctx, imageReference)
-	return args.Error(0)
+func (m *DummyVerifier) VerifyImage(ctx context.Context, imageReference string) error {
+
+	if imageReference == "invalidimage:latest" {
+		return errors.New("invalid image")
+	}
+
+	return nil
 }
 
 func TestNotationValidatorValidate(t *testing.T) {
 
 	tt := []struct {
-		name          string
-		image         string
-		verifierError error
+		name string
+
+		expectedErrors []error
+
+		tasks []struct {
+			driver string
+			image  string
+		}
 	}{
 		{
-			name:  "valid image",
-			image: "myimage",
+			name: "valid image",
+			tasks: []struct {
+				driver string
+				image  string
+			}{
+
+				{
+					driver: "docker",
+					image:  "validimage:latest",
+				},
+			},
+			expectedErrors: nil,
 		},
 		{
-			name:          "invalid image",
-			image:         "myimage",
-			verifierError: errors.New("invalid image"),
+			name: "invalid image",
+			tasks: []struct {
+				driver string
+				image  string
+			}{
+
+				{
+					driver: "docker",
+					image:  "invalidimage:latest",
+				},
+			},
+			expectedErrors: []error{
+				errors.New("invalid image"),
+			},
+		},
+		{
+			name: "invalid image in second task",
+			tasks: []struct {
+				driver string
+				image  string
+			}{
+				{
+					driver: "docker",
+					image:  "validimage:latest",
+				},
+				{
+					driver: "docker",
+					image:  "invalidimage:latest",
+				},
+			},
+			expectedErrors: []error{
+				errors.New("invalid image"),
+			},
+		},
+		{
+			name: "non docker task",
+			tasks: []struct {
+				driver string
+				image  string
+			}{
+				{
+					driver: "magic",
+				},
+			},
+			expectedErrors: nil,
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			mockImageVerifier := new(MockVerifier)
-
-			mockImageVerifier.On("VerifyImage", mock.Anything, tc.image).Return(tc.verifierError)
+			mockImageVerifier := new(DummyVerifier)
 
 			notationValidator := &NotationValidator{
 				logger:   nil,
 				name:     "notation",
 				verifier: mockImageVerifier,
 			}
-			errors, err := notationValidator.Validate(&api.Job{
-				TaskGroups: []*api.TaskGroup{
-					{
-						Tasks: []*api.Task{
-							{
 
-								Config: map[string]interface{}{
-									"image": tc.image,
-								},
+			groups := []*api.TaskGroup{}
+			for _, task := range tc.tasks {
+				groups = append(groups, &api.TaskGroup{
+					Tasks: []*api.Task{
+						{
+							Driver: task.driver,
+							Config: map[string]interface{}{
+								"image": task.image,
 							},
 						},
 					},
-				},
+				})
+			}
+
+			errors, err := notationValidator.Validate(&api.Job{
+				TaskGroups: groups,
 			})
+			require.Equal(t, tc.expectedErrors, errors)
 			require.NoError(t, err)
 
-			if tc.verifierError == nil {
-				require.Empty(t, errors)
-			} else {
-				require.Equal(t, []error{
-					tc.verifierError,
-				}, errors)
-			}
 		})
 	}
 
 }
 
 func TestNewNotationValidator(t *testing.T) {
-	mockImageVerifier := new(MockVerifier)
+	mockImageVerifier := new(DummyVerifier)
 
 	notationValidator := NewNotationValidator(hclog.NewNullLogger(), "notation", mockImageVerifier)
 	require.Equal(t, mockImageVerifier, notationValidator.verifier)
@@ -86,7 +141,7 @@ func TestNewNotationValidator(t *testing.T) {
 	require.NotNil(t, notationValidator.logger)
 }
 func TestNotationValidatorName(t *testing.T) {
-	mockImageVerifier := new(MockVerifier)
+	mockImageVerifier := new(DummyVerifier)
 
 	notationValidator := &NotationValidator{
 		logger:   nil,
