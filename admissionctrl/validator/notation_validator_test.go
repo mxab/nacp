@@ -91,6 +91,7 @@ func TestNotationValidatorValidate(t *testing.T) {
 			}{
 				{
 					driver: "magic",
+					image:  "invalidimage:latest",
 				},
 			},
 			expectedErrors: nil,

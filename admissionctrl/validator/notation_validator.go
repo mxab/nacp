@@ -17,6 +17,12 @@ type NotationValidator struct {
 func (v *NotationValidator) Validate(job *api.Job) ([]error, error) {
 	for _, tg := range job.TaskGroups {
 		for _, task := range tg.Tasks {
+			// check if the task driver is docker
+			// should we consider podman?
+			if task.Driver != "docker" {
+				continue
+			}
+
 			image, ok := task.Config["image"].(string)
 			if !ok {
 				continue
