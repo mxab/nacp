@@ -10,8 +10,9 @@ type Webhook struct {
 	Method   string `hcl:"method"`
 }
 type OpaRule struct {
-	Query    string `hcl:"query"`
-	Filename string `hcl:"filename"`
+	Query    string                  `hcl:"query"`
+	Filename string                  `hcl:"filename"`
+	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
 
 type Validator struct {

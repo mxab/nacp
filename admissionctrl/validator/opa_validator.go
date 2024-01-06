@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
 )
 
@@ -65,12 +66,12 @@ func (v *OpaValidator) Name() string {
 	return v.name
 }
 
-func NewOpaValidator(name, filename, query string, logger hclog.Logger) (*OpaValidator, error) {
+func NewOpaValidator(name, filename, query string, logger hclog.Logger, imageVerifier notation.ImageVerifier) (*OpaValidator, error) {
 
 	ctx := context.TODO()
 
 	// read the policy file
-	preparedEvalQuery, err := opa.CreateQuery(filename, query, ctx)
+	preparedEvalQuery, err := opa.CreateQuery(filename, query, ctx, imageVerifier)
 	if err != nil {
 		return nil, err
 	}

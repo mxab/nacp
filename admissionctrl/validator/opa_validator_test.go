@@ -15,7 +15,7 @@ func TestOpaValidator(t *testing.T) {
 
 	// create a new OPA object
 	opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
-		"errors = data.prefixed_policies.errors", hclog.NewNullLogger())
+		"errors = data.prefixed_policies.errors", hclog.NewNullLogger(), nil)
 
 	require.Equal(t, nil, err)
 
@@ -91,7 +91,7 @@ func TestOpaValidatorSimple(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/errors.rego"),
-				tt.query, hclog.NewNullLogger())
+				tt.query, hclog.NewNullLogger(), nil)
 			require.NoError(t, err)
 			warnings, err := opa.Validate(dummyJob)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)

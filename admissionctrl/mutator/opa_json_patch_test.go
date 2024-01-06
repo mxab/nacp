@@ -102,7 +102,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 
 func newMutator(t *testing.T, filename, query string) *OpaJsonPatchMutator {
 	t.Helper()
-	m, err := NewOpaJsonPatchMutator("testopavalidator", filename, query, hclog.NewNullLogger())
+	m, err := NewOpaJsonPatchMutator("testopavalidator", filename, query, hclog.NewNullLogger(), nil)
 	require.NoError(t, err)
 	return m
 }

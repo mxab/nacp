@@ -2,6 +2,7 @@ package opa
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/hashicorp/nomad/api"
@@ -19,7 +20,7 @@ func TestOpa(t *testing.T) {
 		warnings = data.opatest.warnings
 		patch = data.opatest.patch
 
-	`, ctx)
+	`, ctx, nil)
 	require.Nil(t, err, "No error creating query")
 	assert.NotNil(t, query, "Query is not nil")
 
@@ -51,7 +52,7 @@ func TestFailOnEmptyResultSet(t *testing.T) {
 		errors = data.opatest.notexisting
 
 
-	`, ctx)
+	`, ctx, nil)
 	require.Nil(t, err, "No error creating query")
 	assert.NotNil(t, query, "Query is not nil")
 
@@ -69,7 +70,7 @@ func TestReturnsEmptyIfNotExisting(t *testing.T) {
 		notimportant = data.opatest.errors
 
 
-	`, ctx)
+	`, ctx, nil)
 	require.Nil(t, err, "No error creating query")
 	assert.NotNil(t, query, "Query is not nil")
 	job := &api.Job{}
@@ -84,4 +85,74 @@ func TestReturnsEmptyIfNotExisting(t *testing.T) {
 	patch := result.GetPatch()
 	assert.Equal(t, []interface{}{}, patch, "Patch is correct")
 
+}
+
+type DummyVerifier struct {
+}
+
+func (m *DummyVerifier) VerifyImage(ctx context.Context, imageReference string) error {
+
+	if imageReference == "invalidimage:latest" {
+		return errors.New("invalid image")
+	}
+	if imageReference == "validimage:latest" {
+		return nil
+	}
+
+	panic("invalid image reference")
+}
+func TestNotationImageValidation(t *testing.T) {
+
+	tt := []struct {
+		name           string
+		image          string
+		expectedErrors []interface{}
+	}{
+		{
+			name:           "valid image",
+			image:          "validimage:latest",
+			expectedErrors: []interface{}{},
+		},
+		{
+			name:  "invalid image",
+			image: "invalidimage:latest",
+			expectedErrors: []interface{}{
+				"Image is not in valid",
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			ctx := context.Background()
+
+			path := testutil.Filepath(t, "opa/test_notation.rego")
+
+			query, err := CreateQuery(path, `
+		errors = data.opatest.errors
+	`, ctx, new(DummyVerifier))
+			job := &api.Job{
+				TaskGroups: []*api.TaskGroup{
+					{
+						Tasks: []*api.Task{
+							{
+								Driver: "docker",
+								Config: map[string]interface{}{
+									"image": tc.image,
+								},
+							},
+						},
+					},
+				},
+			}
+			require.NoError(t, err, "No error creating query")
+			result, err := query.Query(ctx, job)
+			require.NoError(t, err, "No error executing query")
+			require.NotNil(t, result, "Result is not nil")
+
+			errors := result.GetErrors()
+			assert.Equal(t, tc.expectedErrors, errors, "Errors are correct")
+		})
+	}
 }

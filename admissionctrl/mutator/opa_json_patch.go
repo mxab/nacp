@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
 )
 
@@ -79,11 +80,11 @@ func (j *OpaJsonPatchMutator) Name() string {
 	return j.name
 }
 
-func NewOpaJsonPatchMutator(name, filename, query string, logger hclog.Logger) (*OpaJsonPatchMutator, error) {
+func NewOpaJsonPatchMutator(name, filename, query string, logger hclog.Logger, ImageVerifier notation.ImageVerifier) (*OpaJsonPatchMutator, error) {
 
 	ctx := context.TODO()
 	// read the policy file
-	preparedQuery, err := opa.CreateQuery(filename, query, ctx)
+	preparedQuery, err := opa.CreateQuery(filename, query, ctx, ImageVerifier)
 	if err != nil {
 		return nil, err
 	}

@@ -541,8 +541,11 @@ func createMutators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobM
 		switch m.Type {
 
 		case "opa_json_patch":
-
-			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"))
+			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, logger.Named("notation_verifier"))
+			if err != nil {
+				return nil, err
+			}
+			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"), notationVerifier)
 			if err != nil {
 				return nil, err
 			}
@@ -567,8 +570,11 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 	for _, v := range c.Validators {
 		switch v.Type {
 		case "opa":
-
-			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, logger.Named("opa_validator"))
+			notationVerifier, err := buildVerifierIfEnabled(v.Notation, logger.Named("notation_verifier"))
+			if err != nil {
+				return nil, err
+			}
+			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, logger.Named("opa_validator"), notationVerifier)
 			if err != nil {
 				return nil, err
 			}
@@ -596,9 +602,17 @@ func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.Jo
 	}
 	return jobValidators, nil
 }
-
+func buildVerifierIfEnabled(notationVerifierConfig *config.NotationVerifierConfig, logger hclog.Logger) (notation.ImageVerifier, error) {
+	if notationVerifierConfig == nil {
+		return nil, nil
+	}
+	return buildVerifier(notationVerifierConfig, logger)
+}
 func buildVerifier(notationVerifierConfig *config.NotationVerifierConfig, logger hclog.Logger) (notation.ImageVerifier, error) {
 
+	if notationVerifierConfig == nil {
+		return nil, fmt.Errorf("notation verifier config is nil")
+	}
 	policy, err := notation.LoadTrustPolicyDocument(notationVerifierConfig.TrustPolicyFile)
 	if err != nil {
 		return nil, err
