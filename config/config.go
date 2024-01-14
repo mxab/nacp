@@ -47,10 +47,11 @@ type ProxyTLS struct {
 	NoClientCert bool   `hcl:"no_client_cert,optional"`
 }
 type NotationVerifierConfig struct {
-	TrustPolicyFile string `hcl:"trust_policy_file"`
-	TrustStoreDir   string `hcl:"trust_store_dir"`
-	RepoPlainHTTP   bool   `hcl:"repo_plain_http,optional"`
-	MaxSigAttempts  int    `hcl:"max_sig_attempts,optional"`
+	TrustPolicyFile     string `hcl:"trust_policy_file"`
+	TrustStoreDir       string `hcl:"trust_store_dir"`
+	RepoPlainHTTP       bool   `hcl:"repo_plain_http,optional"`
+	MaxSigAttempts      int    `hcl:"max_sig_attempts,optional"`
+	CredentialStoreFile string `hcl:"credential_store_file,optional"`
 }
 
 type Config struct {

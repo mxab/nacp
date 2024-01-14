@@ -30,7 +30,7 @@ func CreateQuery(filename string, query string, ctx context.Context, verifier no
 		rego.Query(query),
 		rego.Function1(
 			&rego.Function{
-				Name: "validNotationImage",
+				Name: "valid_notation_image",
 				Decl: types.NewFunction(types.Args(types.S), types.B),
 			},
 			func(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {

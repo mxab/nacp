@@ -619,7 +619,7 @@ func buildVerifier(notationVerifierConfig *config.NotationVerifierConfig, logger
 	}
 	ts := truststore.NewX509TrustStore(dir.NewSysFS(notationVerifierConfig.TrustStoreDir))
 
-	return notation.NewImageVerifier(policy, ts, notationVerifierConfig.RepoPlainHTTP, notationVerifierConfig.MaxSigAttempts, logger)
+	return notation.NewImageVerifier(policy, ts, notationVerifierConfig.RepoPlainHTTP, notationVerifierConfig.MaxSigAttempts, notationVerifierConfig.CredentialStoreFile, logger)
 }
 
 func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {

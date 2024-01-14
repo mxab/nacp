@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -22,14 +23,51 @@ import (
 	"github.com/notaryproject/notation-go"
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/registry"
+
+	dockerRegistry "github.com/docker/docker/api/types/registry"
 	"github.com/notaryproject/notation-go/signer"
 	"github.com/notaryproject/notation-go/verifier/trustpolicy"
 	"github.com/notaryproject/notation-go/verifier/truststore"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"golang.org/x/crypto/bcrypt"
 	"oras.land/oras-go/v2/registry/remote"
 )
+
+type creds struct {
+	username string
+	password string
+}
+
+func (c creds) credsJsonBase64() string {
+
+	configJson, err := json.Marshal(dockerRegistry.AuthConfig{
+		Username: c.username,
+		Password: c.password,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(configJson))
+}
+func (c creds) credsBase64() string {
+
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", c.username, c.password)))
+}
+func (c creds) htpasswd() string {
+	bcryptPassword, err := bcrypt.GenerateFromPassword([]byte(c.password), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%s:%s", c.username, string(bcryptPassword))
+}
+
+var registryTestCreds = creds{
+	username: "testuser",
+	password: "testpassword",
+}
 
 func TestLoadTrustPolicyDocument(t *testing.T) {
 	pathDir := t.TempDir()
@@ -77,25 +115,63 @@ func TestLoadTrustPolicyDocument(t *testing.T) {
 
 func TestVerifyImage(t *testing.T) {
 
-	cleanupRegistry, _, address := launchRegistry(t)
+	tt := []struct {
+		name  string
+		creds *creds
+	}{
+		{
+			name: "no password",
+		},
+		{
+			name: "with password",
 
-	defer cleanupRegistry()
+			creds: &registryTestCreds,
+		},
+	}
 
-	digest := buildImage(t, address)
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
 
-	testCertTuple := testhelper.GetRSASelfSignedSigningCertTuple("NACP Notation Testing")
-	signImage(t, testCertTuple, digest)
+			configDir := t.TempDir()
+			cleanupRegistry, _, address := launchRegistry(t, tc.creds)
 
-	truststoreDir := t.TempDir()
-	writeTruststore(t, truststoreDir, "valid-trust-store", testCertTuple.Cert)
+			defer cleanupRegistry()
 
-	truststore := truststore.NewX509TrustStore(dir.NewSysFS(truststoreDir))
+			digest := buildImage(t, address, tc.creds)
 
-	imageVerifer, err := NewImageVerifier(policy(), truststore, true, 50, hclog.NewNullLogger())
-	require.NoError(t, err)
+			testCertTuple := testhelper.GetRSASelfSignedSigningCertTuple("NACP Notation Testing")
 
-	err = imageVerifer.VerifyImage(context.Background(), digest)
-	require.NoError(t, err)
+			configFile := fmt.Sprintf("%s/config.json", configDir)
+
+			if tc.creds != nil {
+
+				configJson := []byte(fmt.Sprintf(`{
+					"auths": {
+						"%s": {
+							"auth": "%s",
+							"email": ""
+						}
+					}
+				}`, address, tc.creds.credsBase64()))
+
+				err := os.WriteFile(configFile, configJson, 0644)
+				require.NoError(t, err)
+			}
+			client, err := NewClientWithFileCredStore(configFile)
+			require.NoError(t, err)
+			signImage(t, testCertTuple, digest, client)
+
+			truststoreDir := t.TempDir()
+			truststore := truststore.NewX509TrustStore(dir.NewSysFS(truststoreDir))
+			writeTruststore(t, truststoreDir, "valid-trust-store", testCertTuple.Cert)
+
+			imageVerifer, err := NewImageVerifier(policy(), truststore, true, 50, configFile, hclog.NewNullLogger())
+			require.NoError(t, err)
+
+			err = imageVerifer.VerifyImage(context.Background(), digest)
+			require.NoError(t, err)
+		})
+	}
 }
 
 func policy() *trustpolicy.Document {
@@ -114,16 +190,24 @@ func policy() *trustpolicy.Document {
 	return &policy
 }
 
-func launchRegistry(t *testing.T) (func(), nat.Port, string) {
+func launchRegistry(t *testing.T, creds *creds) (func(), nat.Port, string) {
 	t.Helper()
 	ctx := context.Background()
+
+	env := map[string]string{
+		"REGISTRY_STORAGE_DELETE_ENABLED": "true",
+	}
+	if creds != nil {
+		env["REGISTRY_AUTH"] = "htpasswd"
+		env["REGISTRY_AUTH_HTPASSWD_REALM"] = "Registry Realm"
+		env["REGISTRY_AUTH_HTPASSWD_PATH"] = "/etc/registry.htpasswd"
+
+	}
 
 	req := testcontainers.ContainerRequest{
 		Image:      "registry",
 		WaitingFor: wait.ForListeningPort("5000"),
-		Env: map[string]string{
-			"REGISTRY_STORAGE_DELETE_ENABLED": "true",
-		},
+		Env:        env,
 		// I have no clue why, but otherwise docker is not able to connect and push to the registry
 		HostConfigModifier: func(hc *container.HostConfig) {
 			hc.PortBindings = map[nat.Port][]nat.PortBinding{
@@ -139,8 +223,19 @@ func launchRegistry(t *testing.T) (func(), nat.Port, string) {
 	}
 	registryC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
-		Started:          true,
+		Started:          false,
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if creds != nil {
+		entry := creds.htpasswd()
+		err := registryC.CopyToContainer(ctx, []byte(entry), "/etc/registry.htpasswd", 777)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	err = registryC.Start(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +263,7 @@ func launchRegistry(t *testing.T) (func(), nat.Port, string) {
 
 }
 
-func buildImage(t *testing.T, address string) string {
+func buildImage(t *testing.T, address string, creds *creds) string {
 	t.Helper()
 
 	ctx := context.Background()
@@ -252,9 +347,13 @@ func buildImage(t *testing.T, address string) string {
 		fmt.Println(lastLine)
 	}
 
+	auth := "nothing"
+	if creds != nil {
+		auth = creds.credsJsonBase64()
+	}
 	pushRes, err := cli.ImagePush(ctx, imageTag, types.ImagePushOptions{
 		All:          true,
-		RegistryAuth: "123",
+		RegistryAuth: auth,
 	})
 	scanner = bufio.NewScanner(pushRes)
 	for scanner.Scan() {
@@ -291,7 +390,7 @@ func buildImage(t *testing.T, address string) string {
 
 // ExampleRemoteSign demonstrates how to use notation.Sign to sign an artifact
 // in the remote registry and push the signature to the remote.
-func signImage(t *testing.T, testCertTuple testhelper.RSACertTuple, exampleArtifactReference string) {
+func signImage(t *testing.T, testCertTuple testhelper.RSACertTuple, exampleArtifactReference string, client remote.Client) {
 	t.Helper()
 
 	// testCertTuple contains a RSA privateKey and a self-signed X509
@@ -311,6 +410,8 @@ func signImage(t *testing.T, testCertTuple testhelper.RSACertTuple, exampleArtif
 
 	// exampleRepo is an example of registry.Repository.
 	remoteRepo, err := remote.NewRepository(exampleArtifactReference)
+
+	remoteRepo.Client = client
 	remoteRepo.PlainHTTP = true
 	if err != nil {
 		t.Fatal(err)
