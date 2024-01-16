@@ -1,14 +1,17 @@
+variable "image" {
+  type = string
+}
 job "demo" {
 
-    group "demo" {
-        count = 1
+  group "demo" {
+    count = 1
 
-        task "demo" {
-            driver = "docker"
+    task "demo" {
+      driver = "docker"
 
-            config {
-                image = "localhost:5001/net-monitor:v1"
-            }
-        }
+      config {
+        image = var.image
+      }
     }
+  }
 }

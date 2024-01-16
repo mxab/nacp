@@ -10,8 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/nacp/nacp.go",
-            "args": ["-config=nacp.conf.hcl"],
-            "cwd": "${workspaceFolder}/misc/hashitalk_deploy2023/demos"
+            "args": ["-config=notation.conf.hcl"],
+            "cwd": "${workspaceFolder}/example/notation"
         }
     ]
 }
