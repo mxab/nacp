@@ -25,12 +25,15 @@ func CreateQuery(filename string, query string, ctx context.Context, verifier no
 	if err != nil {
 		return nil, err
 	}
-
-	preparedQuery, err := rego.New(
+	options := []func(*rego.Rego){
 		rego.Query(query),
-		rego.Function1(
+		rego.Module(filename, string(module)),
+	}
+	if verifier != nil {
+		options = append(options, rego.Function1(
+
 			&rego.Function{
-				Name: "valid_notation_image",
+				Name: "notation_verify_image",
 				Decl: types.NewFunction(types.Args(types.S), types.B),
 			},
 			func(bctx rego.BuiltinContext, a *ast.Term) (*ast.Term, error) {
@@ -43,8 +46,10 @@ func CreateQuery(filename string, query string, ctx context.Context, verifier no
 				}
 				return ast.BooleanTerm(false), nil
 			}),
-		rego.Module(filename, string(module)),
-	).PrepareForEval(ctx)
+		)
+	}
+
+	preparedQuery, err := rego.New(options...).PrepareForEval(ctx)
 
 	if err != nil {
 		return nil, err

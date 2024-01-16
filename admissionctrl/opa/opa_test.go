@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -106,16 +107,19 @@ func TestNotationImageValidation(t *testing.T) {
 	tt := []struct {
 		name           string
 		image          string
+		verifier       notation.ImageVerifier
 		expectedErrors []interface{}
 	}{
 		{
 			name:           "valid image",
 			image:          "validimage:latest",
+			verifier:       new(DummyVerifier),
 			expectedErrors: []interface{}{},
 		},
 		{
-			name:  "invalid image",
-			image: "invalidimage:latest",
+			name:     "invalid image",
+			image:    "invalidimage:latest",
+			verifier: new(DummyVerifier),
 			expectedErrors: []interface{}{
 				"Image is not in valid",
 			},
@@ -129,9 +133,11 @@ func TestNotationImageValidation(t *testing.T) {
 
 			path := testutil.Filepath(t, "opa/test_notation.rego")
 
-			query, err := CreateQuery(path, `
-		errors = data.opatest.errors
-	`, ctx, new(DummyVerifier))
+			query, err := CreateQuery(path,
+				"errors = data.opatest.errors",
+				ctx,
+				tc.verifier,
+			)
 			job := &api.Job{
 				TaskGroups: []*api.TaskGroup{
 					{
@@ -155,4 +161,19 @@ func TestNotationImageValidation(t *testing.T) {
 			assert.Equal(t, tc.expectedErrors, errors, "Errors are correct")
 		})
 	}
+}
+
+func TestCreateQueryIfNotationFnIsUsedButVerifierIsNil(t *testing.T) {
+
+	ctx := context.Background()
+
+	path := testutil.Filepath(t, "opa/test_notation.rego")
+
+	_, err := CreateQuery(path,
+		"errors = data.opatest.errors",
+		ctx,
+		nil,
+	)
+	assert.Error(t, err, "Error creating query")
+
 }

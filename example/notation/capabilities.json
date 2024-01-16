@@ -1,7 +1,7 @@
 {
   "builtins": [
     {
-      "name": "valid_notation_image",
+      "name": "notation_verify_image",
       "decl": {
         "args": [
           {
