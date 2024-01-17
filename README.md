@@ -254,5 +254,42 @@ nomad {
 }
 ```
 
+### Notation
+
+Image signature validation can be done in two ways. Either by the `notation` validator or via the opa by using the `notation_verify_image` function which returns either `true` if the image is valid or `false` if the image is not valid.
+See [example/notation](./example/notation) for an example.
+
+Both validators expect a notation block. E.g.:
+
+```hcl
+...
+validator "opa" "notation_opa_validator" {
+
+  opa_rule {
+      ...
+  }
+  notation {
+    repo_plain_http   = false
+    trust_store_dir   = "/some/path/to/truststore"
+    trust_policy_file = "/some/path/to/trustpolicy.json"
+    credential_store_file = "/some/path/to/credentialstore.json"
+  }
+}
+```
+
+The `credential_store_file` refers to the [oras' credential file] (https://docs.docker.com/engine/reference/commandline/cli/#docker-cli-configuration-file-configjson-properties)
+
+e.g.:
+```json
+{
+  "auths": {
+    "https://my-registy.example.org": {
+      "auth": "<base64 encoded username:password>"
+    }
+  }
+}
+```
+
+
 # Note
 This work was inspired by the internal [Nomad Admission Controller](https://github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint_hooks.go#L74)
