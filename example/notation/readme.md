@@ -2,6 +2,10 @@
 
 This Demo uses the quickstart example from the [Notation](https://notaryproject.dev/docs/quickstart-guides/quickstart-sign-image-artifact/) project.
 
+
+https://github.com/mxab/nacp/assets/1607547/c06cf01d-43ba-440c-b63d-7a8a0ade9cfe
+
+
 ## Setup
 
 ### Run Nomad and proxy
