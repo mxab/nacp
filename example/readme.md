@@ -23,6 +23,9 @@ NOMAD_ADDR=http://localhost:6464 nomad run example1.nomad
 https://user-images.githubusercontent.com/1607547/227664253-d65cd5d4-12e4-4b99-9143-4a346911b7dd.mov
 
 
+### Image Validation via Notation
+
+See redme in `notation/` folder.
 
 ## Mutator
 

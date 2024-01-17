@@ -64,3 +64,5 @@ terraform.rc
 
 __debug_bin*
 misc/hashitalk_deploy2023/demos/setup/infra/ip_address.txt
+
+.DS_Store

@@ -5,7 +5,7 @@ NAME="wabbit-networks.io"
 
 
 notation key delete $NAME
-notation cert delete --type ca --store ${NAME} ${NAME}.crt
+notation cert delete -y --type ca --store ${NAME} ${NAME}.crt
 
 #echo "rm \"${NOTATION_DIR}/localkeys/${NAME}.key\""
 

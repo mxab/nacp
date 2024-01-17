@@ -23,3 +23,18 @@ nomad job run registry.nomad
 docker build -t localhost:5001/net-monitor:v1 https://github.com/wabbit-networks/net-monitor.git#main
 docker push localhost:5001/net-monitor:v1
 ```
+### Run Nomad Job
+```sh
+export IMAGE=$(docker inspect --format='{{index .RepoDigests 0}}' localhost:5001/net-monitor:v1)
+
+export NOMAD_ADDR=http://localhost:6464
+
+nomad job run -var "image=${IMAGE}" demo.nomad
+
+# should fail
+# now sign image
+
+notation sign $IMAGE
+
+nomad job run -var "image=${IMAGE}" demo.nomad
+```
