@@ -1,10 +1,11 @@
 package postgres
 
-import future.keywords
+import rego.v1
 
-jobName := input.Name
+job_name := input.Name
 
 vault_block_ops contains operation if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
 	object.get(input.TaskGroups[g].Tasks[t], "Vault", null) == null
@@ -23,16 +24,18 @@ vault_block_ops contains operation if {
 }
 
 vault_policies_ops contains operation if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
 	operation := {
 		"op": "add",
 		"path": sprintf("/TaskGroups/%d/Tasks/%d/Vault/Policies/-", [g, t]),
-		"value": sprintf("%s-db-access", [jobName]),
+		"value": sprintf("%s-db-access", [job_name]),
 	}
 }
 
 task_templates_block_ops contains operation if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
 	object.get(input.TaskGroups[g].Tasks[t], "Templates", null) == null
@@ -45,6 +48,7 @@ task_templates_block_ops contains operation if {
 }
 
 task_postgres_env_template_ops contains operation if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
 	operation := {
@@ -64,9 +68,10 @@ task_postgres_env_template_ops contains operation if {
 }
 
 env_tmpl := libpq_tmpl if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres == "libpq"
 
-	db_name := replace(jobName, "-", "_")
+	db_name := replace(job_name, "-", "_")
 	libpq_tmpl := concat("\n", [
 		sprintf("PGDATABASE=%s", [db_name]),
 		sprintf("{{ with secret \"db/%s/creds/admin\" }}", [db_name]),
@@ -81,9 +86,10 @@ env_tmpl := libpq_tmpl if {
 }
 
 env_tmpl := spring_boot_tmpl if {
+	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.postgres == "springboot"
 
-	db_name := replace(jobName, "-", "_")
+	db_name := replace(job_name, "-", "_")
 
 	spring_boot_tmpl := concat("\n", [
 		"{{ range nomadService \"postgres\" }}",
@@ -103,5 +109,5 @@ patch := [op |
 		task_templates_block_ops,
 		task_postgres_env_template_ops,
 	]
-	op := ops[_]
+	some op in ops
 ]

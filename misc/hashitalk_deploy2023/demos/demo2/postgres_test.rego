@@ -1,9 +1,10 @@
-package postgres
+package postgres_test
 
-import future.keywords
+import data.postgres
+import rego.v1
 
 test_patch_vault_policy if {
-	patch_ops := patch with input as {
+	patch_ops := postgres.patch with input as {
 		"ID": "app",
 		"Name": "my-app",
 		"TaskGroups": [{
