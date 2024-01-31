@@ -1,30 +1,28 @@
 package hello_world_meta
 
+import rego.v1
 
-patch[operation] {
+add_meta_ops contains operation if {
+	object.get(input, "Meta", null) == null
 
-    not input.Meta
-    operation := {
-        "op": "add",
-        "path": "/Meta",
-        "value": {}
-    }
+	operation := {
+		"op": "add",
+		"path": "/Meta",
+		"value": {},
+	}
 }
-patch[operation] {
 
-    is_null(input.Meta)
-    operation := {
-        "op": "add",
-        "path": "/Meta",
-        "value": {}
-    }
-}
-patch[operation] {
+add_hello_to_meta_ops contains operation if {
+	object.get(input, ["Meta", "hello"], null) == null
 
-    not input.Meta.hello
-    operation := {
-        "op": "add",
-        "path": "/Meta/hello",
-        "value": "world"
-    }
+	operation := {
+		"op": "add",
+		"path": "/Meta/hello",
+		"value": "world",
+	}
 }
+
+patch := [ operation |
+    some ops in [add_meta_ops, add_hello_to_meta_ops]
+    operation := ops[_]
+]

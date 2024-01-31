@@ -1,68 +1,64 @@
 package hello_world_meta_test
 
-import data.hello_world_meta.patch
+import data.hello_world_meta
 
-import future.keywords
+import rego.v1
 
 test_hello_world if {
-	e := patch with input as {
+	e := hello_world_meta.patch with input as {
 		"ID": "my-job",
 		"Meta": {},
 	}
-    e[{
-        "op": "add",
-        "path": "/Meta/hello",
-        "value": "world"
-    }]
-
+	count(e) == 1
+	e == [{
+		"op": "add",
+		"path": "/Meta/hello",
+		"value": "world",
+	}]
 }
 
 test_hello_world_add_meta if {
-	e := patch with input as {
-		"ID": "my-job"
-	}
-    count(e) == 2
-    trace(sprintf("patch: %v", [e]))
+	e := hello_world_meta.patch with input as {"ID": "my-job"}
 
-    e == {
-        {
-            "op": "add",
-            "path": "/Meta",
-            "value": {}
-        },
-        {
-            "op": "add",
-            "path": "/Meta/hello",
-            "value": "world"
-        }
-    }
+	e == [
+		{
+			"op": "add",
+			"path": "/Meta",
+			"value": {},
+		},
+		{
+			"op": "add",
+			"path": "/Meta/hello",
+			"value": "world",
+		},
+    ]
 }
+
 test_hello_world_add_meta_if_meta_null if {
-	e := patch with input as {
+	e := hello_world_meta.patch with input as {
 		"ID": "my-job",
-        "Meta": null
+		"Meta": null,
 	}
-    count(e) == 2
-    trace(sprintf("patch: %v", [e]))
+	count(e) == 2
 
-    e == {
-        {
-            "op": "add",
-            "path": "/Meta",
-            "value": {}
-        },
-        {
-            "op": "add",
-            "path": "/Meta/hello",
-            "value": "world"
-        }
-    }
+	e == [
+		{
+			"op": "add",
+			"path": "/Meta",
+			"value": {},
+		},
+		{
+			"op": "add",
+			"path": "/Meta/hello",
+			"value": "world",
+		},
+    ]
 }
-test_hello_world_no_code_if_exists if {
-	e := patch with input as {
-		"ID": "my-job",
-		"Meta": {"hello": "world"}
-	}
-    count(e) == 0
 
+test_hello_world_no_code_if_exists if {
+	e := hello_world_meta.patch with input as {
+		"ID": "my-job",
+		"Meta": {"hello": "world"},
+	}
+	count(e) == 0
 }

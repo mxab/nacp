@@ -1,14 +1,13 @@
 package pginject
 
-import future.keywords
+import rego.v1
 
 vault_policy := "db-access"
 
-patch contains operation if {
+add_vault_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
-	input.TaskGroups[g].Tasks[t].Vault == null
-	trace(sprintf("injecting postgres task %d into group %d", [t, g]))
+	object.get(input.TaskGroups[g].Tasks[t], "Vault", null) == null
 
 	operation := {
 		"op": "add",
@@ -23,7 +22,7 @@ patch contains operation if {
 	}
 }
 
-patch contains operation if {
+add_vault_policy_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
 	operation := {
@@ -33,10 +32,10 @@ patch contains operation if {
 	}
 }
 
-patch contains operation if {
+add_env_template_block_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
 
-	input.TaskGroups[g].Tasks[t].Templates == null
+	object.get(input.TaskGroups[g].Tasks[t], "Templates", null) == null
 
 	operation := {
 		"op": "add",
@@ -45,9 +44,8 @@ patch contains operation if {
 	}
 }
 
-patch contains operation if {
+add_env_template_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
-
 
 	operation := {
 		"op": "add",
@@ -72,11 +70,11 @@ patch contains operation if {
 		},
 	}
 }
+
 env_tmpl := native_tmpl if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres == "native"
 
-
-	native_tmpl:= concat("\n", [
+	native_tmpl := concat("\n", [
 		"{{ range nomadService \"postgres\" }}",
 		"PGHOSTADDR={{ .Address }}",
 		"PGPORT={{ .Port }}",
@@ -87,13 +85,12 @@ env_tmpl := native_tmpl if {
 		"PGPASSWORD={{ .Data.password }}",
 		"{{ end }}",
 	])
-
 }
+
 env_tmpl := spring_boot_tmpl if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres == "springboot"
 
-
-	spring_boot_tmpl:= concat("\n", [
+	spring_boot_tmpl := concat("\n", [
 		"{{ range nomadService \"postgres\" }}",
 		"SPRING_DATASOURCE_URL=jdbc:postgresql://{{ .Address }}:{{ .Port }}/postgres",
 		"{{ end }}",
@@ -102,11 +99,12 @@ env_tmpl := spring_boot_tmpl if {
 		"SPRING_DATASOURCE_PASSWORD={{ .Data.password }}",
 		"{{ end }}",
 	])
-
 }
-patch contains operation if {
+
+add_constaint_block_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
-	input.TaskGroups[g].Constraints == null
+
+	object.get(input.TaskGroups[g].Tasks[t], "Constraints", null) == null
 
 	operation := {
 		"op": "add",
@@ -115,13 +113,18 @@ patch contains operation if {
 	}
 }
 
-patch contains operation if {
+add_vault_constraint_block_ops contains operation if {
 	input.TaskGroups[g].Tasks[t].Meta.postgres
-	not input.TaskGroups[g].Constraints[{
-		"LTarget": "${attr.vault.version}",
-		"Operand": "semver",
-		"RTarget": ">= 0.6.1"
-	}]
+
+	constraints := object.get(input.TaskGroups[g].Tasks[t], "Constraints", [])
+	every constraint in constraints {
+		constraint != {
+			"LTarget": "${attr.vault.version}",
+			"Operand": "semver",
+			"RTarget": ">= 0.6.1",
+		}
+	}
+
 	operation := {
 		"op": "add",
 		"path": sprintf("/TaskGroups/%d/Constraints/-", [g]),
@@ -132,3 +135,15 @@ patch contains operation if {
 		},
 	}
 }
+
+patch := [operation |
+	some ops in [
+		add_vault_ops,
+		add_vault_policy_ops,
+		add_env_template_block_ops,
+		add_env_template_ops,
+		add_constaint_block_ops,
+		add_vault_constraint_block_ops,
+	]
+	operation := ops[_]
+]

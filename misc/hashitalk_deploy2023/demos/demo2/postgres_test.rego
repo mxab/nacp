@@ -14,7 +14,7 @@ test_patch_vault_policy if {
 			}],
 		}],
 	}
-	patch_ops == {
+	patch_ops == [
 		{
 			"op": "add",
 			"path": "/TaskGroups/0/Tasks/0/Vault",
@@ -50,5 +50,5 @@ test_patch_vault_policy if {
 				"Splay": 5000000000,
 			},
 		},
-	}
+	]
 }
