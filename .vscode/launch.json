@@ -10,8 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/nacp/nacp.go",
-            "args": ["-config=notation.conf.hcl"],
-            "cwd": "${workspaceFolder}/example/notation"
+            "args": ["-config=otel.conf.hcl"],
+            "cwd": "${workspaceFolder}/example/otel",
         }
     ]
 }
