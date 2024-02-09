@@ -17,3 +17,7 @@ NOMAD_ADDR=http://localhost:64500 nomad job run example.nomad.hcl
 # inspect
 nomad exec -job example sh -c 'env | grep OTEL_'
 ```
+
+
+https://github.com/mxab/nacp/assets/1607547/f4ecf685-42f9-4a95-873d-3615bc07fb30
+
