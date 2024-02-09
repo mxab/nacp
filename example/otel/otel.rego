@@ -4,7 +4,7 @@ import rego.v1
 
 # check for all task if they have a "Meta" field "otel" = "true"
 # if it doesn't have a Templates field or its null create a patch for that
-
+# inject the same data as mentioned here: https://github.com/hashicorp/nomad/commit/fb4887505c82346a8f9046f956530058ab92e55a#diff-ad403bc14b99a07b6bf1d5599b9109113bc30d03afd88d7c007dd55f1bdb6b2cR44
 add_templates_list_ops contains op if {
 	some g, t
 	input.TaskGroups[g].Tasks[t].Meta.otel == "true"
