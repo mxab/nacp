@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/nomad v1.7.3
 	github.com/hashicorp/nomad/api v0.0.0-20240117150308-8f99ba6b2cea
-	github.com/notaryproject/notation-core-go v1.0.1
+	github.com/notaryproject/notation-core-go v1.0.2
 	github.com/open-policy-agent/opa v0.60.0
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.26.0
