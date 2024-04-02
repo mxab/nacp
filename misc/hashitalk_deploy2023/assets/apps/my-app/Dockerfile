@@ -1,4 +1,4 @@
-FROM python:3.11-slim as builder
+FROM python:3.13.0a4-slim as builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN touch README.md
 
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --without dev --no-root
 
-FROM python:3.11-slim as runtime
+FROM python:3.13.0a4-slim as runtime
 
 EXPOSE 8000
 WORKDIR /app
