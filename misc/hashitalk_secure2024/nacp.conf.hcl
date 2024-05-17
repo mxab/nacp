@@ -9,6 +9,9 @@ validator "opa" "enforce_digest" {
     filename = "digest/digest.rego"
   }
 }
+
+
+
 /*
 validator "opa" "verify_image" {
 
