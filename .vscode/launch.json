@@ -10,8 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/nacp/nacp.go",
-            "args": ["-config=otel.conf.hcl"],
-            "cwd": "${workspaceFolder}/example/otel",
+            "args": ["-config=nacp.conf.hcl"],
+            "cwd": "${workspaceFolder}/misc/hashitalk_secure2024",
         }
     ]
 }

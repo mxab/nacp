@@ -2,7 +2,7 @@
 # https://notaryproject.dev/docs/user-guides/installation/uninstall/#remove-the-test-key-and-self-signed-certificate
 echo "Deleting test certs on macOS"
 # default name or take first argument
-NAME="wabbit-networks.io"
+NAME="nacp-demo"
 if [ -n "$1" ]; then
   NAME=$1
 fi
