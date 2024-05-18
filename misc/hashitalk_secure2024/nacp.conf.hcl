@@ -12,7 +12,7 @@ validator "opa" "enforce_digest" {
 
 
 
-/*
+
 validator "opa" "verify_image" {
 
   opa_rule {
@@ -29,4 +29,3 @@ validator "opa" "verify_image" {
     trust_policy_file = "/Users/max/Library/Application Support/notation/trustpolicy.json"
   }
 }
-*/
