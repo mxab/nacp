@@ -1,4 +1,6 @@
-# HashiTalks Secure 2024
+# HashiTalks Secure 2024 - DevSecOpsify your Nomad Deployments with NACP and the Notary Project
+
+
 
 This is the demo code for my HashiTalks Secure 2024 talk.
 
