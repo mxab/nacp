@@ -14,6 +14,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/go-connections/nat"
@@ -319,7 +320,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 	}
 	defer func() {
 
-		items, err := cli.ImageRemove(ctx, imageTag, types.ImageRemoveOptions{
+		items, err := cli.ImageRemove(ctx, imageTag, image.RemoveOptions{
 			Force:         true,
 			PruneChildren: true,
 		})
@@ -351,7 +352,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 	if creds != nil {
 		auth = creds.credsJsonBase64()
 	}
-	pushRes, err := cli.ImagePush(ctx, imageTag, types.ImagePushOptions{
+	pushRes, err := cli.ImagePush(ctx, imageTag, image.PushOptions{
 		All:          true,
 		RegistryAuth: auth,
 	})
