@@ -12,7 +12,7 @@ nacp -config=otel.conf.hcl
 ```
 
 ```shell
-NOMAD_ADDR=http://localhost:64500 nomad job run example.nomad.hcl
+NOMAD_ADDR=http://localhost:6464 nomad job run example.nomad.hcl
 
 # inspect
 nomad exec -job example sh -c 'env | grep OTEL_'
