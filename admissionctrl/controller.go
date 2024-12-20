@@ -27,16 +27,18 @@ type JobValidator interface {
 }
 
 type JobHandler struct {
-	mutators   []JobMutator
-	validators []JobValidator
-	logger     hclog.Logger
+	mutators     []JobMutator
+	validators   []JobValidator
+	resolveToken bool
+	logger       hclog.Logger
 }
 
-func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclog.Logger) *JobHandler {
+func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclog.Logger, resolverToken bool) *JobHandler {
 	return &JobHandler{
-		mutators:   mutators,
-		validators: validators,
-		logger:     logger,
+		mutators:     mutators,
+		validators:   validators,
+		logger:       logger,
+		resolveToken: resolverToken,
 	}
 }
 
@@ -95,6 +97,10 @@ func (j *JobHandler) AdmissionValidators(origJob *api.Job) ([]error, error) {
 
 	return warnings, errs
 
+}
+
+func (j *JobHandler) ResolveToken() bool {
+	return j.resolveToken
 }
 
 func copyJob(job *api.Job) *api.Job {

@@ -17,6 +17,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-hclog"
@@ -43,6 +44,62 @@ var (
 
 	nomadTimeout = 310 * time.Second
 )
+
+// New function to get client IP
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For header first
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		return strings.Split(forwarded, ",")[0]
+	}
+
+	// Fall back to RemoteAddr
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
+}
+
+func resolveTokenAccessor(transport *http.Transport, nomadAddress *url.URL, token string) (string, error) {
+	if token == "" {
+		return "", nil
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
+	if transport == nil {
+		client = http.DefaultClient
+	}
+
+	selfURL := *nomadAddress
+	selfURL.Path = "/v1/acl/token/self"
+
+	req, err := http.NewRequest("GET", selfURL.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("X-Nomad-Token", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to resolve token: %s", resp.Status)
+	}
+
+	var tokenInfo struct {
+		AccessorID string `json:"AccessorID"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&tokenInfo); err != nil {
+		return "", err
+	}
+
+	return tokenInfo.AccessorID, nil
+}
 
 func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger hclog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
 
@@ -79,6 +136,25 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
+
+		ctx := r.Context()
+		reqCtx := &config.RequestContext{
+			ClientIP: getClientIP(r),
+		}
+
+		token := r.Header.Get("X-Nomad-Token")
+		if jobHandler.ResolveToken() {
+			accessorID, err := resolveTokenAccessor(transport, nomadAddress, token)
+			if err != nil {
+				appLogger.Error("Resolving token failed", "error", err)
+				writeError(w, err)
+			}
+			reqCtx.AccessorID = accessorID
+		}
+
+		// Store context
+		ctx = context.WithValue(ctx, "request_context", reqCtx)
+		r = r.WithContext(ctx)
 
 		var err error
 		//var err error
@@ -457,13 +533,20 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 		}
 		proxyTransport.TLSClientConfig = nomadTlsConfig
 	}
-	jobMutators, err := createMutators(c, appLogger.Named("mutators"))
+
+	jobMutators, resolveTokenMutators, err := createMutators(c, appLogger.Named("mutators"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create mutators: %w", err)
 	}
-	jobValidators, err := createValidators(c, appLogger.Named("validators"))
+
+	jobValidators, resolveTokenValidators, err := createValidators(c, appLogger.Named("validators"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create validators: %w", err)
+	}
+
+	var resolveToken bool
+	if resolveTokenMutators || resolveTokenValidators {
+		resolveToken = true
 	}
 
 	handler := admissionctrl.NewJobHandler(
@@ -471,6 +554,7 @@ func buildServer(c *config.Config, appLogger hclog.Logger) (*http.Server, error)
 		jobMutators,
 		jobValidators,
 		appLogger.Named("handler"),
+		resolveToken,
 	)
 
 	proxy := NewProxyHandler(backend, handler, appLogger, proxyTransport)
@@ -535,72 +619,79 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobMutator, error) {
+func createMutators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobMutator, bool, error) {
 	var jobMutators []admissionctrl.JobMutator
+	var resolveToken bool
 	for _, m := range c.Mutators {
+		if m.ResolveToken {
+			resolveToken = true
+		}
 		switch m.Type {
-
 		case "opa_json_patch":
 			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, logger.Named("notation_verifier"))
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, logger.Named("opa_mutator"), notationVerifier)
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			jobMutators = append(jobMutators, mutator)
 
 		case "json_patch_webhook":
 			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, logger.Named("json_patch_webhook_mutator"))
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			jobMutators = append(jobMutators, mutator)
 
 		default:
-			return nil, fmt.Errorf("unknown mutator type %s", m.Type)
+			return nil, resolveToken, fmt.Errorf("unknown mutator type %s", m.Type)
 		}
 
 	}
-	return jobMutators, nil
+	return jobMutators, resolveToken, nil
 }
-func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobValidator, error) {
+func createValidators(c *config.Config, logger hclog.Logger) ([]admissionctrl.JobValidator, bool, error) {
 	var jobValidators []admissionctrl.JobValidator
+	var resolveToken bool
 	for _, v := range c.Validators {
+		if v.ResolveToken {
+			resolveToken = true
+		}
 		switch v.Type {
 		case "opa":
 			notationVerifier, err := buildVerifierIfEnabled(v.Notation, logger.Named("notation_verifier"))
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, logger.Named("opa_validator"), notationVerifier)
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
 
 		case "webhook":
 			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, logger.Named("webhook_validator"))
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, validator)
 		case "notation":
 			notationVerifier, err := buildVerifier(v.Notation, logger.Named("notation_verifier"))
 			if err != nil {
-				return nil, err
+				return nil, resolveToken, err
 			}
 			validator := validator.NewNotationValidator(logger.Named("notation_validator"), v.Name, notationVerifier)
 
 			jobValidators = append(jobValidators, validator)
 
 		default:
-			return nil, fmt.Errorf("unknown validator type %s", v.Type)
+			return nil, resolveToken, fmt.Errorf("unknown validator type %s", v.Type)
 		}
 
 	}
-	return jobValidators, nil
+	return jobValidators, resolveToken, nil
 }
 func buildVerifierIfEnabled(notationVerifierConfig *config.NotationVerifierConfig, logger hclog.Logger) (notation.ImageVerifier, error) {
 	if notationVerifierConfig == nil {

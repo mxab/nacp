@@ -40,6 +40,10 @@ func TestProxy(t *testing.T) {
 		path   string
 		method string
 
+		token        string
+		resolveToken bool
+		accessorID   string
+
 		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
 		wantNomadRequestJson  string
 		wantProxyResponse     interface{}
@@ -312,42 +316,72 @@ func TestProxy(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
+		{
+			name: "resolves token during job creation",
+			path: "/v1/validate/job",
+
+			method:       "PUT",
+			token:        "test-token",
+			resolveToken: true,
+			accessorID:   "test-accessor",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Validate(&api.Job{}, nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+
+			wantProxyResponse: &api.JobValidateResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			nomadBackendCalled := false
+			tokenCalled := false
 			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				// Test request parameters
 				nomadBackendCalled = true
-				assert.Equal(t, req.Method, tc.method, "Ensure method is set")
-				assert.Equal(t, req.URL.Path, tc.path, "Ensure path is set")
+				if req.URL.Path == "/v1/acl/token/self" {
+					tokenCalled = true
+					if tc.token != "test-token" {
+						rw.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+					json.NewEncoder(rw).Encode(map[string]string{
+						"AccessorID": tc.accessorID,
+					})
+					return
+				}
+
+				assert.Equal(t, req.Method, tc.method)
+				assert.Equal(t, req.URL.Path, tc.path)
 				jsonData, err := io.ReadAll(req.Body)
 				if err != nil {
 					t.Fatal(err)
 				}
 				json := string(jsonData)
-				assert.JSONEq(t, tc.wantNomadRequestJson, json, "Body matches")
+				assert.JSONEq(t, tc.wantNomadRequestJson, json)
 
-				//set encoding to gzip
 				if tc.nomadResponseEncoding == "gzip" {
 					rw.Header().Set("Content-Encoding", "gzip")
 					rw.WriteHeader(http.StatusOK)
-					//write gzip response
 					gzipWriter := gzip.NewWriter(rw)
 					defer gzipWriter.Close()
 					gzipWriter.Write([]byte(tc.nomadResponse))
-
 				} else {
 					rw.WriteHeader(http.StatusOK)
 					rw.Write([]byte(tc.nomadResponse))
 				}
-
 			}))
-			// Close the server when test finishes
 			defer nomadDummy.Close()
-
-			// Use Client & URL from our local test server
 
 			nomad, err := url.Parse(nomadDummy.URL)
 			if err != nil {
@@ -357,24 +391,33 @@ func TestProxy(t *testing.T) {
 				tc.mutators,
 				tc.validators,
 				hclog.NewNullLogger(),
+				tc.resolveToken,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
+			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
+
+			if tc.token != "" {
+				nomadClient.SetSecretID(tc.token)
+			}
 
 			resp, _, err := tc.requestSender(nomadClient)
 
 			assert.NoError(t, err, "No http call error")
 			assert.Equal(t, tc.wantProxyResponse, resp, "OK response is expected")
-
 			assert.True(t, nomadBackendCalled, "Nomad backend was called")
 
+			if tc.resolveToken {
+				assert.True(t, tokenCalled, "Token resolution should be called")
+			} else {
+				assert.False(t, tokenCalled, "Token resolution should not be called")
+			}
 		})
 	}
-
 }
+
 func TestJobUpdateProxy(t *testing.T) {
 
 	type test struct {
@@ -440,6 +483,7 @@ func TestJobUpdateProxy(t *testing.T) {
 				tc.mutators,
 				tc.validators,
 				hclog.NewNullLogger(),
+				false,
 			)
 			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
@@ -540,6 +584,7 @@ func TestAdmissionControllerErrors(t *testing.T) {
 		[]admissionctrl.JobMutator{},
 		[]admissionctrl.JobValidator{validator},
 		hclog.NewNullLogger(),
+		false,
 	)
 	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
 
@@ -657,7 +702,7 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			validators, err := createValidators(c, hclog.NewNullLogger())
+			validators, _, err := createValidators(c, hclog.NewNullLogger())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -715,7 +760,7 @@ func TestNotationValidatorConfig(t *testing.T) {
 		},
 	}
 
-	validators, err := createValidators(c, hclog.NewNullLogger())
+	validators, _, err := createValidators(c, hclog.NewNullLogger())
 
 	assert.NoError(t, err)
 	assert.IsType(t, &validator.NotationValidator{}, validators[0])
@@ -776,7 +821,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, err := createMutators(c, hclog.NewNullLogger())
+			mutators, _, err := createMutators(c, hclog.NewNullLogger())
 
 			if tc.wantErr {
 				assert.Error(t, err)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/config"
 	"net/http"
 	"net/url"
 
@@ -47,6 +48,17 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	req, err := http.NewRequest(j.method, j.endpoint.String(), bytes.NewBuffer(jobJson))
 	if err != nil {
 		return nil, nil, err
+	}
+	// Add context headers if available
+	if ctx := req.Context(); ctx != nil {
+		if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
+			if reqCtx.ClientIP != "" {
+				req.Header.Set("X-Forwarded-For", reqCtx.ClientIP)
+			}
+			if reqCtx.AccessorID != "" {
+				req.Header.Set("X-Nomad-Accessor-ID", reqCtx.AccessorID)
+			}
+		}
 	}
 	res, err := httpClient.Do(req)
 	if err != nil {
