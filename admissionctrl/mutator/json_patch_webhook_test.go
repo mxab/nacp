@@ -2,6 +2,7 @@ package mutator
 
 import (
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -95,7 +96,8 @@ func TestJsonPatchMutator(t *testing.T) {
 			mutator, err := NewJsonPatchWebhookMutator(tc.name, webhookServer.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
 			require.NoError(t, err)
 
-			job, warnings, err := mutator.Mutate(tc.job)
+			payload := &types.Payload{Job: tc.job}
+			job, warnings, err := mutator.Mutate(payload)
 
 			require.True(t, webhookCalled)
 			assert.Equal(t, tc.wantErr, err)

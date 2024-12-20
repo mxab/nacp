@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"net/http"
 	"net/url"
 
@@ -36,18 +37,30 @@ func NewJsonPatchWebhookMutator(name string, endpoint string, method string, log
 		method:   method,
 	}, nil
 }
-func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
-
-	jobJson, err := json.Marshal(job)
+func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, []error, error) {
+	jobJson, err := json.Marshal(payload)
 	if err != nil {
 		return nil, nil, err
 	}
-	httpClient := &http.Client{}
 
 	req, err := http.NewRequest(j.method, j.endpoint.String(), bytes.NewBuffer(jobJson))
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Add context headers and body if available
+	if payload.Context != nil {
+		// Add standard headers for backward compatibility
+		if payload.Context.ClientIP != "" {
+			req.Header.Set("X-Forwarded-For", payload.Context.ClientIP) // Standard proxy header
+			req.Header.Set("NACP-Client-IP", payload.Context.ClientIP)  // NACP specific
+		}
+		if payload.Context.AccessorID != "" {
+			req.Header.Set("NACP-Accessor-ID", payload.Context.AccessorID)
+		}
+	}
+
+	httpClient := &http.Client{}
 	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, nil, err
@@ -61,7 +74,7 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 
 	var warnings []error
 	if len(patchResponse.Warnings) > 0 {
-		j.logger.Debug("Got errors from rule", "rule", j.name, "warnings", patchResponse.Warnings, "job", job.ID)
+		j.logger.Debug("Got errors from rule", "rule", j.name, "warnings", patchResponse.Warnings, "job", payload.Job.ID)
 		for _, warning := range patchResponse.Warnings {
 			warnings = append(warnings, fmt.Errorf(warning))
 		}
@@ -75,7 +88,7 @@ func (j *JsonPatchWebhookMutator) Mutate(job *api.Job) (*api.Job, []error, error
 	if err != nil {
 		return nil, nil, err
 	}
-	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson), "job", job.ID)
+	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson), "job", payload.Job.ID)
 	patchedJobJson, err := patch.Apply(jobJson)
 
 	if err != nil {

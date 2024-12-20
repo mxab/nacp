@@ -2,6 +2,7 @@ package mutator
 
 import (
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
@@ -90,7 +91,8 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotOut, gotWarnings, err := tt.j.Mutate(tt.args.job)
+			payload := &types.Payload{Job: tt.args.job}
+			gotOut, gotWarnings, err := tt.j.Mutate(payload)
 			require.Equal(t, tt.wantErr, err != nil, "JSONPatcher.Mutate() error = %v, wantErr %v", err, tt.wantErr)
 
 			assert.Equal(t, tt.wantWarnings, gotWarnings, "JSONPatcher.Mutate() gotWarnings = %v, want %v", gotWarnings, tt.wantWarnings)

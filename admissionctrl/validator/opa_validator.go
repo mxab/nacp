@@ -3,12 +3,11 @@ package validator
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
+	"github.com/mxab/nacp/admissionctrl/types"
 )
 
 type OpaValidator struct {
@@ -17,18 +16,17 @@ type OpaValidator struct {
 	name   string
 }
 
-func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
+func (v *OpaValidator) Validate(payload *types.Payload) ([]error, error) {
 
 	ctx := context.TODO()
 	//iterate over rulesets and evaluate
 	allErrs := &multierror.Error{}
 	allWarnings := make([]error, 0)
 
-	v.logger.Debug("Validating job", "job", job.ID)
+	v.logger.Debug("Validating job", "job", payload.Job.ID)
 
 	// evaluate the query
-
-	results, err := v.query.Query(ctx, job)
+	results, err := v.query.Query(ctx, payload)
 
 	if err != nil {
 		return nil, err
@@ -38,7 +36,7 @@ func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 	warnings := results.GetWarnings()
 
 	if len(warnings) > 0 {
-		v.logger.Debug("Got warnings from rule", "rule", v.Name(), "warnings", warnings, "job", job.ID)
+		v.logger.Debug("Got warnings from rule", "rule", v.Name(), "warnings", warnings, "job", payload.Job.ID)
 		for _, warn := range warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, v.Name()))
 		}
@@ -47,7 +45,7 @@ func (v *OpaValidator) Validate(job *api.Job) ([]error, error) {
 	errors := results.GetErrors()
 
 	if len(errors) > 0 { // no errors is ok
-		v.logger.Debug("Got errors from rule", "rule", v.Name(), "errors", errors, "job", job.ID)
+		v.logger.Debug("Got errors from rule", "rule", v.Name(), "errors", errors, "job", payload.Job.ID)
 		errsForRule := &multierror.Error{}
 		for _, err := range errors {
 			errsForRule = multierror.Append(errsForRule, fmt.Errorf("%s (%s)", err, v.Name()))

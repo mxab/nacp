@@ -1,20 +1,23 @@
 package testutil
 
-import "github.com/hashicorp/nomad/api"
+import (
+	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/types"
+)
 
 type HelloMutator struct {
 	MutatorName string
 }
 
-func (h *HelloMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
+func (h *HelloMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
 
-	if job.Meta == nil {
-		job.Meta = make(map[string]string)
+	if payload.Job.Meta == nil {
+		payload.Job.Meta = make(map[string]string)
 	}
 
-	job.Meta["hello"] = "world"
+	payload.Job.Meta["hello"] = "world"
 
-	return job, nil, nil
+	return payload.Job, nil, nil
 }
 
 func (h *HelloMutator) Name() string {

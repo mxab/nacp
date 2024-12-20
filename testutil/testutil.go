@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"encoding/json"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"io"
 	"os"
 	"path"
@@ -54,8 +55,8 @@ type MockMutator struct {
 	mock.Mock
 }
 
-func (m *MockMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
-	args := m.Called(job)
+func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+	args := m.Called(payload)
 	return args.Get(0).(*api.Job), args.Get(1).([]error), args.Error(2)
 }
 func (m *MockMutator) Name() string {
@@ -66,8 +67,8 @@ type MockValidator struct {
 	mock.Mock
 }
 
-func (m *MockValidator) Validate(job *api.Job) (warnings []error, err error) {
-	args := m.Called(job)
+func (m *MockValidator) Validate(payload *types.Payload) (warnings []error, err error) {
+	args := m.Called(payload)
 	return args.Get(0).([]error), args.Error(1)
 }
 func (m *MockValidator) Name() string {

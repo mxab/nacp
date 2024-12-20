@@ -3,6 +3,7 @@ package mutator
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -74,7 +75,8 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				endpoint: endpoint,
 				method:   tt.fields.method,
 			}
-			gotOut, gotWarnings, err := w.Mutate(tt.args.job)
+			payload := &types.Payload{Job: tt.args.job}
+			gotOut, gotWarnings, err := w.Mutate(payload)
 			assert.True(t, endpointCalled, "Ensure endpoint was called")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WebhookMutator.Mutate() error = %v, wantErr %v", err, tt.wantErr)

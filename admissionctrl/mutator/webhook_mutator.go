@@ -3,6 +3,8 @@ package mutator
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/mxab/nacp/admissionctrl/types"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -15,18 +17,30 @@ type WebhookMutator struct {
 	method   string
 }
 
-func (w *WebhookMutator) Mutate(job *api.Job) (out *api.Job, warnings []error, err error) {
-
-	data, err := json.Marshal(job)
+func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+	data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, nil, err
 	}
-	buffer := bytes.NewBuffer(data)
-
-	req, err := http.NewRequest(w.method, w.endpoint.String(), buffer)
+	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Add context headers and body if available
+	if payload.Context != nil {
+		// Add standard headers for backward compatibility
+		if payload.Context.ClientIP != "" {
+			req.Header.Set("X-Forwarded-For", payload.Context.ClientIP) // Standard proxy header
+			req.Header.Set("NACP-Client-IP", payload.Context.ClientIP)  // NACP specific
+		}
+		if payload.Context.AccessorID != "" {
+			req.Header.Set("NACP-Accessor-ID", payload.Context.AccessorID)
+		}
+	}
+
+	req.Body = io.NopCloser(bytes.NewBuffer(data))
+	req.ContentLength = int64(len(data))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

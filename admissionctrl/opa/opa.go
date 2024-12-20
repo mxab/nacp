@@ -3,9 +3,9 @@ package opa
 import (
 	"context"
 	"errors"
+	types2 "github.com/mxab/nacp/admissionctrl/types"
 	"os"
 
-	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
@@ -60,8 +60,8 @@ func CreateQuery(filename string, query string, ctx context.Context, verifier no
 	}, nil
 }
 
-func (q *OpaQuery) Query(ctx context.Context, input *api.Job) (*OpaQueryResult, error) {
-	resultSet, err := q.query.Eval(ctx, rego.EvalInput(input))
+func (q *OpaQuery) Query(ctx context.Context, payload *types2.Payload) (*OpaQueryResult, error) {
+	resultSet, err := q.query.Eval(ctx, rego.EvalInput(payload))
 	if err != nil {
 		return nil, err
 	}
