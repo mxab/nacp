@@ -6,6 +6,7 @@ package admissionctrl
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
@@ -18,37 +19,39 @@ type AdmissionController interface {
 
 type JobMutator interface {
 	AdmissionController
-	Mutate(*api.Job) (out *api.Job, warnings []error, err error)
+	Mutate(*types.Payload) (*api.Job, []error, error)
 }
 
 type JobValidator interface {
 	AdmissionController
-	Validate(*api.Job) (warnings []error, err error)
+	Validate(*types.Payload) (warnings []error, err error)
 }
 
 type JobHandler struct {
-	mutators   []JobMutator
-	validators []JobValidator
-	logger     hclog.Logger
+	mutators     []JobMutator
+	validators   []JobValidator
+	resolveToken bool
+	logger       hclog.Logger
 }
 
-func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclog.Logger) *JobHandler {
+func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger hclog.Logger, resolverToken bool) *JobHandler {
 	return &JobHandler{
-		mutators:   mutators,
-		validators: validators,
-		logger:     logger,
+		mutators:     mutators,
+		validators:   validators,
+		logger:       logger,
+		resolveToken: resolverToken,
 	}
 }
 
-func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warnings []error, err error) {
+func (j *JobHandler) ApplyAdmissionControllers(payload *types.Payload) (out *api.Job, warnings []error, err error) {
 	// Mutators run first before validators, so validators view the final rendered job.
 	// So, mutators must handle invalid jobs.
-	out, warnings, err = j.AdmissionMutators(job)
+	out, warnings, err = j.AdmissionMutators(payload)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	validateWarnings, err := j.AdmissionValidators(job)
+	validateWarnings, err := j.AdmissionValidators(payload)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,13 +60,14 @@ func (j *JobHandler) ApplyAdmissionControllers(job *api.Job) (out *api.Job, warn
 	return out, warnings, nil
 }
 
-// admissionMutator returns an updated job as well as warnings or an error.
-func (j *JobHandler) AdmissionMutators(job *api.Job) (_ *api.Job, warnings []error, err error) {
+// AdmissionMutators returns an updated job as well as warnings or an error.
+func (j *JobHandler) AdmissionMutators(payload *types.Payload) (job *api.Job, warnings []error, err error) {
 	var w []error
-	j.logger.Debug("applying job mutators", "mutators", len(j.mutators), "job", job.ID)
+	job = payload.Job
+	j.logger.Debug("applying job mutators", "mutators", len(j.mutators), "job", payload.Job.ID)
 	for _, mutator := range j.mutators {
-		j.logger.Debug("applying job mutator", "mutator", mutator.Name(), "job", job.ID)
-		job, w, err = mutator.Mutate(job)
+		j.logger.Debug("applying job mutator", "mutator", mutator.Name(), "job", payload.Job.ID)
+		job, w, err = mutator.Mutate(payload)
 		j.logger.Trace("job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error in job mutator %s: %v", mutator.Name(), err)
@@ -75,17 +79,17 @@ func (j *JobHandler) AdmissionMutators(job *api.Job) (_ *api.Job, warnings []err
 
 // AdmissionValidators returns a slice of validation warnings and a multierror
 // of validation failures.
-func (j *JobHandler) AdmissionValidators(origJob *api.Job) ([]error, error) {
+func (j *JobHandler) AdmissionValidators(payload *types.Payload) ([]error, error) {
 	// ensure job is not mutated
-	j.logger.Debug("applying job validators", "validators", len(j.validators), "job", origJob.ID)
-	job := copyJob(origJob)
+	j.logger.Debug("applying job validators", "validators", len(j.validators), "job", payload.Job.ID)
+	job := copyJob(payload.Job)
 
 	var warnings []error
 	var errs error
 
 	for _, validator := range j.validators {
 		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
-		w, err := validator.Validate(job)
+		w, err := validator.Validate(payload)
 		j.logger.Trace("job validate results", "validator", validator.Name(), "warnings", w, "error", err)
 		if err != nil {
 			errs = multierror.Append(errs, err)
@@ -95,6 +99,10 @@ func (j *JobHandler) AdmissionValidators(origJob *api.Job) ([]error, error) {
 
 	return warnings, errs
 
+}
+
+func (j *JobHandler) ResolveToken() bool {
+	return j.resolveToken
 }
 
 func copyJob(job *api.Job) *api.Job {

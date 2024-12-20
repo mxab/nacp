@@ -3,6 +3,7 @@ package validator
 import (
 	"context"
 	"errors"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
@@ -122,9 +123,13 @@ func TestNotationValidatorValidate(t *testing.T) {
 				})
 			}
 
-			errors, err := notationValidator.Validate(&api.Job{
-				TaskGroups: groups,
-			})
+			payload := &types.Payload{
+				Job: &api.Job{
+					TaskGroups: groups,
+				},
+			}
+
+			errors, err := notationValidator.Validate(payload)
 			require.Equal(t, tc.expectedErrors, errors)
 			require.NoError(t, err)
 

@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsimple"
+	"github.com/hashicorp/nomad/api"
 )
 
 type Webhook struct {
@@ -16,18 +17,27 @@ type OpaRule struct {
 }
 
 type Validator struct {
-	Type    string   `hcl:"type,label"`
-	Name    string   `hcl:"name,label"`
-	OpaRule *OpaRule `hcl:"opa_rule,block"`
-	Webhook *Webhook `hcl:"webhook,block"`
+	Type         string   `hcl:"type,label"`
+	Name         string   `hcl:"name,label"`
+	OpaRule      *OpaRule `hcl:"opa_rule,block"`
+	Webhook      *Webhook `hcl:"webhook,block"`
+	ResolveToken bool     `hcl:"resolve_token,optional"`
 
 	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
 type Mutator struct {
-	Type    string   `hcl:"type,label"`
-	Name    string   `hcl:"name,label"`
-	OpaRule *OpaRule `hcl:"opa_rule,block"`
-	Webhook *Webhook `hcl:"webhook,block"`
+	Type         string   `hcl:"type,label"`
+	Name         string   `hcl:"name,label"`
+	OpaRule      *OpaRule `hcl:"opa_rule,block"`
+	Webhook      *Webhook `hcl:"webhook,block"`
+	ResolveToken bool     `hcl:"resolve_token,optional"`
+}
+
+type RequestContext struct {
+	ClientIP     string        `json:"clientIP"`
+	AccessorID   string        `json:"accessorID"`
+	ResolveToken bool          `json:"resolveToken"`
+	TokenInfo    *api.ACLToken `json:"tokenInfo,omitempty"`
 }
 
 type NomadServerTLS struct {

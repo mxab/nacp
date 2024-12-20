@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
+	"github.com/mxab/nacp/admissionctrl/types"
 )
 
 type OpaJsonPatchMutator struct {
@@ -19,11 +19,11 @@ type OpaJsonPatchMutator struct {
 	name   string
 }
 
-func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
+func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, []error, error) {
 	allWarnings := make([]error, 0)
 	ctx := context.TODO()
 
-	results, err := j.query.Query(ctx, job)
+	results, err := j.query.Query(ctx, payload)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,7 +31,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	errors := results.GetErrors()
 
 	if len(errors) > 0 {
-		j.logger.Debug("Got errors from rule", "rule", j.Name(), "errors", errors, "job", job.ID)
+		j.logger.Debug("Got errors from rule", "rule", j.Name(), "errors", errors, "job", payload.Job.ID)
 		allErrors := multierror.Append(nil)
 		for _, warn := range errors {
 			allErrors = multierror.Append(allErrors, fmt.Errorf("%s (%s)", warn, j.Name()))
@@ -42,7 +42,7 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	warnings := results.GetWarnings()
 
 	if len(warnings) > 0 {
-		j.logger.Debug("Got warnings from rule", "rule", j.Name(), "warnings", warnings, "job", job.ID)
+		j.logger.Debug("Got warnings from rule", "rule", j.Name(), "warnings", warnings, "job", payload.Job.ID)
 		for _, warn := range warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, j.Name()))
 		}
@@ -57,8 +57,8 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON), "job", job.ID)
-	jobJson, err := json.Marshal(job)
+	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON), "job", payload.Job.ID)
+	jobJson, err := json.Marshal(payload.Job)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,9 +72,9 @@ func (j *OpaJsonPatchMutator) Mutate(job *api.Job) (*api.Job, []error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	job = &patchedJob
+	payload.Job = &patchedJob
 
-	return job, allWarnings, nil
+	return payload.Job, allWarnings, nil
 }
 func (j *OpaJsonPatchMutator) Name() string {
 	return j.name

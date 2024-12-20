@@ -3,6 +3,7 @@ package validator
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -18,11 +19,6 @@ import (
 // WebhookValidator is a validator that uses a webhook to validate a job.
 
 func TestWebhookValidator(t *testing.T) {
-	//calls and endpoint with a job, returns a json response with result.errors and result.warnings fields
-	//if result.errors is not empty, return an error
-	//if result.warnings is not empty, return a all warnings
-
-	//Setup Table test, with different responses
 	tt := []struct {
 		name         string
 		endpointPath string
@@ -77,31 +73,31 @@ func TestWebhookValidator(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				webhookCalled = true
 
-				expectedJobJsonData, err := json.Marshal(&api.Job{ID: &tc.name})
+				var payload types.Payload
+				jsonData, err := io.ReadAll(r.Body)
+				require.NoError(t, err)
+				err = json.Unmarshal(jsonData, &payload)
 				require.NoError(t, err)
 
+				expectedJob := &api.Job{ID: &tc.name}
+				assert.Equal(t, expectedJob.ID, payload.Job.ID)
 				assert.Equal(t, tc.endpointPath, r.URL.Path)
 				assert.Equal(t, tc.method, r.Method)
-				data, err := io.ReadAll(r.Body)
 
-				require.NoError(t, err)
-				assert.JSONEq(t, string(expectedJobJsonData), string(data))
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte(tc.response))
-
 			}))
 			defer server.Close()
-			//Test
 
 			validator, err := NewWebhookValidator("test", server.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
 			require.NoError(t, err)
 
-			warnings, err := validator.Validate(&api.Job{ID: &tc.name})
+			payload := &types.Payload{Job: &api.Job{ID: &tc.name}}
+			warnings, err := validator.Validate(payload)
 
 			require.True(t, webhookCalled, "webhook was not called")
 			assert.Equal(t, tc.wantErr, err)
 			assert.Equal(t, tc.wantWarnings, warnings)
 		})
 	}
-
 }

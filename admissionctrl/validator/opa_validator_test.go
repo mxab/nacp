@@ -1,6 +1,8 @@
 package validator
 
 import (
+	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
@@ -14,7 +16,7 @@ func TestOpaValidator(t *testing.T) {
 	// create a context with a timeout
 
 	// create a new OPA object
-	opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
+	opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
 		"errors = data.prefixed_policies.errors", hclog.NewNullLogger(), nil)
 
 	require.Equal(t, nil, err)
@@ -38,7 +40,8 @@ func TestOpaValidator(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			job := testutil.ReadJob(t, tt.jobFile)
-			_, err := opa.Validate(job)
+			payload := &types.Payload{Job: job}
+			_, err := opaValidator.Validate(payload)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 
 		})
@@ -90,13 +93,108 @@ func TestOpaValidatorSimple(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			opa, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/errors.rego"),
+			opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/errors.rego"),
 				tt.query, hclog.NewNullLogger(), nil)
 			require.NoError(t, err)
-			warnings, err := opa.Validate(dummyJob)
+			payload := &types.Payload{Job: dummyJob}
+			warnings, err := opaValidator.Validate(payload)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			assert.Len(t, warnings, tt.wantWarnings, "OpaValidator.Validate() warnings = %v, wantWarnings %v", warnings, tt.wantWarnings)
 		})
 	}
 
+}
+
+func TestOpaValidatorContext(t *testing.T) {
+	tests := []struct {
+		name         string
+		query        string
+		payload      *types.Payload
+		wantErr      bool
+		wantWarnings int
+	}{
+		{
+			name:  "reject job from specific IP",
+			query: `errors = data.context.errors`,
+			payload: &types.Payload{
+				Job: &api.Job{},
+				Context: &config.RequestContext{
+					ClientIP: "192.168.1.10",
+				},
+			},
+			wantErr:      true,
+			wantWarnings: 0,
+		},
+		{
+			name:  "allow job from other IP",
+			query: `errors = data.context.errors`,
+			payload: &types.Payload{
+				Job: &api.Job{},
+				Context: &config.RequestContext{
+					ClientIP: "192.168.1.20",
+				},
+			},
+			wantErr:      false,
+			wantWarnings: 0,
+		},
+		{
+			name:  "reject job with forbidden policy",
+			query: `errors = data.context.errors`,
+			payload: &types.Payload{
+				Job: &api.Job{},
+				Context: &config.RequestContext{
+					TokenInfo: &api.ACLToken{
+						Policies: []string{"nomad_reject", "other_policy"},
+					},
+				},
+			},
+			wantErr:      true,
+			wantWarnings: 0,
+		},
+		{
+			name:  "warn job with warn policy",
+			query: `warnings = data.context.warnings`,
+			payload: &types.Payload{
+				Job: &api.Job{},
+				Context: &config.RequestContext{
+					TokenInfo: &api.ACLToken{
+						Policies: []string{"nomad_warn", "other_policy"},
+					},
+				},
+			},
+			wantErr:      false,
+			wantWarnings: 1,
+		},
+		{
+			name:  "allow job with normal policies",
+			query: `errors = data.context.errors`,
+			payload: &types.Payload{
+				Job: &api.Job{},
+				Context: &config.RequestContext{
+					TokenInfo: &api.ACLToken{
+						Policies: []string{"normal_policy"},
+					},
+				},
+			},
+			wantErr:      false,
+			wantWarnings: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validator, err := NewOpaValidator(
+				"test_context_validator",
+				testutil.Filepath(t, "opa/validators/context.rego"),
+				tt.query,
+				hclog.NewNullLogger(),
+				nil,
+			)
+			require.NoError(t, err)
+
+			warnings, err := validator.Validate(tt.payload)
+			assert.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			assert.Len(t, warnings, tt.wantWarnings, "OpaValidator.Validate() warnings = %v, wantWarnings %v", warnings, tt.wantWarnings)
+		})
+	}
 }

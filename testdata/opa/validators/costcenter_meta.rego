@@ -12,7 +12,7 @@ errors contains msg if {
 	# of the keys are missing, this statement will be true.
     
     
-	not input.Meta.costcenter
+	not input.job.Meta.costcenter
     trace("Costcenter code is missing")
 
 	msg := "Every job must have a costcenter metadata label"
@@ -21,7 +21,7 @@ errors contains msg if {
 # This definition checks if the costcenter label is formatted appropriately. Each rule
 # definition contributes to the set of error messages.
 errors contains msg if {
-	value := input.Meta.costcenter
+	value := input.job.Meta.costcenter
     
 	not startswith(value, "cccode-")
 	msg := sprintf("Costcenter code must start with `cccode-`; found `%v`", [value])

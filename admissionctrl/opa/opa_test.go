@@ -3,6 +3,7 @@ package opa
 import (
 	"context"
 	"errors"
+	"github.com/mxab/nacp/admissionctrl/types"
 	"testing"
 
 	"github.com/hashicorp/nomad/api"
@@ -26,7 +27,8 @@ func TestOpa(t *testing.T) {
 	assert.NotNil(t, query, "Query is not nil")
 
 	job := &api.Job{}
-	result, err := query.Query(ctx, job)
+	payload := &types.Payload{Job: job}
+	result, err := query.Query(ctx, payload)
 	assert.Nil(t, err, "No error executing query")
 	assert.NotNil(t, result, "Result is not nil")
 
@@ -58,7 +60,8 @@ func TestFailOnEmptyResultSet(t *testing.T) {
 	assert.NotNil(t, query, "Query is not nil")
 
 	job := &api.Job{}
-	result, err := query.Query(ctx, job)
+	payload := &types.Payload{Job: job}
+	result, err := query.Query(ctx, payload)
 	assert.Error(t, err, "Error executing query")
 	assert.Nil(t, result, "Result is nil")
 
@@ -75,7 +78,8 @@ func TestReturnsEmptyIfNotExisting(t *testing.T) {
 	require.Nil(t, err, "No error creating query")
 	assert.NotNil(t, query, "Query is not nil")
 	job := &api.Job{}
-	result, err := query.Query(ctx, job)
+	payload := &types.Payload{Job: job}
+	result, err := query.Query(ctx, payload)
 	assert.Nil(t, err, "No error executing query")
 	assert.NotNil(t, result, "Result is not nil")
 
@@ -153,7 +157,8 @@ func TestNotationImageValidation(t *testing.T) {
 				},
 			}
 			require.NoError(t, err, "No error creating query")
-			result, err := query.Query(ctx, job)
+			payload := &types.Payload{Job: job}
+			result, err := query.Query(ctx, payload)
 			require.NoError(t, err, "No error executing query")
 			require.NotNil(t, result, "Result is not nil")
 

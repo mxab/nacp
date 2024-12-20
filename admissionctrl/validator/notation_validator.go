@@ -2,9 +2,9 @@ package validator
 
 import (
 	"context"
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/notation"
 )
 
@@ -14,8 +14,8 @@ type NotationValidator struct {
 	verifier notation.ImageVerifier
 }
 
-func (v *NotationValidator) Validate(job *api.Job) ([]error, error) {
-	for _, tg := range job.TaskGroups {
+func (v *NotationValidator) Validate(payload *types.Payload) ([]error, error) {
+	for _, tg := range payload.Job.TaskGroups {
 		for _, task := range tg.Tasks {
 			// check if the task driver is docker
 			// should we consider podman?
