@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/mxab/nacp/config"
 	"net/http"
 	"net/url"
 
@@ -33,6 +34,17 @@ func (w *WebhookValidator) Validate(job *api.Job) ([]error, error) {
 	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
+	}
+	// Add context headers if available
+	if ctx := req.Context(); ctx != nil {
+		if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
+			if reqCtx.ClientIP != "" {
+				req.Header.Set("X-Forwarded-For", reqCtx.ClientIP)
+			}
+			if reqCtx.AccessorID != "" {
+				req.Header.Set("X-Nomad-Accessor-ID", reqCtx.AccessorID)
+			}
+		}
 	}
 
 	resp, err := http.DefaultClient.Do(req)

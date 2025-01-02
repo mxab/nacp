@@ -16,18 +16,25 @@ type OpaRule struct {
 }
 
 type Validator struct {
-	Type    string   `hcl:"type,label"`
-	Name    string   `hcl:"name,label"`
-	OpaRule *OpaRule `hcl:"opa_rule,block"`
-	Webhook *Webhook `hcl:"webhook,block"`
+	Type         string   `hcl:"type,label"`
+	Name         string   `hcl:"name,label"`
+	OpaRule      *OpaRule `hcl:"opa_rule,block"`
+	Webhook      *Webhook `hcl:"webhook,block"`
+	ResolveToken bool     `hcl:"resolve_token,optional"`
 
 	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
 type Mutator struct {
-	Type    string   `hcl:"type,label"`
-	Name    string   `hcl:"name,label"`
-	OpaRule *OpaRule `hcl:"opa_rule,block"`
-	Webhook *Webhook `hcl:"webhook,block"`
+	Type         string   `hcl:"type,label"`
+	Name         string   `hcl:"name,label"`
+	OpaRule      *OpaRule `hcl:"opa_rule,block"`
+	Webhook      *Webhook `hcl:"webhook,block"`
+	ResolveToken bool     `hcl:"resolve_token,optional"`
+}
+type RequestContext struct {
+	ClientIP     string
+	AccessorID   string
+	ResolveToken bool
 }
 
 type NomadServerTLS struct {
