@@ -5,9 +5,9 @@ import rego.v1
 vault_policy := "db-access"
 
 add_vault_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
-	object.get(input.TaskGroups[g].Tasks[t], "Vault", null) == null
+	object.get(input.job.TaskGroups[g].Tasks[t], "Vault", null) == null
 
 	operation := {
 		"op": "add",
@@ -23,7 +23,7 @@ add_vault_ops contains operation if {
 }
 
 add_vault_policy_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
 	operation := {
 		"op": "add",
@@ -33,9 +33,9 @@ add_vault_policy_ops contains operation if {
 }
 
 add_env_template_block_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
-	object.get(input.TaskGroups[g].Tasks[t], "Templates", null) == null
+	object.get(input.job.TaskGroups[g].Tasks[t], "Templates", null) == null
 
 	operation := {
 		"op": "add",
@@ -45,7 +45,7 @@ add_env_template_block_ops contains operation if {
 }
 
 add_env_template_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
 	operation := {
 		"op": "add",
@@ -72,7 +72,7 @@ add_env_template_ops contains operation if {
 }
 
 env_tmpl := native_tmpl if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres == "native"
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres == "native"
 
 	native_tmpl := concat("\n", [
 		"{{ range nomadService \"postgres\" }}",
@@ -88,7 +88,7 @@ env_tmpl := native_tmpl if {
 }
 
 env_tmpl := spring_boot_tmpl if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres == "springboot"
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres == "springboot"
 
 	spring_boot_tmpl := concat("\n", [
 		"{{ range nomadService \"postgres\" }}",
@@ -102,9 +102,9 @@ env_tmpl := spring_boot_tmpl if {
 }
 
 add_constaint_block_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
-	object.get(input.TaskGroups[g].Tasks[t], "Constraints", null) == null
+	object.get(input.job.TaskGroups[g].Tasks[t], "Constraints", null) == null
 
 	operation := {
 		"op": "add",
@@ -114,9 +114,9 @@ add_constaint_block_ops contains operation if {
 }
 
 add_vault_constraint_block_ops contains operation if {
-	input.TaskGroups[g].Tasks[t].Meta.postgres
+	input.job.TaskGroups[g].Tasks[t].Meta.postgres
 
-	constraints := object.get(input.TaskGroups[g].Tasks[t], "Constraints", [])
+	constraints := object.get(input.job.TaskGroups[g].Tasks[t], "Constraints", [])
 	every constraint in constraints {
 		constraint != {
 			"LTarget": "${attr.vault.version}",

@@ -7,9 +7,9 @@ import rego.v1
 # inject the same data as mentioned here: https://github.com/hashicorp/nomad/commit/fb4887505c82346a8f9046f956530058ab92e55a#diff-ad403bc14b99a07b6bf1d5599b9109113bc30d03afd88d7c007dd55f1bdb6b2cR44
 add_templates_list_ops contains op if {
 	some g, t
-	input.TaskGroups[g].Tasks[t].Meta.otel == "true"
+	input.job.TaskGroups[g].Tasks[t].Meta.otel == "true"
 
-	object.get(input.TaskGroups[g].Tasks[t], "Templates", null) == null
+	object.get(input.job.TaskGroups[g].Tasks[t], "Templates", null) == null
 
 	op := {
 		"op": "add",
@@ -22,7 +22,7 @@ add_templates_list_ops contains op if {
 
 add_otel_env_template_ops contains op if {
 	some g, t
-	input.TaskGroups[g].Tasks[t].Meta.otel == "true"
+	input.job.TaskGroups[g].Tasks[t].Meta.otel == "true"
 
 	EmbeddedTmpl := sprintf("%s=%s", ["OTEL_RESOURCE_ATTRIBUTES", concat(
 		",",
@@ -36,7 +36,7 @@ add_otel_env_template_ops contains op if {
 			"nomad.job.id={{ env \"NOMAD_JOB_ID\" }}",
 			"nomad.job.name={{ env \"NOMAD_JOB_NAME\" }}",
 			"nomad.job.parentId={{ env \"NOMAD_JOB_PARENT_ID\" }}",
-			sprintf("nomad.job.type=%s", [object.get(input, "Type", "service")]),
+			sprintf("nomad.job.type=%s", [object.get(input.job, "Type", "service")]),
 			"nomad.namespace={{ env \"NOMAD_NAMESPACE\" }}",
 			"nomad.node.id={{ env \"node.unique.id\" }}",
 			"nomad.node.name={{ env \"node.unique.name\" }}",
@@ -45,7 +45,7 @@ add_otel_env_template_ops contains op if {
 			"nomad.node.address={{ env \"attr.unique.network.ip-address\"}}",
 			"nomad.region={{ env \"node.region\" }}",
 			"nomad.task.name={{ env \"NOMAD_TASK_NAME\" }}",
-			sprintf("nomad.task.driver=%s", [input.TaskGroups[g].Tasks[t].Driver]),
+			sprintf("nomad.task.driver=%s", [input.job.TaskGroups[g].Tasks[t].Driver]),
 		],
 	)])
 	print("EmbeddedTmpl: ", EmbeddedTmpl)

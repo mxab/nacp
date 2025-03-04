@@ -6,7 +6,7 @@ import data.pginject.patch
 import rego.v1
 
 test_pginject if {
-	patch_ops := patch with input as {
+	patch_ops := patch with input as {"job": {
 		"TaskGroups": [{
 			"Name": "app",
 			"Tasks": [{
@@ -15,9 +15,7 @@ test_pginject if {
 			}],
 		}],
 		"Type": "service",
-	}
-
-
+	}}
 	count(patch_ops) == 6
 
 	# test each entry of patchops

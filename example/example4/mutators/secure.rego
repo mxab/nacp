@@ -3,9 +3,9 @@ package secure
 import future.keywords
 
 patch contains op if {
-	input.TaskGroups[g].Meta.secure
+	input.job.TaskGroups[g].Meta.secure
 
-	serviceToSecure := input.TaskGroups[g].Meta.secure
+	serviceToSecure := input.job.TaskGroups[g].Meta.secure
 
 	renamedService := sprintf("internal-%s", [serviceToSecure])
 
@@ -103,10 +103,10 @@ patch contains op if {
 }
 
 patch contains op if {
-	input.TaskGroups[g].Meta.secure
-	serviceToSecure := input.TaskGroups[g].Meta.secure
+	input.job.TaskGroups[g].Meta.secure
+	serviceToSecure := input.job.TaskGroups[g].Meta.secure
 	renamedService := sprintf("internal-%s", [serviceToSecure])
-	input.TaskGroups[g].Services[s].Name == serviceToSecure
+	input.job.TaskGroups[g].Services[s].Name == serviceToSecure
 
 	op := {
 		"op": "replace",
@@ -114,47 +114,48 @@ patch contains op if {
 		"value": renamedService,
 	}
 }
-patch contains op if {
-    input.TaskGroups[g].Meta.secure
-    serviceToSecure := input.TaskGroups[g].Meta.secure
-    renamedService := sprintf("internal-%s", [serviceToSecure])
-    input.TaskGroups[g].Services[s].Name == serviceToSecure
 
-    op :=     {
-        "op": "add",
-        "path": sprintf("/TaskGroups/%d/Services/%d", [g, s+1]),
-        "value": {
-            "Address": "",
-            "AddressMode": "auto",
-            "CanaryMeta": null,
-            "CanaryTags": null,
-            "Checks": null,
-            "Connect": null,
-            "EnableTagOverride": false,
-            "Meta": null,
-            "Name": serviceToSecure,
-            "Namespace": "default",
-            "OnUpdate": "require_healthy",
-            "PortLabel": "auth",
-            "Provider": "nomad",
-            "TaggedAddresses": null,
-            "Tags": null,
-            "TaskName": ""
-        }
-    }
+patch contains op if {
+	input.job.TaskGroups[g].Meta.secure
+	serviceToSecure := input.job.TaskGroups[g].Meta.secure
+	renamedService := sprintf("internal-%s", [serviceToSecure])
+	input.job.TaskGroups[g].Services[s].Name == serviceToSecure
+
+	op := {
+		"op": "add",
+		"path": sprintf("/TaskGroups/%d/Services/%d", [g, s + 1]),
+		"value": {
+			"Address": "",
+			"AddressMode": "auto",
+			"CanaryMeta": null,
+			"CanaryTags": null,
+			"Checks": null,
+			"Connect": null,
+			"EnableTagOverride": false,
+			"Meta": null,
+			"Name": serviceToSecure,
+			"Namespace": "default",
+			"OnUpdate": "require_healthy",
+			"PortLabel": "auth",
+			"Provider": "nomad",
+			"TaggedAddresses": null,
+			"Tags": null,
+			"TaskName": "",
+		},
+	}
 }
 
 patch contains op if {
-    input.TaskGroups[g].Meta.secure
+	input.job.TaskGroups[g].Meta.secure
 
-    op:= {
-        "op": "add",
-        "path": sprintf("/TaskGroups/%d/Networks/0/DynamicPorts/1", [g]),
-        "value": {
-            "HostNetwork": "default",
-            "Label": "auth",
-            "To": 4180,
-            "Value": 0
-        }
-    }
+	op := {
+		"op": "add",
+		"path": sprintf("/TaskGroups/%d/Networks/0/DynamicPorts/1", [g]),
+		"value": {
+			"HostNetwork": "default",
+			"Label": "auth",
+			"To": 4180,
+			"Value": 0,
+		},
+	}
 }
