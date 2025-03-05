@@ -32,7 +32,7 @@ import future.keywords
 
 patch contains ops if [
 
-   input.Name == "greeting_job"
+   input.job.Name == "greeting_job"
    ops:= {
         "op": "add",
         "path": "/Meta",
@@ -44,13 +44,13 @@ patch contains ops if [
 
 errors contains msg if {
 
-    input.Name == "silent_job"
+    input.job.Name == "silent_job"
     msg := "cannot greet"
 }
 
 warnings contains msg if {
 
-  input.Name == "had_no_coffee_yet_job"
+  input.job.Name == "had_no_coffee_yet_job"
   msg := "you should have coffee first"
 }
 ```
@@ -132,12 +132,12 @@ import future.keywords.if
 
 errors contains msg if {
 
-	not input.Meta.costcenter
+	not input.job.Meta.costcenter
 	msg := "Every job must have a costcenter metadata label"
 }
 
 errors contains msg if {
-	value := input.Meta.costcenter
+	value := input.job.Meta.costcenter
 
 	not startswith(value, "cccode-")
 	msg := sprintf("Costcenter code must start with `cccode-`; found `%v`", [value])
