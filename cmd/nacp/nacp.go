@@ -132,8 +132,6 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method)
-
 		ctx := r.Context()
 		reqCtx := &config.RequestContext{
 			ClientIP: getClientIP(r),
@@ -150,6 +148,9 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 				reqCtx.AccessorID = tokenInfo.AccessorID
 				reqCtx.TokenInfo = tokenInfo
 			}
+			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
+		} else {
+			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
 		}
 
 		// Store context
