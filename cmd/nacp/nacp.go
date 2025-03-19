@@ -88,7 +88,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to resolve token: %s", resp.Status)
+		return nil, fmt.Errorf("unexpected status code: %s", resp.Status)
 	}
 
 	var aclToken api.ACLToken
@@ -142,12 +142,16 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			tokenInfo, err := resolveTokenAccessor(transport, nomadAddress, token)
 			if err != nil {
 				appLogger.Error("Resolving token failed", "error", err)
-				writeError(w, err)
 			}
 			if tokenInfo != nil {
 				reqCtx.AccessorID = tokenInfo.AccessorID
 				reqCtx.TokenInfo = tokenInfo
 			}
+		}
+
+		// Even tho we have resolveToken set to true, the initial connection will be issued without a token for the auth
+		// so it's better to validate whether it's populated or not
+		if reqCtx.TokenInfo != nil {
 			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
 		} else {
 			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
