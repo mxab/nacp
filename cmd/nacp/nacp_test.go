@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"compress/gzip"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -15,9 +17,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
-
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/hashicorp/nomad/helper/tlsutil"
@@ -26,13 +26,13 @@ import (
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/otel"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-// rewrite the test above as table driven test
 func TestProxy(t *testing.T) {
 
 	type test struct {
@@ -391,11 +391,11 @@ func TestProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				tc.resolveToken,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, hclog.NewNullLogger(), proxyTransport)
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
@@ -479,10 +479,10 @@ func TestJobUpdateProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				false,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -511,13 +511,13 @@ func buildNomadClient(t *testing.T, proxyServer *httptest.Server) *api.Client {
 func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 
 	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf(warning)}, nil)
+	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
 	return validator
 }
 func mockValidatorReturningError(err string) admissionctrl.JobValidator {
 
 	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf(err))
+	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
 	return validator
 }
 
@@ -580,10 +580,10 @@ func TestAdmissionControllerErrors(t *testing.T) {
 	jobHandler := admissionctrl.NewJobHandler(
 		[]admissionctrl.JobMutator{},
 		[]admissionctrl.JobValidator{validator},
-		hclog.NewNullLogger(),
+		slog.New(slog.DiscardHandler),
 		false,
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 
@@ -609,7 +609,7 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 }
 
 func TestDefaultBuildServer(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := buildConfig(logger)
 	server, err := buildServer(c, logger)
 	assert.NoError(t, err)
@@ -618,7 +618,7 @@ func TestDefaultBuildServer(t *testing.T) {
 
 }
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
 	_, err := buildServer(c, logger)
@@ -626,7 +626,7 @@ func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
 
 }
 func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
@@ -635,7 +635,7 @@ func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
@@ -699,7 +699,7 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			validators, _, err := createValidators(c, hclog.NewNullLogger())
+			validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -757,7 +757,7 @@ func TestNotationValidatorConfig(t *testing.T) {
 		},
 	}
 
-	validators, _, err := createValidators(c, hclog.NewNullLogger())
+	validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
 
 	assert.NoError(t, err)
 	assert.IsType(t, &validator.NotationValidator{}, validators[0])
@@ -818,7 +818,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, _, err := createMutators(c, hclog.NewNullLogger())
+			mutators, _, err := createMutators(c, slog.New(slog.DiscardHandler))
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -937,5 +937,144 @@ func writeTLSStuff(t *testing.T, name, data string) {
 	t.Helper()
 	if err := file.WriteAtomicWithPerms(name, []byte(data), 0755, 0600); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestOtelInstrumentation(t *testing.T) {
+
+	type test struct {
+		name string
+
+		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
+		wantNomadRequestJson  string
+		wantProxyResponse     interface{}
+		nomadResponse         string
+		nomadResponseEncoding string
+		//	responseWarnings []error
+		validators []admissionctrl.JobValidator
+		mutators   []admissionctrl.JobMutator
+	}
+
+	tests := []test{
+		{
+
+			name: "create job adds warnings",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
+			},
+
+			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				Warnings: "1 warning:\n\n* some warning",
+			},
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+
+			_, logConsumer := testutil.LaunchCollector(t)
+
+			ctx := t.Context()
+			shutdown, err := otel.SetupOTelSDK(ctx, config.OtelConfig{
+				Enabled: true,
+				Logging: &config.LoggingConfig{
+					Exporter: "otlp",
+				},
+				Metrics: &config.MetricsConfig{
+					Exporter: "otlp",
+				},
+				Tracing: &config.TracingConfig{
+					Exporter: "otlp",
+				},
+			})
+			require.NoError(t, err)
+
+			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+
+				jsonData, err := io.ReadAll(req.Body)
+				require.NoError(t, err)
+				assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
+
+				if tc.nomadResponseEncoding == "gzip" {
+					rw.Header().Set("Content-Encoding", "gzip")
+					rw.WriteHeader(http.StatusOK)
+					gzipWriter := gzip.NewWriter(rw)
+					defer gzipWriter.Close()
+					gzipWriter.Write([]byte(tc.nomadResponse))
+				} else {
+					rw.WriteHeader(http.StatusOK)
+					rw.Write([]byte(tc.nomadResponse))
+				}
+			}))
+			defer nomadDummy.Close()
+
+			nomadURL, err := url.Parse(nomadDummy.URL)
+			require.NoError(t, err)
+
+			proxyTransport := http.DefaultTransport.(*http.Transport).Clone()
+			jobHandler := admissionctrl.NewJobHandler(
+				tc.mutators,
+				tc.validators,
+				slog.Default(),
+				false,
+			)
+
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.Default(), proxyTransport)
+			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+			defer proxyServer.Close()
+			nomadClient := buildNomadClient(t, proxyServer)
+
+			_, _, err = tc.requestSender(nomadClient)
+
+			assert.NoError(t, err, "No http call error")
+			require.NoError(t, shutdown(ctx))
+
+			fmt.Println(logConsumer)
+			msg := strings.Join(logConsumer.Stderrs, "\n")
+
+			scanner := bufio.NewScanner(strings.NewReader(msg))
+			scanner.Split(bufio.ScanLines)
+			var lines []string
+			for scanner.Scan() {
+				line := scanner.Text()
+				if line == "" {
+					continue
+				}
+				lines = append(lines, line)
+			}
+			fmt.Println(len(logConsumer.Stderrs), len(lines))
+			require.GreaterOrEqual(t, 2, len(lines), "Should have at least 2 lines")
+
+			var signals []map[string]interface{}
+			for _, line := range lines {
+				var data map[string]interface{}
+
+				err := json.Unmarshal([]byte(line), &data)
+
+				if assert.NoError(t, err) {
+
+					signals = append(signals, data)
+				}
+
+			}
+			// find log
+			var logs []map[string]interface{}
+			for _, signal := range signals {
+				if _, ok := signal["SeverityText"]; ok {
+					logs = append(logs, signal)
+				}
+			}
+			require.NotEmpty(t, logs, "Expected logs to be found")
+
+		})
 	}
 }

@@ -32,6 +32,12 @@ func TestLoadConfig(t *testing.T) {
 				},
 				Validators: []Validator{},
 				Mutators:   []Mutator{},
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						Type:  "slog",
+					},
+				},
 			},
 		},
 		{
@@ -84,7 +90,65 @@ func TestLoadConfig(t *testing.T) {
 						},
 					},
 				},
+
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						Type:  "slog",
+					},
+				},
 			},
+		},
+		{
+			name: "with slog / json logging",
+			args: args{name: "testdata/loggingjson.hcl"},
+			want: &Config{
+				Port:     port,
+				Bind:     bind,
+				LogLevel: "info",
+				Nomad: &NomadServer{
+					Address: nomadAddr,
+				},
+				Validators: []Validator{},
+				Mutators:   []Mutator{},
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						Type:  "slog",
+						SlogLogging: &SlogLogging{
+							Handler: "json",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with otel logging",
+			args: args{name: "testdata/otelconfig.hcl"},
+			want: &Config{
+				Port:     port,
+				Bind:     bind,
+				LogLevel: "info",
+				Nomad: &NomadServer{
+					Address: nomadAddr,
+				},
+				Validators: []Validator{},
+				Mutators:   []Mutator{},
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						Type:  "otel",
+					},
+					Metrics: &Metrics{
+						Enabled: true,
+					},
+					Tracing: &Tracing{
+						Enabled: true,
+					},
+				},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

@@ -3,10 +3,12 @@ package mutator
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
+
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 )
@@ -17,14 +19,14 @@ type WebhookMutator struct {
 	method   string
 }
 
-func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
 	data, err := json.Marshal(payload)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewBuffer(data))
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 
 	// Add context headers and body if available
@@ -46,15 +48,16 @@ func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, warnings 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 
 	newJob := &api.Job{}
 	err = json.NewDecoder(resp.Body).Decode(newJob)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
-	return newJob, nil, nil
+	mutated = !reflect.DeepEqual(newJob, payload.Job)
+	return newJob, mutated, nil, nil
 }
 func (w *WebhookMutator) Name() string {
 	return w.name

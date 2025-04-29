@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,7 +19,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/go-connections/nat"
-	"github.com/hashicorp/go-hclog"
 	"github.com/notaryproject/notation-core-go/signature/cose"
 	"github.com/notaryproject/notation-core-go/testhelper"
 	"github.com/notaryproject/notation-go"
@@ -166,7 +166,7 @@ func TestVerifyImage(t *testing.T) {
 			truststore := truststore.NewX509TrustStore(dir.NewSysFS(truststoreDir))
 			writeTruststore(t, truststoreDir, "valid-trust-store", testCertTuple.Cert)
 
-			imageVerifer, err := NewImageVerifier(policy(), truststore, true, 50, configFile, hclog.NewNullLogger())
+			imageVerifer, err := NewImageVerifier(policy(), truststore, true, 50, configFile, slog.New(slog.DiscardHandler))
 			require.NoError(t, err)
 
 			err = imageVerifer.VerifyImage(context.Background(), digest)

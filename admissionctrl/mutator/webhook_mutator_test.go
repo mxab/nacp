@@ -3,12 +3,13 @@ package mutator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,7 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 		fields       fields
 		args         args
 		wantOut      *api.Job
+		wantMutated  bool
 		wantWarnings []error
 		wantErr      bool
 	}{
@@ -47,6 +49,7 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 					"test": "test",
 				},
 			},
+			wantMutated: true,
 		},
 	}
 	for _, tt := range tests {
@@ -76,13 +79,14 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				method:   tt.fields.method,
 			}
 			payload := &types.Payload{Job: tt.args.job}
-			gotOut, gotWarnings, err := w.Mutate(payload)
+			gotOut, gotMutated, gotWarnings, err := w.Mutate(payload)
 			assert.True(t, endpointCalled, "Ensure endpoint was called")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WebhookMutator.Mutate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, gotOut, tt.wantOut, "Ensure job is set")
+			assert.Equal(t, tt.wantMutated, gotMutated, "WebhookMutator.Mutate() mutated = %v, want %v", gotMutated, tt.wantMutated)
 			assert.Equal(t, gotWarnings, tt.wantWarnings, "Ensure warnings are set")
 
 		})

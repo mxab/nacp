@@ -64,6 +64,27 @@ type NotationVerifierConfig struct {
 	CredentialStoreFile string `hcl:"credential_store_file,optional"`
 }
 
+type SlogLogging struct {
+	Handler string `hcl:"handler,optional"` // "json" or "text"
+}
+type Logging struct {
+	Level       string       `hcl:"level,optional"`
+	Type        string       `hcl:"type,optional"` // "slog" or "otel"
+	SlogLogging *SlogLogging `hcl:"slog,block"`
+}
+type Metrics struct {
+	Enabled bool `hcl:"enabled,optional"`
+	// only otel for now
+}
+type Tracing struct {
+	Enabled bool `hcl:"enabled,optional"`
+	// only otel for now
+}
+type Telemetry struct {
+	Logging *Logging `hcl:"logging,block"`
+	Metrics *Metrics `hcl:"metrics,block"`
+	Tracing *Tracing `hcl:"tracing,block"`
+}
 type Config struct {
 	Port int    `hcl:"port,optional"`
 	Bind string `hcl:"bind,optional"`
@@ -74,6 +95,8 @@ type Config struct {
 	Nomad      *NomadServer `hcl:"nomad,block"`
 	Validators []Validator  `hcl:"validator,block"`
 	Mutators   []Mutator    `hcl:"mutator,block"`
+
+	Telemetry *Telemetry `hcl:"telemetry,block"`
 }
 
 func DefaultConfig() *Config {
@@ -86,6 +109,12 @@ func DefaultConfig() *Config {
 		LogLevel:   "info",
 		Validators: []Validator{},
 		Mutators:   []Mutator{},
+		Telemetry: &Telemetry{
+			Logging: &Logging{
+				Level: "info",
+				Type:  "slog",
+			},
+		},
 	}
 	return c
 }

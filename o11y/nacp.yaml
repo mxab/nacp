@@ -1,0 +1,51 @@
+groups:
+  - id: metric.nacp.validator.error.count
+    type: metric
+    metric_name: nacp.validator.error.count
+    stability: stable
+    brief: "Count of all validation errors produced by the NACP."
+    instrument: counter
+    unit: "{validation_error}"
+    attributes:
+      - ref: validator.name
+        requirement_level: required
+  - id: metric.nacp.validator.warning.count
+    type: metric
+    metric_name: nacp.validator.warning.count
+    stability: stable
+    brief: "Count of all validation warnings produced by the NACP."
+    instrument: counter
+    unit: "{validation_warning}"
+    attributes:
+      - ref: validator.name
+        requirement_level: required
+  - id: metric.nacp.mutator.error.count
+    type: metric
+    metric_name: nacp.mutator.error.count
+    stability: stable
+    brief: "Count of all mutation errors produced by the NACP."
+    instrument: counter
+    unit: "{mutation_error}"
+    attributes:
+      - ref: mutator.name
+        requirement_level: required
+  - id: metric.nacp.mutator.warning.count
+    type: metric
+    metric_name: nacp.mutator.warning.count
+    stability: stable
+    brief: "Count of all mutation warnings produced by the NACP."
+    instrument: counter
+    unit: "{mutation_warning}"
+    attributes:
+      - ref: mutator.name
+        requirement_level: required
+  - id: metric.nacp.mutator.mutation.count
+    type: metric
+    metric_name: nacp.mutator.mutation.count
+    stability: stable
+    brief: "Count of all mutations produced by the NACP."
+    instrument: counter
+    unit: "{mutation}"
+    attributes:
+      - ref: mutator.name
+        requirement_level: required

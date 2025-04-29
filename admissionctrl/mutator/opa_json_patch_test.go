@@ -2,10 +2,11 @@ package mutator
 
 import (
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
@@ -21,6 +22,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		j            *OpaJsonPatchMutator
 		args         args
 		wantOut      *api.Job
+		wantMutated  bool
 		wantWarnings []error
 		wantErr      bool
 	}{
@@ -39,6 +41,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 					"hello": "world",
 				},
 			},
+			wantMutated:  true,
 			wantWarnings: []error{},
 			wantErr:      false,
 		},
@@ -52,6 +55,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 				job: &api.Job{},
 			},
 			wantOut:      &api.Job{},
+			wantMutated:  false,
 			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "testopavalidator")},
 			wantErr:      false,
 		},
@@ -72,6 +76,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 					"hello": "world",
 				},
 			},
+			wantMutated:  true,
 			wantWarnings: []error{fmt.Errorf("This is a warning message (%s)", "testopavalidator")},
 			wantErr:      false,
 		},
@@ -84,6 +89,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 			args: args{
 				job: &api.Job{},
 			},
+			wantMutated:  false,
 			wantOut:      nil,
 			wantWarnings: nil,
 			wantErr:      true,
@@ -92,11 +98,12 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			payload := &types.Payload{Job: tt.args.job}
-			gotOut, gotWarnings, err := tt.j.Mutate(payload)
+			gotOut, mutated, gotWarnings, err := tt.j.Mutate(payload)
 			require.Equal(t, tt.wantErr, err != nil, "JSONPatcher.Mutate() error = %v, wantErr %v", err, tt.wantErr)
 
 			assert.Equal(t, tt.wantWarnings, gotWarnings, "JSONPatcher.Mutate() gotWarnings = %v, want %v", gotWarnings, tt.wantWarnings)
 			assert.Equal(t, tt.wantOut, gotOut)
+			assert.Equal(t, tt.wantMutated, mutated, "JSONPatcher.Mutate() mutated = %v, want %v", mutated, tt.wantMutated)
 
 		})
 	}
@@ -104,7 +111,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 
 func newMutator(t *testing.T, filename, query string) *OpaJsonPatchMutator {
 	t.Helper()
-	m, err := NewOpaJsonPatchMutator("testopavalidator", filename, query, hclog.NewNullLogger(), nil)
+	m, err := NewOpaJsonPatchMutator("testopavalidator", filename, query, slog.New(slog.DiscardHandler), nil)
 	require.NoError(t, err)
 	return m
 }

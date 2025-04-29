@@ -2,12 +2,13 @@ package testutil
 
 import (
 	"encoding/json"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"io"
 	"os"
 	"path"
 	"runtime"
 	"testing"
+
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/mock"
@@ -55,9 +56,9 @@ type MockMutator struct {
 	mock.Mock
 }
 
-func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
 	args := m.Called(payload)
-	return args.Get(0).(*api.Job), args.Get(1).([]error), args.Error(2)
+	return args.Get(0).(*api.Job), args.Bool(1), args.Get(2).([]error), args.Error(3)
 }
 func (m *MockMutator) Name() string {
 	return "mock-mutator"
