@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/mxab/nacp/config"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,18 +38,7 @@ func TestStdoutSetup(t *testing.T) {
 	require := require.New(t)
 
 	ctx := t.Context()
-	otelShutdown, err := SetupOTelSDK(ctx, config.OtelConfig{
-		Enabled: true,
-		Logging: &config.LoggingConfig{
-			Exporter: "stdout",
-		},
-		Metrics: &config.MetricsConfig{
-			Exporter: "stdout",
-		},
-		Tracing: &config.TracingConfig{
-			Exporter: "stdout",
-		},
-	})
+	_, _, _, otelShutdown, err := SetupOTelSDKWithInmemoryOutput(ctx)
 	if err != nil {
 		t.Fatalf("failed to setup OTel SDK: %v", err)
 	}
@@ -62,6 +50,7 @@ func TestStdoutSetup(t *testing.T) {
 
 	err = otelShutdown(ctx)
 	require.NoError(err, "failed to shutdown OTel SDK")
+
 }
 func TestSetupWithReader(t *testing.T) {
 
@@ -170,18 +159,7 @@ func TestOtlpSetup(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	otelShutdown, err := SetupOTelSDK(ctx, config.OtelConfig{
-		Enabled: true,
-		Logging: &config.LoggingConfig{
-			Exporter: "otlp",
-		},
-		Metrics: &config.MetricsConfig{
-			Exporter: "otlp",
-		},
-		Tracing: &config.TracingConfig{
-			Exporter: "otlp",
-		},
-	})
+	otelShutdown, err := SetupOTelSDK(ctx, true, true, true)
 	if err != nil {
 		t.Fatalf("failed to setup OTel SDK: %v", err)
 	}

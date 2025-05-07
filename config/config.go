@@ -113,6 +113,9 @@ func DefaultConfig() *Config {
 			Logging: &Logging{
 				Level: "info",
 				Type:  "slog",
+				SlogLogging: &SlogLogging{
+					Handler: "text",
+				},
 			},
 		},
 	}

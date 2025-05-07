@@ -24,7 +24,6 @@ require (
 	github.com/oras-project/oras-credentials-go v0.4.0
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.36.0
-	github.com/zenizh/go-capturer v0.0.0-20211219060012-52ea6c8fed04
 	go.opentelemetry.io/contrib/bridges/otelslog v0.10.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.58.0
 	go.opentelemetry.io/otel v1.35.0
@@ -39,8 +38,14 @@ require (
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/sdk/log v0.11.0
 	go.opentelemetry.io/otel/sdk/metric v1.35.0
+	go.opentelemetry.io/otel/trace v1.35.0
 	golang.org/x/crypto v0.33.0
 	oras.land/oras-go/v2 v2.5.0
+)
+
+require (
+	github.com/PaesslerAG/gval v1.0.0 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 )
 
 require (
@@ -52,6 +57,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
+	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -177,14 +183,12 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/veraison/go-cose v1.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.2.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zclconf/go-cty v1.15.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.33.0 // indirect
-	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/mod v0.21.0 // indirect

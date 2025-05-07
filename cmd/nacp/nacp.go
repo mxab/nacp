@@ -114,7 +114,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 
 	return &aclToken, nil
 }
-func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, applogger *slog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
+func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, applogger *slog.Logger, transport *http.Transport, otelInstrumentation bool) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -146,7 +146,10 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		return nil
 	}
-	instrumentedProxy := otelhttp.NewHandler(proxy, "/")
+	var proxyHandler http.Handler = proxy
+	if otelInstrumentation {
+		proxyHandler = otelhttp.NewHandler(proxyHandler, "/")
+	}
 	nacpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
@@ -189,7 +192,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			writeError(w, err)
 
 		} else {
-			instrumentedProxy.ServeHTTP(w, r)
+			proxyHandler.ServeHTTP(w, r)
 		}
 
 	}
@@ -525,31 +528,68 @@ func isValidate(r *http.Request) bool {
 // https://joshsoftware.wordpress.com/2021/05/25/simple-and-powerful-reverseproxy-in-go/
 func main() {
 
+	configPtr := flag.String("config", "", "point to a nacp config file")
+	bootstrapLoggerHandlerPtr := flag.Bool("bootstrap-json-logger", false, "use json for initial logging until config is loaded")
+	flag.Parse()
+	var bootstrapLogger *slog.Logger
+	if *bootstrapLoggerHandlerPtr {
+		bootstrapLogger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	} else {
+		bootstrapLogger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	// Set up OpenTelemetry.
-	otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, config.OtelConfig{})
-	if err != nil {
-		return
+	c := buildConfig(*configPtr, bootstrapLogger)
+
+	var loggerFactory loggerFactory
+	var otelLogging bool
+	if c.Telemetry.Logging.Type == "slog" {
+		if c.Telemetry.Logging.SlogLogging.Handler == "json" {
+			slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+			loggerFactory = func(name string) *slog.Logger {
+				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
+			}
+		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
+			slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+			loggerFactory = func(_ string) *slog.Logger {
+				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
+			}
+		} else {
+			bootstrapLogger.Error("Invalid slog logging handler, using default json")
+			os.Exit(1)
+		}
+	} else if c.Telemetry.Logging.Type == "otel" {
+		otelLogging = true
+	} else {
+		bootstrapLogger.Error("Invalid logging type, only slog and otel are supported")
+		os.Exit(1)
 	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
 
-	appLogger := otelslog.NewLogger("nacp")
+	setupOtel := otelLogging || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
+	if setupOtel {
+		// Set up OpenTelemetry.
+		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, otelLogging, c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled)
+		if err != nil {
+			return
+		}
+		// Handle shutdown properly so nothing leaks.
+		defer func() {
+			err = errors.Join(err, otelShutdown(context.Background()))
+		}()
 
-	c := buildConfig(appLogger)
+	}
+	appLogger := loggerFactory(name)
 	level := slog.Level(0)
-	if err := level.UnmarshalText([]byte(c.LogLevel)); err != nil {
+	if err := level.UnmarshalText([]byte(c.Telemetry.Logging.Level)); err != nil {
 		appLogger.Error("Failed to parse log level", "error", err)
 		os.Exit(1)
 		return
 	}
 	slog.SetLogLoggerLevel(level)
 
-	server, err := buildServer(c, appLogger)
+	server, err := buildServer(c, appLogger, setupOtel)
 
 	if err != nil {
 		appLogger.Error("Failed to build server", "error", err)
@@ -586,7 +626,7 @@ func main() {
 
 }
 
-func buildServer(c *config.Config, applogger *slog.Logger) (*http.Server, error) {
+func buildServer(c *config.Config, applogger *slog.Logger, otelInstrumentation bool) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -630,7 +670,7 @@ func buildServer(c *config.Config, applogger *slog.Logger) (*http.Server, error)
 		resolveToken,
 	)
 
-	proxy := NewProxyHandler(backend, handler, appLogger, proxyTransport)
+	proxy := NewProxyHandler(backend, handler, appLogger, proxyTransport, otelInstrumentation)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -653,23 +693,22 @@ func buildServer(c *config.Config, applogger *slog.Logger) (*http.Server, error)
 	return server, nil
 }
 
-func buildConfig(logger *slog.Logger) *config.Config {
+func buildConfig(configPath string, logger *slog.Logger) *config.Config {
 
-	configPtr := flag.String("config", "", "point to a nacp config file")
-	flag.Parse()
 	var c *config.Config
 
-	if _, err := os.Stat(*configPtr); err == nil && *configPtr != "" {
-		c, err = config.LoadConfig(*configPtr)
+	if _, err := os.Stat(configPath); err == nil && configPath != "" {
+		c, err = config.LoadConfig(configPath)
 		if err != nil {
 			logger.Error("Failed to load config", "error", err)
 			os.Exit(1)
 		}
-		logger.Info("Loaded config", "config", *configPtr)
+		logger.Info("Loaded config", "config", configPath)
 	} else {
 		logger.Info("No config file found, using default config")
 		c = config.DefaultConfig()
 	}
+
 	return c
 }
 
@@ -812,3 +851,5 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	}
 	return tlsConfig, err
 }
+
+type loggerFactory func(name string) *slog.Logger

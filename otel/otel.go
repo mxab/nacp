@@ -6,11 +6,13 @@ import (
 	"errors"
 	"io"
 
-	"github.com/mxab/nacp/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	logApi "go.opentelemetry.io/otel/log"
+	metricApi "go.opentelemetry.io/otel/metric"
+	traceApi "go.opentelemetry.io/otel/trace"
 
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
@@ -91,49 +93,61 @@ func SetupOTelSDKWithInmemoryOutput(ctx context.Context) (lr, mr, tr io.Reader, 
 
 	return logOut, metricsOut, traceOut, shutdown, nil
 }
-func SetupOTelSDK(ctx context.Context, otelConfig config.OtelConfig) (shutdown func(context.Context) error, err error) {
 
-	shutdown, handleErr, shutdownFnAppender, forceFlushFnAppender := cleanupConfig(ctx)
+func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown func(context.Context) error, err error) {
 
-	tracerExporter, err := traceExporter(ctx, otelConfig.Tracing)
-	if err != nil {
-		handleErr(err)
-		return
+	shutdown, handleErr, shutdownFnAppender := cleanupConfig(ctx)
+
+	var tp traceApi.TracerProvider
+
+	if tracing {
+
+		tracerExporter, err := otlptracehttp.New(ctx)
+
+		if err != nil {
+			err = handleErr(err)
+			return nil, err
+		}
+		tracerProvider := newTracerProvider(tracerExporter)
+		shutdownFnAppender(tracerProvider.Shutdown)
+		tp = tracerProvider
 	}
-	metricExporter, err := metricExporter(ctx, otelConfig.Metrics)
-	if err != nil {
-		handleErr(err)
-		return
+
+	var mp metricApi.MeterProvider
+	if metrics {
+		metricExporter, err := otlpmetrichttp.New(ctx)
+		if err != nil {
+			err = handleErr(err)
+			return nil, err
+		}
+
+		meterProvider := newMeterProvider(metricExporter) // Updated to remove error handling
+
+		shutdownFnAppender(meterProvider.Shutdown)
+		mp = meterProvider
 	}
-	loggerExporter, err := logExporter(ctx, otelConfig.Logging)
-	if err != nil {
-		handleErr(err)
-		return
+
+	var lp logApi.LoggerProvider
+
+	if logging {
+		loggerExporter, err := otlploghttp.New(ctx)
+		if err != nil {
+			err = handleErr(err)
+			return nil, err
+		}
+
+		loggerProvider := newLoggerProvider(loggerExporter)
+
+		shutdownFnAppender(loggerProvider.Shutdown)
+		lp = loggerProvider
 	}
-
-	// Set up trace provider.
-	tracerProvider := newTracerProvider(tracerExporter)
-
-	shutdownFnAppender(tracerProvider.Shutdown)
-	forceFlushFnAppender(tracerProvider.ForceFlush)
-
-	meterProvider := newMeterProvider(metricExporter) // Updated to remove error handling
-
-	shutdownFnAppender(meterProvider.Shutdown)
-	forceFlushFnAppender(meterProvider.ForceFlush)
-
-	loggerProvider := newLoggerProvider(loggerExporter)
-
-	shutdownFnAppender(loggerProvider.Shutdown)
-	forceFlushFnAppender(loggerProvider.ForceFlush)
-
 	// Set up propagator.
-	ApplyProviders(tracerProvider, meterProvider, loggerProvider)
+	ApplyProviders(tp, mp, lp)
 
 	return shutdown, nil
 }
 
-func ApplyProviders(tracerProvider *trace.TracerProvider, meterProvider *metric.MeterProvider, loggerProvider *log.LoggerProvider) {
+func ApplyProviders(tracerProvider traceApi.TracerProvider, meterProvider metricApi.MeterProvider, loggerProvider logApi.LoggerProvider) {
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
 
@@ -179,38 +193,4 @@ func newLoggerProvider(exporter log.Exporter) *log.LoggerProvider {
 		log.WithProcessor(log.NewBatchProcessor(exporter)),
 	)
 	return loggerProvider
-}
-
-func logExporter(ctx context.Context, cfg *config.LoggingConfig) (log.Exporter, error) {
-	exporterType := cfg.Exporter
-	switch exporterType {
-	case "stdout":
-		return stdoutlog.New()
-	case "otlp":
-		return otlploghttp.New(ctx)
-	default:
-		return nil, errors.New("unknown exporter type")
-	}
-}
-func metricExporter(ctx context.Context, cfg *config.MetricsConfig) (metric.Exporter, error) {
-	exporterType := cfg.Exporter
-	switch exporterType {
-	case "stdout":
-		return stdoutmetric.New()
-	case "otlp":
-		return otlpmetrichttp.New(ctx)
-	default:
-		return nil, errors.New("unknown exporter type")
-	}
-}
-func traceExporter(ctx context.Context, cfg *config.TracingConfig) (trace.SpanExporter, error) {
-	exporterType := cfg.Exporter
-	switch exporterType {
-	case "stdout":
-		return stdouttrace.New()
-	case "otlp":
-		return otlptracehttp.New(ctx)
-	default:
-		return nil, errors.New("unknown exporter type")
-	}
 }
