@@ -2,12 +2,13 @@ package mutator
 
 import (
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,10 +23,11 @@ func TestJsonPatchMutator(t *testing.T) {
 		endpointPath string
 		method       string
 
-		response  []byte
-		wantErr   error
-		wantWarns []error
-		wantJob   *api.Job
+		response    []byte
+		wantErr     error
+		wantWarns   []error
+		wantJob     *api.Job
+		wantMutated bool
 	}{
 		{
 			name:         "empty response",
@@ -34,10 +36,11 @@ func TestJsonPatchMutator(t *testing.T) {
 
 			response: []byte(`{}`),
 
-			job:       &api.Job{},
-			wantErr:   nil,
-			wantWarns: nil,
-			wantJob:   &api.Job{},
+			job:         &api.Job{},
+			wantErr:     nil,
+			wantWarns:   nil,
+			wantJob:     &api.Job{},
+			wantMutated: false,
 		},
 		{
 			name:         "patch",
@@ -52,9 +55,10 @@ func TestJsonPatchMutator(t *testing.T) {
 
 			job: &api.Job{},
 
-			wantErr:   nil,
-			wantWarns: nil,
-			wantJob:   &api.Job{Meta: map[string]string{"foo": "bar"}},
+			wantErr:     nil,
+			wantWarns:   nil,
+			wantJob:     &api.Job{Meta: map[string]string{"foo": "bar"}},
+			wantMutated: true,
 		},
 		{
 			name:         "with warnings",
@@ -70,9 +74,10 @@ func TestJsonPatchMutator(t *testing.T) {
 
 			job: &api.Job{},
 
-			wantErr:   nil,
-			wantWarns: []error{fmt.Errorf("Warning 1"), fmt.Errorf("Warning 2")},
-			wantJob:   &api.Job{},
+			wantErr:     nil,
+			wantWarns:   []error{fmt.Errorf("Warning 1"), fmt.Errorf("Warning 2")},
+			wantJob:     &api.Job{},
+			wantMutated: false,
 		},
 	}
 
@@ -93,16 +98,17 @@ func TestJsonPatchMutator(t *testing.T) {
 			}))
 			defer webhookServer.Close()
 
-			mutator, err := NewJsonPatchWebhookMutator(tc.name, webhookServer.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
+			mutator, err := NewJsonPatchWebhookMutator(tc.name, webhookServer.URL+tc.endpointPath, tc.method, slog.New(slog.DiscardHandler))
 			require.NoError(t, err)
 
 			payload := &types.Payload{Job: tc.job}
-			job, warnings, err := mutator.Mutate(payload)
+			job, mutated, warnings, err := mutator.Mutate(payload)
 
 			require.True(t, webhookCalled)
 			assert.Equal(t, tc.wantErr, err)
 			assert.Equal(t, tc.wantWarns, warnings)
 			assert.Equal(t, tc.wantJob, job)
+			assert.Equal(t, tc.wantMutated, mutated)
 
 		})
 	}

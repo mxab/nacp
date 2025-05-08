@@ -4,17 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"net/http"
 	"net/url"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/go-multierror"
 )
 
 type WebhookValidator struct {
 	endpoint *url.URL
-	logger   hclog.Logger
+	logger   *slog.Logger
 	method   string
 	name     string
 }
@@ -81,7 +82,7 @@ func (w *WebhookValidator) Validate(payload *types.Payload) ([]error, error) {
 func (w *WebhookValidator) Name() string {
 	return w.name
 }
-func NewWebhookValidator(name string, endpoint string, method string, logger hclog.Logger) (*WebhookValidator, error) {
+func NewWebhookValidator(name string, endpoint string, method string, logger *slog.Logger) (*WebhookValidator, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err

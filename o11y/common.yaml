@@ -1,0 +1,18 @@
+groups:
+  - id: shared.attributes
+    type: attribute_group
+    brief: Attributes shared between our signals.
+    attributes:
+      - id: validator.name
+        type: string
+        brief: >
+          The name of the validator.
+
+        stability: stable
+        examples: ["notation_verifier"]
+      - id: mutator.name
+        type: string
+        brief: >
+          The name of the mutator.
+        stability: stable
+        examples: ["inject_otel"]

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"compress/gzip"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -15,9 +17,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/PaesslerAG/jsonpath"
 	"github.com/hashicorp/go-multierror"
-
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/hashicorp/nomad/helper/tlsutil"
@@ -26,13 +27,13 @@ import (
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/otel"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-// rewrite the test above as table driven test
 func TestProxy(t *testing.T) {
 
 	type test struct {
@@ -391,11 +392,11 @@ func TestProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				tc.resolveToken,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, hclog.NewNullLogger(), proxyTransport)
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport, false)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
@@ -479,10 +480,10 @@ func TestJobUpdateProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				false,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil, false)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -511,13 +512,13 @@ func buildNomadClient(t *testing.T, proxyServer *httptest.Server) *api.Client {
 func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 
 	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf(warning)}, nil)
+	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
 	return validator
 }
 func mockValidatorReturningError(err string) admissionctrl.JobValidator {
 
 	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf(err))
+	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
 	return validator
 }
 
@@ -580,10 +581,10 @@ func TestAdmissionControllerErrors(t *testing.T) {
 	jobHandler := admissionctrl.NewJobHandler(
 		[]admissionctrl.JobMutator{},
 		[]admissionctrl.JobValidator{validator},
-		hclog.NewNullLogger(),
+		slog.New(slog.DiscardHandler),
 		false,
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil, false)
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 
@@ -609,38 +610,38 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 }
 
 func TestDefaultBuildServer(t *testing.T) {
-	logger := hclog.NewNullLogger()
-	c := buildConfig(logger)
-	server, err := buildServer(c, logger)
+	logger := slog.New(slog.DiscardHandler)
+	c := buildConfig("", logger)
+	server, err := buildServer(c, logger, false)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, server)
 
 }
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, logger, false)
 	assert.Error(t, err)
 
 }
 func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, logger, false)
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
+	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, logger, false)
 	assert.Error(t, err, "failed to create mutators: unknown mutator type doesnotexit")
 }
 func TestCreateValidators(t *testing.T) {
@@ -699,7 +700,7 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			validators, _, err := createValidators(c, hclog.NewNullLogger())
+			validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -757,7 +758,7 @@ func TestNotationValidatorConfig(t *testing.T) {
 		},
 	}
 
-	validators, _, err := createValidators(c, hclog.NewNullLogger())
+	validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
 
 	assert.NoError(t, err)
 	assert.IsType(t, &validator.NotationValidator{}, validators[0])
@@ -818,7 +819,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, _, err := createMutators(c, hclog.NewNullLogger())
+			mutators, _, err := createMutators(c, slog.New(slog.DiscardHandler))
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -938,4 +939,186 @@ func writeTLSStuff(t *testing.T, name, data string) {
 	if err := file.WriteAtomicWithPerms(name, []byte(data), 0755, 0600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestOtelInstrumentation(t *testing.T) {
+
+	type test struct {
+		name string
+
+		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
+		wantNomadRequestJson  string
+		wantProxyResponse     interface{}
+		nomadResponse         string
+		nomadResponseEncoding string
+		//	responseWarnings []error
+		validators []admissionctrl.JobValidator
+		mutators   []admissionctrl.JobMutator
+	}
+
+	tests := []test{
+		{
+
+			name: "create job adds warnings",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
+			},
+
+			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				Warnings: "1 warning:\n\n* some warning",
+			},
+
+			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+			validators: []admissionctrl.JobValidator{
+				mockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+
+			ctx := t.Context()
+			lr, mr, tr, shutdown, err := otel.SetupOTelSDKWithInmemoryOutput(ctx)
+			require.NoError(t, err)
+			slog.SetLogLoggerLevel(slog.LevelInfo)
+
+			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+
+				jsonData, err := io.ReadAll(req.Body)
+				require.NoError(t, err)
+				assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
+
+				if tc.nomadResponseEncoding == "gzip" {
+					rw.Header().Set("Content-Encoding", "gzip")
+					rw.WriteHeader(http.StatusOK)
+					gzipWriter := gzip.NewWriter(rw)
+					defer gzipWriter.Close()
+					gzipWriter.Write([]byte(tc.nomadResponse))
+				} else {
+					rw.WriteHeader(http.StatusOK)
+					rw.Write([]byte(tc.nomadResponse))
+				}
+			}))
+			defer nomadDummy.Close()
+
+			nomadURL, err := url.Parse(nomadDummy.URL)
+			require.NoError(t, err)
+
+			proxyTransport := http.DefaultTransport.(*http.Transport).Clone()
+			jobHandler := admissionctrl.NewJobHandler(
+				tc.mutators,
+				tc.validators,
+				slog.Default(),
+				false,
+			)
+
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.Default(), proxyTransport, true)
+			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+			defer proxyServer.Close()
+			nomadClient := buildNomadClient(t, proxyServer)
+
+			_, _, err = tc.requestSender(nomadClient)
+
+			assert.NoError(t, err, "No http call error")
+			require.NoError(t, shutdown(ctx))
+
+			logs := ReaderToLineMaps(t, lr)
+
+			require.NotEmpty(t, logs, "Expected logs to be found")
+			assert.Lenf(t, logs, 2, "Expected 2 log entries, got %d", len(logs))
+
+			logRecord := logs[0]
+
+			AssertPathContains(t, logRecord, "$.Attributes", StringAttr("path", "/v1/jobs"), StringAttr("method", "PUT"), StringAttr("clientIP", "127.0.0.1"))
+			AssertPathEquals(t, logRecord, "$.Body", map[string]interface{}{
+				"Type":  "String",
+				"Value": "Request received",
+			})
+
+			metrics := ReaderToLineMaps(t, mr)
+			require.NotEmpty(t, metrics, "Expected metrics to be found")
+			assert.Len(t, metrics, 1, "Expected one metric entry")
+			metric := metrics[0]
+
+			AssertPathContains(t, metric,
+				`$.ScopeMetrics[?(@.Scope.Name == "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp")].Metrics[*].Name`,
+				"http.server.request.size", "http.server.response.size", "http.server.duration")
+			AssertPathContains(t, metric, `$.ScopeMetrics[?(@.Scope.Name == "nacp.controller")].Metrics[*].Name`, "nacp.validator.warning.count")
+
+			spans := ReaderToLineMaps(t, tr)
+			require.NotEmpty(t, spans, "Expected spans to be found")
+			assert.Len(t, spans, 1, "Expected one span entry")
+
+		})
+	}
+}
+
+func ReaderToLineMaps(t *testing.T, reader io.Reader) []map[string]interface{} {
+	t.Helper()
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(bufio.ScanLines)
+	var lines []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+		lines = append(lines, line)
+	}
+
+	var signals []map[string]interface{}
+	for _, line := range lines {
+
+		fmt.Println(line)
+		var data map[string]interface{}
+
+		err := json.Unmarshal([]byte(line), &data)
+
+		if assert.NoError(t, err) {
+
+			signals = append(signals, data)
+		}
+
+	}
+	return signals
+}
+
+func StringAttr(key, value string) map[string]interface{} {
+	return map[string]interface{}{
+		"Key": key,
+		"Value": map[string]interface{}{
+			"Type":  "String",
+			"Value": value,
+		},
+	}
+}
+
+func AssertPathContains(t *testing.T, signal map[string]interface{}, path string, expected ...interface{}) bool {
+	t.Helper()
+
+	result, err := jsonpath.Get(path, signal)
+	if assert.NoError(t, err) {
+		hits, ok := result.([]interface{})
+		if assert.True(t, ok, "Expected result to be a slice") {
+			for _, exp := range expected {
+				if !assert.Contains(t, hits, exp, "Expected result to contain %v", exp) {
+					return false
+				}
+			}
+			return true
+		}
+	}
+	return false
+}
+func AssertPathEquals(t *testing.T, signal map[string]interface{}, path string, expected interface{}) bool {
+	t.Helper()
+
+	result, err := jsonpath.Get(path, signal)
+
+	return assert.NoError(t, err) && assert.Equal(t, expected, result)
 }
