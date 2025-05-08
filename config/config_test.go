@@ -36,6 +36,9 @@ func TestLoadConfig(t *testing.T) {
 					Logging: &Logging{
 						Level: "info",
 						Type:  "slog",
+						SlogLogging: &SlogLogging{ //just default part
+							Handler: "text",
+						},
 					},
 				},
 			},
@@ -95,6 +98,9 @@ func TestLoadConfig(t *testing.T) {
 					Logging: &Logging{
 						Level: "info",
 						Type:  "slog",
+						SlogLogging: &SlogLogging{ //just default part
+							Handler: "text",
+						},
 					},
 				},
 			},
@@ -139,6 +145,9 @@ func TestLoadConfig(t *testing.T) {
 					Logging: &Logging{
 						Level: "info",
 						Type:  "otel",
+						SlogLogging: &SlogLogging{ //just default part
+							Handler: "text",
+						},
 					},
 					Metrics: &Metrics{
 						Enabled: true,

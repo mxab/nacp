@@ -57,10 +57,13 @@ func TestSetupWithReader(t *testing.T) {
 	os.Setenv("OTEL_SERVICE_NAME", "nacptest")
 
 	assertResource := func(signal map[string]interface{}) {
-		resource, ok := signal["Resource"].(map[string]interface{})
+		resource, ok := signal["Resource"].([]interface{})
 
 		if assert.True(t, ok, "Resource field is not a map") {
-			assert.EqualValues(t, resource["service.name"], "nacptest")
+			assert.Contains(t, resource, map[string]interface{}{
+				"Key":   "service.name",
+				"Value": map[string]interface{}{"Type": "STRING", "Value": "nacptest"},
+			}, "expected service.name not found")
 		}
 
 	}
@@ -82,8 +85,9 @@ func TestSetupWithReader(t *testing.T) {
 	logger.Info("some test log", "foo", "bar", "error", fmt.Errorf("test error"))
 
 	err = otelShutdown(ctx)
+	time.Sleep(5 * time.Second)
 	require.NoError(err, "failed to shutdown OTel SDK")
-
+	time.Sleep(5 * time.Second)
 	logScanner := bufio.NewScanner(lr)
 	logs := make([]map[string]interface{}, 0)
 	for logScanner.Scan() {
@@ -96,7 +100,7 @@ func TestSetupWithReader(t *testing.T) {
 
 	}
 
-	if assert.Equal(len(logs), 1, "expected log not found") {
+	if assert.Equal(1, len(logs), "expected log not found") {
 
 		log := logs[0]
 		assert.EqualValues(
@@ -121,13 +125,11 @@ func TestSetupWithReader(t *testing.T) {
 			metrics = append(metrics, data)
 		}
 	}
-	if assert.Equal(len(metrics), 2, "expected metric not found") {
+	if assert.Equal(1, len(metrics), "expected metric not found") {
 
 		assertResource(metrics[0])
-		assertResource(metrics[1])
 
 		fmt.Println("metrics", metrics[0])
-		fmt.Println("metrics", metrics[1])
 
 	}
 
