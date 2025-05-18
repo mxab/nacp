@@ -26,8 +26,9 @@ jobs:
       run: go build -v ./...
     - name: Test
       run: |
-        go test  -coverprofile=cov.out -v ./...
-        go tool cover -func=cov.out
+        go test  -coverprofile=coverage.out -v ./...
+        grep -v 'o11y/metric.go' coverage.out > coverage_filtered.out
+        go tool cover -func=coverage_filtered.out
     - name: Analyze with SonarCloud
       uses: sonarsource/sonarcloud-github-action@master
       env:
