@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"compress/gzip"
 	"crypto/x509"
 	"encoding/json"
@@ -17,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/PaesslerAG/jsonpath"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
@@ -32,6 +30,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/log/logtest"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata/metricdatatest"
 )
 
 func TestProxy(t *testing.T) {
@@ -609,39 +613,39 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 	return http.DefaultClient.Do(req)
 }
 
+func discardFactory(name string) *slog.Logger {
+	return slog.New(slog.DiscardHandler)
+}
 func TestDefaultBuildServer(t *testing.T) {
-	logger := slog.New(slog.DiscardHandler)
-	c := buildConfig("", logger)
-	server, err := buildServer(c, logger, false)
+
+	c := buildConfig("", discardFactory(""))
+	server, err := buildServer(c, discardFactory, false)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, server)
 
 }
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
-	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
-	_, err := buildServer(c, logger, false)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err)
 
 }
 func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
-	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger, false)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
-	logger := slog.New(slog.DiscardHandler)
 	c := config.DefaultConfig()
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger, false)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err, "failed to create mutators: unknown mutator type doesnotexit")
 }
 func TestCreateValidators(t *testing.T) {
@@ -700,7 +704,7 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
+			validators, _, err := createValidators(c, discardFactory)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -758,7 +762,7 @@ func TestNotationValidatorConfig(t *testing.T) {
 		},
 	}
 
-	validators, _, err := createValidators(c, slog.New(slog.DiscardHandler))
+	validators, _, err := createValidators(c, discardFactory)
 
 	assert.NoError(t, err)
 	assert.IsType(t, &validator.NotationValidator{}, validators[0])
@@ -819,7 +823,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, _, err := createMutators(c, slog.New(slog.DiscardHandler))
+			mutators, _, err := createMutators(c, discardFactory)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -983,8 +987,12 @@ func TestOtelInstrumentation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 
 			ctx := t.Context()
-			lr, mr, tr, shutdown, err := otel.SetupOTelSDKWithInmemoryOutput(ctx)
+
+			logRecorder, metricReader, traceReader := testutil.OtelExporters(t)
+
+			shutdown, flush, err := otel.SetupOTelSDKWith(ctx, logRecorder, metricReader, traceReader)
 			require.NoError(t, err)
+
 			slog.SetLogLoggerLevel(slog.LevelInfo)
 
 			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -1013,112 +1021,96 @@ func TestOtelInstrumentation(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				slog.Default(),
+				otelslog.NewLogger("testnacp"),
 				false,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, slog.Default(), proxyTransport, true)
+			proxy := NewProxyHandler(nomadURL, jobHandler, otelslog.NewLogger("testnacp"), proxyTransport, true)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
 
 			_, _, err = tc.requestSender(nomadClient)
 
 			assert.NoError(t, err, "No http call error")
+
+			resourceMetrics := &metricdata.ResourceMetrics{}
+			require.NoError(t, metricReader.Collect(t.Context(), resourceMetrics))
+
+			flush(ctx)
+			spans := traceReader.GetSpans()
+
 			require.NoError(t, shutdown(ctx))
 
-			logs := ReaderToLineMaps(t, lr)
+			logs := logRecorder.Result()
 
 			require.NotEmpty(t, logs, "Expected logs to be found")
 			assert.Lenf(t, logs, 2, "Expected 2 log entries, got %d", len(logs))
 
-			logRecord := logs[0]
+			AssertLogBodyPresent(t, logs, "Request received", attribute.String("path", "/v1/jobs"))
 
-			AssertPathContains(t, logRecord, "$.Attributes", StringAttr("path", "/v1/jobs"), StringAttr("method", "PUT"), StringAttr("clientIP", "127.0.0.1"))
-			AssertPathEquals(t, logRecord, "$.Body", map[string]interface{}{
-				"Type":  "String",
-				"Value": "Request received",
-			})
+			require.NotEmpty(t, resourceMetrics.ScopeMetrics, "Expected metrics to be found")
 
-			metrics := ReaderToLineMaps(t, mr)
-			require.NotEmpty(t, metrics, "Expected metrics to be found")
-			assert.Len(t, metrics, 1, "Expected one metric entry")
-			metric := metrics[0]
+			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.request.size", attribute.String("http.method", "PUT"))
+			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.duration", attribute.String("http.method", "PUT"))
 
-			AssertPathContains(t, metric,
-				`$.ScopeMetrics[?(@.Scope.Name == "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp")].Metrics[*].Name`,
-				"http.server.request.size", "http.server.response.size", "http.server.duration")
-			AssertPathContains(t, metric, `$.ScopeMetrics[?(@.Scope.Name == "nacp.controller")].Metrics[*].Name`, "nacp.validator.warning.count")
+			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "nacp.controller", "nacp.validator.warning.count", attribute.String("validator.name", "mock-validator"))
 
-			spans := ReaderToLineMaps(t, tr)
+			//metricdatatest.AssertHasAttributes(t, resourceMetrics.ScopeMetrics[0].Metrics[0], attribute.String("http.method", "POST"))
+
+			// AssertPathContains(t, metric,
+			// 	`$.ScopeMetrics[?(@.Scope.Name == "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp")].Metrics[*].Name`,
+			// 	"http.server.request.size", "http.server.response.size", "http.server.duration")
+			// AssertPathContains(t, metric, `$.ScopeMetrics[?(@.Scope.Name == "nacp.controller")].Metrics[*].Name`, "nacp.validator.warning.count")
+
 			require.NotEmpty(t, spans, "Expected spans to be found")
 			assert.Len(t, spans, 1, "Expected one span entry")
 
 		})
 	}
 }
-
-func ReaderToLineMaps(t *testing.T, reader io.Reader) []map[string]interface{} {
+func AssertScopeMetricHasAttributes(t *testing.T, scopeMetrics []metricdata.ScopeMetrics, scope, metricName string, attrs ...attribute.KeyValue) bool {
 	t.Helper()
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(bufio.ScanLines)
-	var lines []string
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-		lines = append(lines, line)
-	}
+	found := false
+	for _, scopeMetric := range scopeMetrics {
+		if scope == scopeMetric.Scope.Name {
+			for _, metric := range scopeMetric.Metrics {
+				if metric.Name == metricName {
+					found = true
+					metricdatatest.AssertHasAttributes(t, metric, attrs...)
 
-	var signals []map[string]interface{}
-	for _, line := range lines {
-
-		fmt.Println(line)
-		var data map[string]interface{}
-
-		err := json.Unmarshal([]byte(line), &data)
-
-		if assert.NoError(t, err) {
-
-			signals = append(signals, data)
-		}
-
-	}
-	return signals
-}
-
-func StringAttr(key, value string) map[string]interface{} {
-	return map[string]interface{}{
-		"Key": key,
-		"Value": map[string]interface{}{
-			"Type":  "String",
-			"Value": value,
-		},
-	}
-}
-
-func AssertPathContains(t *testing.T, signal map[string]interface{}, path string, expected ...interface{}) bool {
-	t.Helper()
-
-	result, err := jsonpath.Get(path, signal)
-	if assert.NoError(t, err) {
-		hits, ok := result.([]interface{})
-		if assert.True(t, ok, "Expected result to be a slice") {
-			for _, exp := range expected {
-				if !assert.Contains(t, hits, exp, "Expected result to contain %v", exp) {
-					return false
 				}
 			}
-			return true
 		}
 	}
-	return false
+	return assert.True(t, found, "Expected log body to be present")
 }
-func AssertPathEquals(t *testing.T, signal map[string]interface{}, path string, expected interface{}) bool {
+func AssertLogBodyPresent(t *testing.T, records []*logtest.ScopeRecords, body string, attrs ...attribute.KeyValue) bool {
 	t.Helper()
+	found := false
+	for _, logRecord := range records {
+		for _, record := range logRecord.Records {
+			if body == record.Body().AsString() {
 
-	result, err := jsonpath.Get(path, signal)
+				found = true
 
-	return assert.NoError(t, err) && assert.Equal(t, expected, result)
+				for _, a := range attrs {
+					attrFound := false
+
+					record.WalkAttributes(func(kv log.KeyValue) bool {
+
+						if kv.Key == string(a.Key) {
+							attrFound = true
+							assert.Equal(t, kv.Value.AsString(), a.Value.AsString(), "Expected log to contain %s", a)
+						}
+						return !attrFound
+					})
+					assert.True(t, attrFound, "Expected log to '%s' contain %v = %v", body, a.Key, a.Value.AsString())
+
+				}
+			}
+		}
+	}
+	return assert.True(t, found, "Expected log body to be present")
 }

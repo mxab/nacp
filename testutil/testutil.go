@@ -12,6 +12,9 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/mock"
+	"go.opentelemetry.io/otel/log/logtest"
+	metricSdk "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func readJobJson(t *testing.T, name string) []byte {
@@ -85,4 +88,14 @@ func Filepath(t *testing.T, name string) string {
 	}
 
 	return path.Join(path.Dir(filename), "..", "testdata", name)
+}
+
+func OtelExporters(t *testing.T) (*logtest.Recorder, *metricSdk.ManualReader, *tracetest.InMemoryExporter) {
+	t.Helper()
+	spanExporter := tracetest.NewInMemoryExporter()
+	logRecorder := logtest.NewRecorder()
+
+	manualReader := metricSdk.NewManualReader()
+
+	return logRecorder, manualReader, spanExporter
 }

@@ -1,10 +1,8 @@
 package otel
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -14,9 +12,6 @@ import (
 	metricApi "go.opentelemetry.io/otel/metric"
 	traceApi "go.opentelemetry.io/otel/trace"
 
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/log"
@@ -53,45 +48,34 @@ func cleanupConfig(ctx context.Context) (
 	return
 }
 
-func SetupOTelSDKWithInmemoryOutput(ctx context.Context) (lr, mr, tr io.Reader, shutdown func(context.Context) error, err error) {
+func SetupOTelSDKWith(ctx context.Context, loggerProvider logApi.LoggerProvider, metricReader metric.Reader, traceExporter trace.SpanExporter) (shutdown func(context.Context) error, flush func(context.Context) error, err error) {
 
-	logOut := bytes.NewBufferString("")
-	metricsOut := bytes.NewBufferString("")
-	traceOut := bytes.NewBufferString("")
-	shutdown, handleErr, shutdownFnAppender := cleanupConfig(ctx)
-
-	logExporter, err := stdoutlog.New(stdoutlog.WithWriter(logOut))
-	if err != nil {
-		handleErr(err)
-		return
-	}
-	metricExporter, err := stdoutmetric.New(stdoutmetric.WithWriter(metricsOut))
-	if err != nil {
-		handleErr(err)
-		return
-	}
-	traceExporter, err := stdouttrace.New(stdouttrace.WithWriter(traceOut))
-	if err != nil {
-		handleErr(err)
-		return
-	}
+	shutdown, _, shutdownFnAppender := cleanupConfig(ctx)
 
 	tracerProvider := newTracerProvider(traceExporter)
 
 	shutdownFnAppender(tracerProvider.Shutdown)
 
-	meterProvider := newMeterProvider(metricExporter) // Updated to remove error handling
+	meterProvider := newMeterProvider(metricReader)
 
 	shutdownFnAppender(meterProvider.Shutdown)
-
-	loggerProvider := newLoggerProvider(logExporter)
-
-	shutdownFnAppender(loggerProvider.Shutdown)
+	shutdownFnAppender(traceExporter.Shutdown)
 
 	// Set up propagator.
 	ApplyProviders(tracerProvider, meterProvider, loggerProvider)
 
-	return logOut, metricsOut, traceOut, shutdown, nil
+	forceFlushes := make([]func(context.Context) error, 0)
+	forceFlushes = append(forceFlushes, tracerProvider.ForceFlush)
+	forceFlushes = append(forceFlushes, meterProvider.ForceFlush)
+
+	flush = func(ctx context.Context) error {
+		var err error
+		for _, fn := range forceFlushes {
+			err = errors.Join(err, fn(ctx))
+		}
+		return err
+	}
+	return shutdown, flush, nil
 }
 
 func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown func(context.Context) error, err error) {
@@ -121,7 +105,7 @@ func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown
 			return nil, err
 		}
 
-		meterProvider := newMeterProvider(metricExporter) // Updated to remove error handling
+		meterProvider := newMeterProvider(metric.NewPeriodicReader(metricExporter)) // Updated to remove error handling
 
 		shutdownFnAppender(meterProvider.Shutdown)
 		mp = meterProvider
@@ -178,10 +162,10 @@ func newTracerProvider(exporter trace.SpanExporter) *trace.TracerProvider {
 	return tracerProvider
 }
 
-func newMeterProvider(exporter metric.Exporter) *metric.MeterProvider {
+func newMeterProvider(reader metric.Reader) *metric.MeterProvider {
 
 	meterProvider := metric.NewMeterProvider(
-		metric.WithReader(metric.NewPeriodicReader(exporter)),
+		metric.WithReader(reader),
 	)
 
 	return meterProvider

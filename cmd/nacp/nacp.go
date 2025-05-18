@@ -49,9 +49,8 @@ type contextKeyValidationError struct{}
 const name = "nacp"
 
 var (
-	tracer    = otel.Tracer(name)
-	meter     = otel.Meter(name)
-	appLogger = otelslog.NewLogger(name)
+	tracer = otel.Tracer(name)
+	meter  = otel.Meter(name)
 )
 var (
 	ctxWarnings        = contextKeyWarnings{}
@@ -114,7 +113,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 
 	return &aclToken, nil
 }
-func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, applogger *slog.Logger, transport *http.Transport, otelInstrumentation bool) func(http.ResponseWriter, *http.Request) {
+func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport, otelInstrumentation bool) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -281,7 +280,7 @@ func handleJobPlanResponse(resp *http.Response, applogger *slog.Logger) error {
 	}
 	return nil
 }
-func handleJobValdidateResponse(resp *http.Response, applogger *slog.Logger) error {
+func handleJobValdidateResponse(resp *http.Response, appLogger *slog.Logger) error {
 
 	ctx := resp.Request.Context()
 	validationErr, okErr := ctx.Value(ctxValidationError).(error)
@@ -373,7 +372,7 @@ func rewriteRequest(r *http.Request, data []byte) {
 	r.Body = io.NopCloser(bytes.NewBuffer(data))
 }
 
-func handleRegister(r *http.Request, applogger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
+func handleRegister(r *http.Request, appLogger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 	body := r.Body
 	jobRegisterRequest := &api.JobRegisterRequest{}
 
@@ -412,7 +411,7 @@ func handleRegister(r *http.Request, applogger *slog.Logger, jobHandler *admissi
 	rewriteRequest(r, data)
 	return r, nil
 }
-func handlePlan(r *http.Request, applogger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
+func handlePlan(r *http.Request, appLogger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 	body := r.Body
 	jobPlanRequest := &api.JobPlanRequest{}
 
@@ -567,6 +566,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if otelLogging {
+		loggerFactory = func(name string) *slog.Logger {
+			return otelslog.NewLogger(name)
+		}
+	}
 	setupOtel := otelLogging || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
 	if setupOtel {
 		// Set up OpenTelemetry.
@@ -589,7 +593,7 @@ func main() {
 	}
 	slog.SetLogLoggerLevel(level)
 
-	server, err := buildServer(c, appLogger, setupOtel)
+	server, err := buildServer(c, loggerFactory, setupOtel)
 
 	if err != nil {
 		appLogger.Error("Failed to build server", "error", err)
@@ -626,7 +630,7 @@ func main() {
 
 }
 
-func buildServer(c *config.Config, applogger *slog.Logger, otelInstrumentation bool) (*http.Server, error) {
+func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentation bool) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -647,12 +651,12 @@ func buildServer(c *config.Config, applogger *slog.Logger, otelInstrumentation b
 		proxyTransport.TLSClientConfig = nomadTlsConfig
 	}
 
-	jobMutators, resolveTokenMutators, err := createMutators(c, otelslog.NewLogger("mutators"))
+	jobMutators, resolveTokenMutators, err := createMutators(c, loggerFactory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create mutators: %w", err)
 	}
 
-	jobValidators, resolveTokenValidators, err := createValidators(c, otelslog.NewLogger("validators"))
+	jobValidators, resolveTokenValidators, err := createValidators(c, loggerFactory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create validators: %w", err)
 	}
@@ -666,11 +670,11 @@ func buildServer(c *config.Config, applogger *slog.Logger, otelInstrumentation b
 
 		jobMutators,
 		jobValidators,
-		otelslog.NewLogger("handler"),
+		loggerFactory("handler"),
 		resolveToken,
 	)
 
-	proxy := NewProxyHandler(backend, handler, appLogger, proxyTransport, otelInstrumentation)
+	proxy := NewProxyHandler(backend, handler, loggerFactory("proxy-handler"), proxyTransport, otelInstrumentation)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -731,7 +735,7 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutators(c *config.Config, logger *slog.Logger) ([]admissionctrl.JobMutator, bool, error) {
+func createMutators(c *config.Config, loggerFactory loggerFactory) ([]admissionctrl.JobMutator, bool, error) {
 	var jobMutators []admissionctrl.JobMutator
 	var resolveToken bool
 	for _, m := range c.Mutators {
@@ -740,18 +744,18 @@ func createMutators(c *config.Config, logger *slog.Logger) ([]admissionctrl.JobM
 		}
 		switch m.Type {
 		case "opa_json_patch":
-			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, otelslog.NewLogger("notation_verifier"))
+			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, loggerFactory("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, otelslog.NewLogger("opa_mutator"), notationVerifier)
+			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, loggerFactory("opa_mutator"), notationVerifier)
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobMutators = append(jobMutators, mutator)
 
 		case "json_patch_webhook":
-			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, otelslog.NewLogger("json_patch_webhook_mutator"))
+			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, loggerFactory("json_patch_webhook_mutator"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
@@ -764,7 +768,7 @@ func createMutators(c *config.Config, logger *slog.Logger) ([]admissionctrl.JobM
 	}
 	return jobMutators, resolveToken, nil
 }
-func createValidators(c *config.Config, logger *slog.Logger) ([]admissionctrl.JobValidator, bool, error) {
+func createValidators(c *config.Config, loggerFactory loggerFactory) ([]admissionctrl.JobValidator, bool, error) {
 	var jobValidators []admissionctrl.JobValidator
 	var resolveToken bool
 	for _, v := range c.Validators {
@@ -773,28 +777,28 @@ func createValidators(c *config.Config, logger *slog.Logger) ([]admissionctrl.Jo
 		}
 		switch v.Type {
 		case "opa":
-			notationVerifier, err := buildVerifierIfEnabled(v.Notation, otelslog.NewLogger("notation_verifier"))
+			notationVerifier, err := buildVerifierIfEnabled(v.Notation, loggerFactory("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, otelslog.NewLogger("opa_validator"), notationVerifier)
+			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, loggerFactory("opa_validator"), notationVerifier)
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
 
 		case "webhook":
-			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, otelslog.NewLogger("webhook_validator"))
+			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, loggerFactory("webhook_validator"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, validator)
 		case "notation":
-			notationVerifier, err := buildVerifier(v.Notation, otelslog.NewLogger("notation_verifier"))
+			notationVerifier, err := buildVerifier(v.Notation, loggerFactory("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			validator := validator.NewNotationValidator(otelslog.NewLogger("notation_validator"), v.Name, notationVerifier)
+			validator := validator.NewNotationValidator(loggerFactory("notation_validator"), v.Name, notationVerifier)
 
 			jobValidators = append(jobValidators, validator)
 
