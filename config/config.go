@@ -117,6 +117,12 @@ func DefaultConfig() *Config {
 					Handler: "text",
 				},
 			},
+			Metrics: &Metrics{
+				Enabled: false,
+			},
+			Tracing: &Tracing{
+				Enabled: false,
+			},
 		},
 	}
 	return c

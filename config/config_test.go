@@ -40,6 +40,12 @@ func TestLoadConfig(t *testing.T) {
 							Handler: "text",
 						},
 					},
+					Metrics: &Metrics{
+						Enabled: false,
+					},
+					Tracing: &Tracing{
+						Enabled: false,
+					},
 				},
 			},
 		},
@@ -102,6 +108,12 @@ func TestLoadConfig(t *testing.T) {
 							Handler: "text",
 						},
 					},
+					Metrics: &Metrics{
+						Enabled: false,
+					},
+					Tracing: &Tracing{
+						Enabled: false,
+					},
 				},
 			},
 		},
@@ -124,6 +136,12 @@ func TestLoadConfig(t *testing.T) {
 						SlogLogging: &SlogLogging{
 							Handler: "json",
 						},
+					},
+					Metrics: &Metrics{
+						Enabled: false,
+					},
+					Tracing: &Tracing{
+						Enabled: false,
 					},
 				},
 			},

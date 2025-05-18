@@ -546,19 +546,21 @@ func main() {
 	var otelLogging bool
 	if c.Telemetry.Logging.Type == "slog" {
 		if c.Telemetry.Logging.SlogLogging.Handler == "json" {
-			slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-			loggerFactory = func(name string) *slog.Logger {
-				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
-			}
-		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
-			slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 			loggerFactory = func(_ string) *slog.Logger {
 				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
 			}
+
+		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
+			loggerFactory = func(_ string) *slog.Logger {
+				return slog.New(slog.NewTextHandler(os.Stdout, nil))
+			}
+
 		} else {
 			bootstrapLogger.Error("Invalid slog logging handler, using default json")
 			os.Exit(1)
+			return
 		}
+		slog.SetDefault(loggerFactory(""))
 	} else if c.Telemetry.Logging.Type == "otel" {
 		otelLogging = true
 	} else {
