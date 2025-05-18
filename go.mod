@@ -1,6 +1,6 @@
 module github.com/mxab/nacp
 
-go 1.24.2
+go 1.24.3
 
 replace (
 	github.com/Microsoft/go-winio => github.com/endocrimes/go-winio v0.4.13-0.20190628114223-fb47a8b41948
