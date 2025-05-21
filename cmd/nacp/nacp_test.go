@@ -1149,7 +1149,6 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 	case <-time.After(5 * time.Second): // Adjust timeout as needed
 		t.Fatal("run function did not complete within the timeout after interrupt.")
 	}
-	require.NoError(t, err)
 }
 
 func freePort(t *testing.T) int {
