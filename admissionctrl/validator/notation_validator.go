@@ -2,14 +2,15 @@ package validator
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/mxab/nacp/admissionctrl/types"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/mxab/nacp/admissionctrl/notation"
 )
 
 type NotationValidator struct {
-	logger   hclog.Logger
+	logger   *slog.Logger
 	name     string
 	verifier notation.ImageVerifier
 }
@@ -41,7 +42,7 @@ func (v *NotationValidator) Name() string {
 	return v.name
 }
 
-func NewNotationValidator(logger hclog.Logger, name string, verifier notation.ImageVerifier) *NotationValidator {
+func NewNotationValidator(logger *slog.Logger, name string, verifier notation.ImageVerifier) *NotationValidator {
 	return &NotationValidator{
 		logger:   logger,
 		name:     name,

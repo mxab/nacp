@@ -1,10 +1,11 @@
 package admissionctrl
 
 import (
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	job := &api.Job{} // testutil.ReadJob(t)
 	payload := &types.Payload{Job: job}
 	mutator := new(testutil.MockMutator)
-	mutator.On("Mutate", payload).Return(payload.Job, []error{}, nil)
+	mutator.On("Mutate", payload).Return(payload.Job, true, []error{}, nil)
 
 	validator := new(testutil.MockValidator)
 	validator.On("Validate", payload).Return([]error{}, nil)
@@ -52,7 +53,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := NewJobHandler([]JobMutator{tt.fields.mutator}, []JobValidator{tt.fields.validator}, hclog.NewNullLogger(), tt.resolveToken)
+			j := NewJobHandler([]JobMutator{tt.fields.mutator}, []JobValidator{tt.fields.validator}, slog.New(slog.DiscardHandler), tt.resolveToken)
 			payload := &types.Payload{Job: tt.args.job}
 			_, warnings, err := j.ApplyAdmissionControllers(payload)
 			assert.Empty(t, warnings, "No Warnings")

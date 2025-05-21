@@ -10,8 +10,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/nacp/nacp.go",
-            "args": ["-config=nacp.conf.hcl"],
-            "cwd": "${workspaceFolder}/misc/hashitalk_secure2024",
+            "args": ["-config=example2.conf.hcl"],
+            "cwd": "${workspaceFolder}/example/example2",
+            "env": {
+                "OTEL_SERVICE_NAME": "nacp",
+            }
         }
     ]
 }

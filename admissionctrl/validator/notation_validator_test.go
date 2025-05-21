@@ -3,10 +3,11 @@ package validator
 import (
 	"context"
 	"errors"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/require"
 )
@@ -141,7 +142,7 @@ func TestNotationValidatorValidate(t *testing.T) {
 func TestNewNotationValidator(t *testing.T) {
 	mockImageVerifier := new(DummyVerifier)
 
-	notationValidator := NewNotationValidator(hclog.NewNullLogger(), "notation", mockImageVerifier)
+	notationValidator := NewNotationValidator(slog.New(slog.DiscardHandler), "notation", mockImageVerifier)
 	require.Equal(t, mockImageVerifier, notationValidator.verifier)
 	require.Equal(t, "notation", notationValidator.name)
 	require.NotNil(t, notationValidator.logger)

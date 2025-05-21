@@ -3,13 +3,14 @@ package validator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -89,7 +90,7 @@ func TestWebhookValidator(t *testing.T) {
 			}))
 			defer server.Close()
 
-			validator, err := NewWebhookValidator("test", server.URL+tc.endpointPath, tc.method, hclog.NewNullLogger())
+			validator, err := NewWebhookValidator("test", server.URL+tc.endpointPath, tc.method, slog.New(slog.DiscardHandler))
 			require.NoError(t, err)
 
 			payload := &types.Payload{Job: &api.Job{ID: &tc.name}}

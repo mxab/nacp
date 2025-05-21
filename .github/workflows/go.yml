@@ -19,17 +19,18 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: "^1.21"
+        go-version: "^1.24"
     - name: "Check format"
       run: "test -z $(gofmt -l .)"
     - name: Build
       run: go build -v ./...
     - name: Test
       run: |
-        go test  -coverprofile=cov.out -v ./...
+        go test  -coverprofile=cov.all.out -v ./...
+        grep -v 'o11y/metric.go' cov.all.out > cov.out
         go tool cover -func=cov.out
     - name: Analyze with SonarCloud
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

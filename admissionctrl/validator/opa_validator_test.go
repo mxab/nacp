@@ -1,11 +1,12 @@
 package validator
 
 import (
-	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/config"
+	"log/slog"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ func TestOpaValidator(t *testing.T) {
 
 	// create a new OPA object
 	opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
-		"errors = data.prefixed_policies.errors", hclog.NewNullLogger(), nil)
+		"errors = data.prefixed_policies.errors", slog.New(slog.DiscardHandler), nil)
 
 	require.Equal(t, nil, err)
 
@@ -94,7 +95,7 @@ func TestOpaValidatorSimple(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/errors.rego"),
-				tt.query, hclog.NewNullLogger(), nil)
+				tt.query, slog.New(slog.DiscardHandler), nil)
 			require.NoError(t, err)
 			payload := &types.Payload{Job: dummyJob}
 			warnings, err := opaValidator.Validate(payload)
@@ -187,7 +188,7 @@ func TestOpaValidatorContext(t *testing.T) {
 				"test_context_validator",
 				testutil.Filepath(t, "opa/validators/context.rego"),
 				tt.query,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				nil,
 			)
 			require.NoError(t, err)
