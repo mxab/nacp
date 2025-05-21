@@ -106,13 +106,11 @@ func (j *JobHandler) AdmissionMutators(payload *types.Payload) (job *api.Job, wa
 		if mutated {
 			mutatorMutationCount.Add(context.Background(), 1, mutator.Name())
 		}
-		if err != nil {
-			mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
-		}
 		mutatorWarningCount.Add(context.Background(), float64(len(w)), mutator.Name())
 
 		j.logger.Debug("job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
 		if err != nil {
+			mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
 			return nil, nil, fmt.Errorf("error in job mutator %s: %v", mutator.Name(), err)
 		}
 		warnings = append(warnings, w...)
@@ -134,11 +132,9 @@ func (j *JobHandler) AdmissionValidators(payload *types.Payload) ([]error, error
 		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
 		w, err := validator.Validate(payload)
 		validatorWarningCount.Add(context.Background(), float64(len(w)), validator.Name())
-		if err != nil {
-			validatorErrorCount.Add(context.Background(), 1, validator.Name())
-		}
 		j.logger.Debug("job validate results", "validator", validator.Name(), "warnings", w, "error", err)
 		if err != nil {
+			validatorErrorCount.Add(context.Background(), 1, validator.Name())
 			errs = multierror.Append(errs, err)
 		}
 		warnings = append(warnings, w...)
