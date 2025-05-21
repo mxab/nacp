@@ -14,7 +14,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
@@ -618,7 +620,8 @@ func discardFactory(name string) *slog.Logger {
 }
 func TestDefaultBuildServer(t *testing.T) {
 
-	c := buildConfig("", discardFactory(""))
+	c, err := buildConfig("")
+	require.NoError(t, err)
 	server, err := buildServer(c, discardFactory, false)
 	assert.NoError(t, err)
 
@@ -1113,4 +1116,45 @@ func AssertLogBodyPresent(t *testing.T, records []*logtest.ScopeRecords, body st
 		}
 	}
 	return assert.True(t, found, "Expected log body to be present")
+}
+
+func TestRunTerminatesOnSIGINT(t *testing.T) {
+
+	// config
+	cfg := config.DefaultConfig()
+
+	// assign a random free port
+	var randomFreePort int
+	listener, err := net.Listen("tcp", "localhost:0")
+	require.NoError(t, err)
+	defer func() {
+		err := listener.Close()
+		require.NoError(t, err)
+	}()
+	randomFreePort = listener.Addr().(*net.TCPAddr).Port
+	cfg.Port = randomFreePort
+
+	done := make(chan struct{})
+
+	go func() {
+		err := run(cfg)
+		assert.NoError(t, err)
+		close(done) // Signal that the run function has finished.
+	}()
+	time.Sleep(3 * time.Second)
+
+	t.Log("Sending OS interrupt signal (SIGINT)...")
+
+	require.NoError(t, syscall.Kill(syscall.Getpid(), syscall.SIGINT))
+
+	// Wait for the 'run' function to complete, with a timeout.
+	// This ensures the test doesn't hang indefinitely if 'run' fails to exit.
+	select {
+	case <-done:
+		t.Log("run function completed successfully after interrupt.")
+		// Test passed: the function exited as expected.
+	case <-time.After(5 * time.Second): // Adjust timeout as needed
+		t.Fatal("run function did not complete within the timeout after interrupt.")
+	}
+	require.NoError(t, err)
 }

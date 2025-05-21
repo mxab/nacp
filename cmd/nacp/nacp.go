@@ -40,18 +40,11 @@ import (
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel"
 )
 
 type contextKeyWarnings struct{}
 type contextKeyValidationError struct{}
 
-const name = "nacp"
-
-var (
-	tracer = otel.Tracer(name)
-	meter  = otel.Meter(name)
-)
 var (
 	ctxWarnings        = contextKeyWarnings{}
 	ctxValidationError = contextKeyValidationError{}
@@ -536,76 +529,63 @@ func main() {
 	} else {
 		bootstrapLogger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	}
+	slog.SetDefault(bootstrapLogger)
+
+	c, err := buildConfig(*configPtr)
+	if err != nil {
+		slog.Error("Error loading config", "error", err)
+		os.Exit(1)
+	}
+
+	if err := run(c); err != nil {
+
+		slog.Error("Error running nacp", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run(c *config.Config) (err error) {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	c := buildConfig(*configPtr, bootstrapLogger)
-
-	var loggerFactory loggerFactory
-	var otelLogging bool
-	if c.Telemetry.Logging.Type == "slog" {
-		if c.Telemetry.Logging.SlogLogging.Handler == "json" {
-			loggerFactory = func(_ string) *slog.Logger {
-				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
-			}
-
-		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
-			loggerFactory = func(_ string) *slog.Logger {
-				return slog.New(slog.NewTextHandler(os.Stdout, nil))
-			}
-
-		} else {
-			bootstrapLogger.Error("Invalid slog logging handler, using default json")
-			os.Exit(1)
-			return
-		}
-		slog.SetDefault(loggerFactory(""))
-	} else if c.Telemetry.Logging.Type == "otel" {
-		otelLogging = true
-	} else {
-		bootstrapLogger.Error("Invalid logging type, only slog and otel are supported")
-		os.Exit(1)
+	loggerFactory, err := buildLoggerFactory(c)
+	if err != nil {
+		return fmt.Errorf("failed to build logger factory: %w", err)
 	}
 
-	if otelLogging {
-		loggerFactory = func(name string) *slog.Logger {
-			return otelslog.NewLogger(name)
-		}
-	}
-	setupOtel := otelLogging || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
+	logger := loggerFactory("nacp")
+	slog.SetDefault(logger)
+	appLogger := logger
+	setupOtel := c.Telemetry.Logging.IsOtel() || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
 	if setupOtel {
 		// Set up OpenTelemetry.
-		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, otelLogging, c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled)
+		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, c.Telemetry.Logging.IsOtel(), c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled)
 		if err != nil {
-			return
+			return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
 		}
 		// Handle shutdown properly so nothing leaks.
+		// https://opentelemetry.io/docs/languages/go/getting-started/
 		defer func() {
 			err = errors.Join(err, otelShutdown(context.Background()))
+
 		}()
 
 	}
-	appLogger := loggerFactory(name)
+
 	level := slog.Level(0)
 	if err := level.UnmarshalText([]byte(c.Telemetry.Logging.Level)); err != nil {
-		appLogger.Error("Failed to parse log level", "error", err)
-		os.Exit(1)
-		return
+		return fmt.Errorf("failed to parse log level: %w", err)
 	}
 	slog.SetLogLoggerLevel(level)
 
 	server, err := buildServer(c, loggerFactory, setupOtel)
 
 	if err != nil {
-		appLogger.Error("Failed to build server", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to build server: %w", err)
 	}
 
 	srvErr := make(chan error, 1)
-	// go func() {
-	// 	srvErr <- server.ListenAndServe()
-	// }()
 
 	go func() {
 
@@ -628,8 +608,38 @@ func main() {
 		// Stop receiving signal notifications as soon as possible.
 		stop()
 	}
+	appLogger.Info("Received shutdown signal, shutting down NACP")
 	server.Shutdown(context.Background())
+	appLogger.Info("NACP stopped")
+	return nil
 
+}
+
+func buildLoggerFactory(c *config.Config) (lf loggerFactory, err error) {
+	if c.Telemetry.Logging.IsSlog() {
+		if c.Telemetry.Logging.SlogLogging.Handler == "json" {
+			lf = func(_ string) *slog.Logger {
+				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
+			}
+
+		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
+			lf = func(_ string) *slog.Logger {
+				return slog.New(slog.NewTextHandler(os.Stdout, nil))
+			}
+
+		} else {
+			return nil, fmt.Errorf("invalid slog logging handler, only json and text are supported")
+		}
+
+	} else if c.Telemetry.Logging.IsOtel() {
+		lf = func(name string) *slog.Logger {
+			return otelslog.NewLogger(name)
+		}
+
+	} else {
+		return nil, fmt.Errorf("invalid logging type, only slog and otel are supported")
+	}
+	return
 }
 
 func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentation bool) (*http.Server, error) {
@@ -699,23 +709,22 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 	return server, nil
 }
 
-func buildConfig(configPath string, logger *slog.Logger) *config.Config {
+func buildConfig(configPath string) (*config.Config, error) {
 
 	var c *config.Config
 
 	if _, err := os.Stat(configPath); err == nil && configPath != "" {
 		c, err = config.LoadConfig(configPath)
 		if err != nil {
-			logger.Error("Failed to load config", "error", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("failed to load config: %w", err)
 		}
-		logger.Info("Loaded config", "config", configPath)
+		slog.Info("Loaded config", "config", configPath)
 	} else {
-		logger.Info("No config file found, using default config")
+		slog.Info("No config file found, using default config")
 		c = config.DefaultConfig()
 	}
 
-	return c
+	return c, nil
 }
 
 func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {

@@ -24,9 +24,9 @@ func TestLoadConfig(t *testing.T) {
 			name: "default config",
 			args: args{name: "testdata/simple.hcl"},
 			want: &Config{
-				Port:     port,
-				Bind:     bind,
-				LogLevel: "info",
+				Port: port,
+				Bind: bind,
+
 				Nomad: &NomadServer{
 					Address: nomadAddr,
 				},
@@ -60,9 +60,9 @@ func TestLoadConfig(t *testing.T) {
 			name: "with admission controllers",
 			args: args{name: "testdata/with_admission.hcl"},
 			want: &Config{
-				Port:     port,
-				Bind:     bind,
-				LogLevel: "info",
+				Port: port,
+				Bind: bind,
+
 				Nomad: &NomadServer{
 					Address: nomadAddr,
 				},
@@ -121,9 +121,9 @@ func TestLoadConfig(t *testing.T) {
 			name: "with slog / json logging",
 			args: args{name: "testdata/loggingjson.hcl"},
 			want: &Config{
-				Port:     port,
-				Bind:     bind,
-				LogLevel: "info",
+				Port: port,
+				Bind: bind,
+
 				Nomad: &NomadServer{
 					Address: nomadAddr,
 				},
@@ -151,9 +151,9 @@ func TestLoadConfig(t *testing.T) {
 			name: "with otel logging",
 			args: args{name: "testdata/otelconfig.hcl"},
 			want: &Config{
-				Port:     port,
-				Bind:     bind,
-				LogLevel: "info",
+				Port: port,
+				Bind: bind,
+
 				Nomad: &NomadServer{
 					Address: nomadAddr,
 				},

@@ -72,6 +72,14 @@ type Logging struct {
 	Type        string       `hcl:"type,optional"` // "slog" or "otel"
 	SlogLogging *SlogLogging `hcl:"slog,block"`
 }
+
+func (l *Logging) IsOtel() bool {
+	return l.Type == "otel"
+}
+func (l *Logging) IsSlog() bool {
+	return l.Type == "slog"
+}
+
 type Metrics struct {
 	Enabled bool `hcl:"enabled,optional"`
 	// only otel for now
@@ -89,8 +97,7 @@ type Config struct {
 	Port int    `hcl:"port,optional"`
 	Bind string `hcl:"bind,optional"`
 
-	LogLevel string    `hcl:"log_level,optional"`
-	Tls      *ProxyTLS `hcl:"tls,block"`
+	Tls *ProxyTLS `hcl:"tls,block"`
 
 	Nomad      *NomadServer `hcl:"nomad,block"`
 	Validators []Validator  `hcl:"validator,block"`
@@ -106,7 +113,7 @@ func DefaultConfig() *Config {
 		Nomad: &NomadServer{
 			Address: "http://localhost:4646",
 		},
-		LogLevel:   "info",
+
 		Validators: []Validator{},
 		Mutators:   []Mutator{},
 		Telemetry: &Telemetry{
