@@ -1124,15 +1124,8 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 	cfg := config.DefaultConfig()
 
 	// assign a random free port
-	var randomFreePort int
-	listener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer func() {
-		err := listener.Close()
-		require.NoError(t, err)
-	}()
-	randomFreePort = listener.Addr().(*net.TCPAddr).Port
-	cfg.Port = randomFreePort
+
+	cfg.Port = freePort(t)
 
 	done := make(chan struct{})
 
@@ -1157,4 +1150,22 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 		t.Fatal("run function did not complete within the timeout after interrupt.")
 	}
 	require.NoError(t, err)
+}
+
+func freePort(t *testing.T) int {
+	t.Helper()
+	var randomFreePort int
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		t.Fatalf("Failed to create listener: %v", err)
+	}
+
+	defer func() {
+		err := listener.Close()
+		if err != nil {
+			t.Fatalf("Failed to close listener: %v", err)
+		}
+	}()
+	randomFreePort = listener.Addr().(*net.TCPAddr).Port
+	return randomFreePort
 }
