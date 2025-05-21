@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,8 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 		method       string
 	}
 	type args struct {
-		job *api.Job
+		job     *api.Job
+		context *config.RequestContext
 	}
 
 	tests := []struct {
@@ -33,6 +35,8 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 		wantMutated  bool
 		wantWarnings []error
 		wantErr      bool
+
+		wantedHeaders map[string]string
 	}{
 		{
 			name: "Test simple mutation",
@@ -50,6 +54,53 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				},
 			},
 			wantMutated: true,
+		},
+		{
+			name: "with context client ip",
+			fields: fields{
+				name:         "test",
+				endpointPath: "/test",
+				method:       "POST",
+			},
+			args: args{
+				job: &api.Job{},
+				context: &config.RequestContext{
+					ClientIP: "127.0.0.1",
+				},
+			},
+			wantOut: &api.Job{
+				Meta: map[string]string{
+					"test": "test",
+				},
+			},
+			wantMutated: true,
+			wantedHeaders: map[string]string{
+				"X-Forwarded-For": "127.0.0.1",
+				"NACP-Client-IP":  "127.0.0.1",
+			},
+		},
+		{
+			name: "with context accessor id",
+			fields: fields{
+				name:         "test",
+				endpointPath: "/test",
+				method:       "POST",
+			},
+			args: args{
+				job: &api.Job{},
+				context: &config.RequestContext{
+					AccessorID: "1234",
+				},
+			},
+			wantOut: &api.Job{
+				Meta: map[string]string{
+					"test": "test",
+				},
+			},
+			wantMutated: true,
+			wantedHeaders: map[string]string{
+				"NACP-Accessor-ID": "1234",
+			},
 		},
 	}
 	for _, tt := range tests {
