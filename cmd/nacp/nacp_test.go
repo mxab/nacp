@@ -1123,31 +1123,65 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 	// config
 	cfg := config.DefaultConfig()
 
-	// assign a random free port
+	tt := []struct {
+		name   string
+		config func() *config.Config
+	}{
+		{
+			name: "default config",
+			config: func() *config.Config {
 
-	cfg.Port = freePort(t)
+				return cfg
+			},
+		},
+		{
+			name: "with otel",
+			config: func() *config.Config {
+				cfg := config.DefaultConfig()
+				cfg.Telemetry = &config.Telemetry{
+					Logging: &config.Logging{
+						Type: "otel",
+					},
+					Tracing: &config.Tracing{
+						Enabled: true,
+					},
+					Metrics: &config.Metrics{
+						Enabled: true,
+					},
+				}
+				return cfg
+			},
+		},
+	}
 
-	done := make(chan struct{})
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
 
-	go func() {
-		err := run(cfg)
-		assert.NoError(t, err)
-		close(done) // Signal that the run function has finished.
-	}()
-	time.Sleep(3 * time.Second)
+			cfg.Port = freePort(t)
 
-	t.Log("Sending OS interrupt signal (SIGINT)...")
+			done := make(chan struct{})
 
-	require.NoError(t, syscall.Kill(syscall.Getpid(), syscall.SIGINT))
+			go func() {
+				err := run(cfg)
+				assert.NoError(t, err)
+				close(done) // Signal that the run function has finished.
+			}()
+			time.Sleep(3 * time.Second)
 
-	// Wait for the 'run' function to complete, with a timeout.
-	// This ensures the test doesn't hang indefinitely if 'run' fails to exit.
-	select {
-	case <-done:
-		t.Log("run function completed successfully after interrupt.")
-		// Test passed: the function exited as expected.
-	case <-time.After(5 * time.Second): // Adjust timeout as needed
-		t.Fatal("run function did not complete within the timeout after interrupt.")
+			t.Log("Sending OS interrupt signal (SIGINT)...")
+
+			require.NoError(t, syscall.Kill(syscall.Getpid(), syscall.SIGINT))
+
+			// Wait for the 'run' function to complete, with a timeout.
+			// This ensures the test doesn't hang indefinitely if 'run' fails to exit.
+			select {
+			case <-done:
+				t.Log("run function completed successfully after interrupt.")
+				// Test passed: the function exited as expected.
+			case <-time.After(5 * time.Second): // Adjust timeout as needed
+				t.Fatal("run function did not complete within the timeout after interrupt.")
+			}
+		})
 	}
 }
 

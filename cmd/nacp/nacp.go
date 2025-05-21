@@ -317,8 +317,7 @@ func handleJobValdidateResponse(resp *http.Response, appLogger *slog.Logger) err
 	responeData, err := json.Marshal(response)
 
 	if err != nil {
-		appLogger.Error("Error marshalling job", "error", err)
-		return err
+		return fmt.Errorf("error marshalling job: %w", err)
 	}
 
 	if isGzip {
