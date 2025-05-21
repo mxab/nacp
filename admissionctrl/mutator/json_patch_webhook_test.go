@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,7 @@ func TestJsonPatchMutator(t *testing.T) {
 		name string
 
 		job          *api.Job
+		context      *config.RequestContext
 		endpointPath string
 		method       string
 
@@ -28,6 +30,8 @@ func TestJsonPatchMutator(t *testing.T) {
 		wantWarns   []error
 		wantJob     *api.Job
 		wantMutated bool
+
+		wantedHeaders map[string]string
 	}{
 		{
 			name:         "empty response",
@@ -79,6 +83,41 @@ func TestJsonPatchMutator(t *testing.T) {
 			wantJob:     &api.Job{},
 			wantMutated: false,
 		},
+		{
+			name:         "with ClientIP context",
+			endpointPath: "/mutate",
+			method:       "POST",
+			response:     []byte(`{}`),
+			job:          &api.Job{},
+			context: &config.RequestContext{
+				ClientIP: "127.0.0.1",
+			},
+			wantErr:     nil,
+			wantWarns:   nil,
+			wantJob:     &api.Job{},
+			wantMutated: false,
+			wantedHeaders: map[string]string{
+				"X-Forwarded-For": "127.0.0.1",
+				"NACP-Client-IP":  "127.0.0.1",
+			},
+		},
+		{
+			name:         "with AccessorID context",
+			endpointPath: "/mutate",
+			method:       "POST",
+			response:     []byte(`{}`),
+			job:          &api.Job{},
+			context: &config.RequestContext{
+				AccessorID: "1234",
+			},
+			wantErr:     nil,
+			wantWarns:   nil,
+			wantJob:     &api.Job{},
+			wantMutated: false,
+			wantedHeaders: map[string]string{
+				"NACP-Accessor-ID": "1234",
+			},
+		},
 	}
 
 	for _, tc := range tt {
@@ -91,6 +130,10 @@ func TestJsonPatchMutator(t *testing.T) {
 				assert.Equal(t, tc.endpointPath, r.URL.Path)
 				assert.Equal(t, tc.method, r.Method)
 
+				for key, value := range tc.wantedHeaders {
+					assert.Equal(t, value, r.Header.Get(key))
+				}
+
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(tc.response)
@@ -101,7 +144,7 @@ func TestJsonPatchMutator(t *testing.T) {
 			mutator, err := NewJsonPatchWebhookMutator(tc.name, webhookServer.URL+tc.endpointPath, tc.method, slog.New(slog.DiscardHandler))
 			require.NoError(t, err)
 
-			payload := &types.Payload{Job: tc.job}
+			payload := &types.Payload{Job: tc.job, Context: tc.context}
 			job, mutated, warnings, err := mutator.Mutate(payload)
 
 			require.True(t, webhookCalled)
