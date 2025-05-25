@@ -61,7 +61,11 @@ type MockMutator struct {
 
 func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
 	args := m.Called(payload)
-	return args.Get(0).(*api.Job), args.Bool(1), args.Get(2).([]error), args.Error(3)
+	job := out
+	if args.Get(0) != nil {
+		job = args.Get(0).(*api.Job)
+	}
+	return job, args.Bool(1), args.Get(2).([]error), args.Error(3)
 }
 func (m *MockMutator) Name() string {
 	return "mock-mutator"

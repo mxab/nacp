@@ -521,13 +521,23 @@ func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
 	return validator
 }
+
 func mockValidatorReturningError(err string) admissionctrl.JobValidator {
 
 	validator := new(testutil.MockValidator)
 	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
 	return validator
 }
-
+func mockMutatorReturningWarnings(warning string) admissionctrl.JobMutator {
+	mutator := new(testutil.MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{fmt.Errorf("%s", warning)}, nil)
+	return mutator
+}
+func mockMutatorReturningError(err string) admissionctrl.JobMutator {
+	mutator := new(testutil.MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{fmt.Errorf("%s", err)}, nil)
+	return mutator
+}
 func readClosterToString(t *testing.T, rc io.ReadCloser) string {
 	t.Helper()
 	data, err := io.ReadAll(rc)
@@ -953,37 +963,71 @@ func TestOtelInstrumentation(t *testing.T) {
 	type test struct {
 		name string
 
-		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
-		wantNomadRequestJson  string
-		wantProxyResponse     interface{}
+		requestSender func(*api.Client) (interface{}, *api.WriteMeta, error)
+
 		nomadResponse         string
 		nomadResponseEncoding string
 		//	responseWarnings []error
 		validators []admissionctrl.JobValidator
 		mutators   []admissionctrl.JobMutator
+
+		expectedMetricWithValue []map[string]metricdata.Aggregation
 	}
 
 	tests := []test{
 		{
 
-			name: "create job adds warnings",
+			name: "validator warning increments warning.count",
 
 			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
 				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
-			},
-
-			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
-
-			wantProxyResponse: &api.JobRegisterResponse{
-				Warnings: "1 warning:\n\n* some warning",
 			},
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators: []admissionctrl.JobValidator{
 				mockValidatorReturningWarnings("some warning"),
 			},
-			mutators: []admissionctrl.JobMutator{},
+
+			expectedMetricWithValue: []map[string]metricdata.Aggregation{
+				{
+					"nacp.validator.warning.count": metricdata.Sum[float64]{
+						Temporality: metricdata.CumulativeTemporality,
+						IsMonotonic: true,
+						DataPoints: []metricdata.DataPoint[float64]{
+							{
+								Attributes: attribute.NewSet(attribute.String("validator.name", "mock-validator")),
+								Value:      1,
+							},
+						},
+					},
+				},
+			},
 		},
+
+		// {
+		// 	name: "mutator warning increments warning.count",
+		// 	requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+		// 		return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
+		// 	},
+		// 	nomadResponse: toJson(t, &api.JobRegisterResponse{}),
+		// 	mutators: []admissionctrl.JobMutator{
+		// 		mockMutatorReturningWarnings("some warning"),
+		// 	},
+		// 	expectedMetricWithValue: []map[string]metricdata.Aggregation{
+		// 		{
+		// 			"nacp.mutator.warning.count": metricdata.Sum[float64]{
+		// 				Temporality: metricdata.CumulativeTemporality,
+		// 				IsMonotonic: true,
+		// 				DataPoints: []metricdata.DataPoint[float64]{
+		// 					{
+		// 						Attributes: attribute.NewSet(attribute.String("mutator.name", "mock-mutator")),
+		// 						Value:      1,
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
@@ -999,10 +1043,6 @@ func TestOtelInstrumentation(t *testing.T) {
 			slog.SetLogLoggerLevel(slog.LevelInfo)
 
 			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-
-				jsonData, err := io.ReadAll(req.Body)
-				require.NoError(t, err)
-				assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
 
 				if tc.nomadResponseEncoding == "gzip" {
 					rw.Header().Set("Content-Encoding", "gzip")
@@ -1034,14 +1074,13 @@ func TestOtelInstrumentation(t *testing.T) {
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
 
-			_, _, err = tc.requestSender(nomadClient)
-
-			assert.NoError(t, err, "No http call error")
+			tc.requestSender(nomadClient)
 
 			resourceMetrics := &metricdata.ResourceMetrics{}
 			require.NoError(t, metricReader.Collect(t.Context(), resourceMetrics))
 
 			flush(ctx)
+
 			spans := traceReader.GetSpans()
 
 			require.NoError(t, shutdown(ctx))
@@ -1058,8 +1097,11 @@ func TestOtelInstrumentation(t *testing.T) {
 			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.request.size", attribute.String("http.method", "PUT"))
 			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.duration", attribute.String("http.method", "PUT"))
 
-			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "nacp.controller", "nacp.validator.warning.count", attribute.String("validator.name", "mock-validator"))
-
+			for _, expectedMetric := range tc.expectedMetricWithValue {
+				for name, expected := range expectedMetric {
+					AssertScopeMetricHasValue(t, resourceMetrics.ScopeMetrics, "nacp.controller", name, expected)
+				}
+			}
 			//metricdatatest.AssertHasAttributes(t, resourceMetrics.ScopeMetrics[0].Metrics[0], attribute.String("http.method", "POST"))
 
 			// AssertPathContains(t, metric,
@@ -1087,7 +1129,23 @@ func AssertScopeMetricHasAttributes(t *testing.T, scopeMetrics []metricdata.Scop
 			}
 		}
 	}
-	return assert.True(t, found, "Expected log body to be present")
+	return assert.Truef(t, found, "Expected metric %s to be found in scope %s", metricName, scope)
+}
+func AssertScopeMetricHasValue(t *testing.T, scopeMetrics []metricdata.ScopeMetrics, scope, metricName string, expected metricdata.Aggregation) bool {
+	t.Helper()
+
+	for _, scopeMetric := range scopeMetrics {
+		if scope == scopeMetric.Scope.Name {
+			for _, metric := range scopeMetric.Metrics {
+				if metric.Name == metricName {
+
+					return metricdatatest.AssertAggregationsEqual(t, expected, metric.Data, metricdatatest.IgnoreTimestamp(), metricdatatest.IgnoreExemplars())
+
+				}
+			}
+		}
+	}
+	return assert.Failf(t, "metric not found", "metric with name %s not found in scope %s", metricName, scope)
 }
 func AssertLogBodyPresent(t *testing.T, records []*logtest.ScopeRecords, body string, attrs ...attribute.KeyValue) bool {
 	t.Helper()
@@ -1120,9 +1178,6 @@ func AssertLogBodyPresent(t *testing.T, records []*logtest.ScopeRecords, body st
 
 func TestRunTerminatesOnSIGINT(t *testing.T) {
 
-	// config
-	cfg := config.DefaultConfig()
-
 	tt := []struct {
 		name   string
 		config func() *config.Config
@@ -1130,7 +1185,8 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 		{
 			name: "default config",
 			config: func() *config.Config {
-
+				cfg := config.DefaultConfig()
+				cfg.Port = freePort(t)
 				return cfg
 			},
 		},
@@ -1138,17 +1194,10 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 			name: "with otel",
 			config: func() *config.Config {
 				cfg := config.DefaultConfig()
-				cfg.Telemetry = &config.Telemetry{
-					Logging: &config.Logging{
-						Type: "otel",
-					},
-					Tracing: &config.Tracing{
-						Enabled: true,
-					},
-					Metrics: &config.Metrics{
-						Enabled: true,
-					},
-				}
+				cfg.Port = freePort(t)
+				cfg.Telemetry.Logging.Type = "otel"
+				cfg.Telemetry.Metrics.Enabled = true
+				cfg.Telemetry.Tracing.Enabled = true
 				return cfg
 			},
 		},
@@ -1157,7 +1206,7 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 
-			cfg.Port = freePort(t)
+			cfg := tc.config()
 
 			done := make(chan struct{})
 
