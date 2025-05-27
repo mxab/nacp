@@ -17,34 +17,44 @@ import (
 	"github.com/hashicorp/nomad/api"
 )
 
-var (
-	meter                 = otel.Meter("nacp.controller")
+type Metrics struct {
 	validatorWarningCount o11y.NacpValidatorWarningCount
 	validatorErrorCount   o11y.NacpValidatorErrorCount
 	mutatorWarningCount   o11y.NacpMutatorWarningCount
 	mutatorErrorCount     o11y.NacpMutatorErrorCount
 	mutatorMutationCount  o11y.NacpMutatorMutationCount
-)
+}
 
-func init() {
+func newMetrics() *Metrics {
+	meter := otel.Meter("nacp.controller")
 
-	var err error
-	if validatorWarningCount, err = o11y.NewNacpValidatorWarningCount(meter); err != nil {
+	validatorWarningCount, err := o11y.NewNacpValidatorWarningCount(meter)
+	if err != nil {
 		panic(err)
 	}
-	if validatorErrorCount, err = o11y.NewNacpValidatorErrorCount(meter); err != nil {
+	validatorErrorCount, err := o11y.NewNacpValidatorErrorCount(meter)
+	if err != nil {
 		panic(err)
 	}
-	if mutatorWarningCount, err = o11y.NewNacpMutatorWarningCount(meter); err != nil {
+	mutatorWarningCount, err := o11y.NewNacpMutatorWarningCount(meter)
+	if err != nil {
 		panic(err)
 	}
-	if mutatorErrorCount, err = o11y.NewNacpMutatorErrorCount(meter); err != nil {
+	mutatorErrorCount, err := o11y.NewNacpMutatorErrorCount(meter)
+	if err != nil {
 		panic(err)
 	}
-	if mutatorMutationCount, err = o11y.NewNacpMutatorMutationCount(meter); err != nil {
+	mutatorMutationCount, err := o11y.NewNacpMutatorMutationCount(meter)
+	if err != nil {
 		panic(err)
 	}
-
+	return &Metrics{
+		validatorWarningCount: validatorWarningCount,
+		validatorErrorCount:   validatorErrorCount,
+		mutatorWarningCount:   mutatorWarningCount,
+		mutatorErrorCount:     mutatorErrorCount,
+		mutatorMutationCount:  mutatorMutationCount,
+	}
 }
 
 type AdmissionController interface {
@@ -66,6 +76,7 @@ type JobHandler struct {
 	validators   []JobValidator
 	resolveToken bool
 	logger       *slog.Logger
+	metrics      *Metrics
 }
 
 func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger *slog.Logger, resolverToken bool) *JobHandler {
@@ -74,6 +85,7 @@ func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger *slo
 		validators:   validators,
 		logger:       logger,
 		resolveToken: resolverToken,
+		metrics:      newMetrics(),
 	}
 }
 
@@ -104,13 +116,13 @@ func (j *JobHandler) AdmissionMutators(payload *types.Payload) (job *api.Job, wa
 		var mutated bool
 		job, mutated, w, err = mutator.Mutate(payload)
 		if mutated {
-			mutatorMutationCount.Add(context.Background(), 1, mutator.Name())
+			j.metrics.mutatorMutationCount.Add(context.Background(), 1, mutator.Name())
 		}
-		mutatorWarningCount.Add(context.Background(), float64(len(w)), mutator.Name())
+		j.metrics.mutatorWarningCount.Add(context.Background(), float64(len(w)), mutator.Name())
 
 		j.logger.Debug("job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
 		if err != nil {
-			mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
+			j.metrics.mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
 			return nil, nil, fmt.Errorf("error in job mutator %s: %v", mutator.Name(), err)
 		}
 		warnings = append(warnings, w...)
@@ -131,10 +143,10 @@ func (j *JobHandler) AdmissionValidators(payload *types.Payload) ([]error, error
 	for _, validator := range j.validators {
 		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
 		w, err := validator.Validate(payload)
-		validatorWarningCount.Add(context.Background(), float64(len(w)), validator.Name())
+		j.metrics.validatorWarningCount.Add(context.Background(), float64(len(w)), validator.Name())
 		j.logger.Debug("job validate results", "validator", validator.Name(), "warnings", w, "error", err)
 		if err != nil {
-			validatorErrorCount.Add(context.Background(), 1, validator.Name())
+			j.metrics.validatorErrorCount.Add(context.Background(), 1, validator.Name())
 			errs = multierror.Append(errs, err)
 		}
 		warnings = append(warnings, w...)
