@@ -33,6 +33,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/log/logtest"
@@ -402,7 +403,7 @@ func TestProxy(t *testing.T) {
 				tc.resolveToken,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport, false)
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
@@ -489,7 +490,7 @@ func TestJobUpdateProxy(t *testing.T) {
 				slog.New(slog.DiscardHandler),
 				false,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil, false)
+			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -606,7 +607,7 @@ func TestAdmissionControllerErrors(t *testing.T) {
 		slog.New(slog.DiscardHandler),
 		false,
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil, false)
+	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 
@@ -1154,8 +1155,8 @@ func TestOtelInstrumentation(t *testing.T) {
 				false,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, otelslog.NewLogger("testnacp"), proxyTransport, true)
-			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+			proxy := NewProxyHandler(nomadURL, jobHandler, otelslog.NewLogger("testnacp"), proxyTransport)
+			proxyServer := httptest.NewServer(otelhttp.NewHandler(http.HandlerFunc(proxy), "/"))
 
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
@@ -1167,7 +1168,7 @@ func TestOtelInstrumentation(t *testing.T) {
 
 			flush(ctx)
 
-			//spans := traceReader.GetSpans()
+			spans := traceReader.GetSpans()
 
 			require.NoError(t, shutdown(ctx))
 
@@ -1180,8 +1181,8 @@ func TestOtelInstrumentation(t *testing.T) {
 
 			require.NotEmpty(t, resourceMetrics.ScopeMetrics, "Expected metrics to be found")
 
-			// AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.request.size", attribute.String("http.method", "PUT"))
-			// AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.duration", attribute.String("http.method", "PUT"))
+			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.request.size", attribute.String("http.method", "PUT"))
+			AssertScopeMetricHasAttributes(t, resourceMetrics.ScopeMetrics, "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp", "http.server.duration", attribute.String("http.method", "PUT"))
 
 			for _, expectedMetric := range tc.expectedMetricWithValue {
 				for name, expected := range expectedMetric {
@@ -1189,8 +1190,8 @@ func TestOtelInstrumentation(t *testing.T) {
 				}
 			}
 
-			// require.NotEmpty(t, spans, "Expected spans to be found")
-			// assert.Len(t, spans, 1, "Expected one span entry")
+			require.NotEmpty(t, spans, "Expected spans to be found")
+			assert.Len(t, spans, 1, "Expected one span entry")
 
 		})
 	}

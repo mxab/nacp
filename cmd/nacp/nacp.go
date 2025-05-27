@@ -106,7 +106,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 
 	return &aclToken, nil
 }
-func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport, otelInstrumentation bool) func(http.ResponseWriter, *http.Request) {
+func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -139,9 +139,9 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		return nil
 	}
 	var proxyHandler http.Handler = proxy
-	if otelInstrumentation {
-		proxyHandler = otelhttp.NewHandler(proxyHandler, "/")
-	}
+	// if otelInstrumentation {
+	// 	proxyHandler = otelhttp.NewHandler(proxyHandler, "/")
+	// }
 	nacpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
@@ -677,7 +677,7 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		resolveToken = true
 	}
 
-	handler := admissionctrl.NewJobHandler(
+	jobHandler := admissionctrl.NewJobHandler(
 
 		jobMutators,
 		jobValidators,
@@ -685,7 +685,7 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		resolveToken,
 	)
 
-	proxy := NewProxyHandler(backend, handler, loggerFactory("proxy-handler"), proxyTransport, otelInstrumentation)
+	proxy := NewProxyHandler(backend, jobHandler, loggerFactory("proxy-handler"), proxyTransport)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -698,10 +698,15 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		}
 	}
 
+	handlerFunc := http.HandlerFunc(proxy)
+	if otelInstrumentation {
+		handlerFunc = otelhttp.NewHandler(handlerFunc, "/").(http.HandlerFunc)
+	}
+
 	server := &http.Server{
 		Addr:         bind,
 		TLSConfig:    tlsConfig,
-		Handler:      http.HandlerFunc(proxy),
+		Handler:      handlerFunc,
 		ReadTimeout:  nomadTimeout,
 		WriteTimeout: nomadTimeout,
 	}
