@@ -979,8 +979,6 @@ func TestOtelInstrumentation(t *testing.T) {
 		mutators   []admissionctrl.JobMutator
 
 		expectedMetricWithValue []map[string]metricdata.Aggregation
-
-		skip bool
 	}
 
 	tests := []test{
@@ -1117,9 +1115,6 @@ func TestOtelInstrumentation(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			if tc.skip {
-				t.Skip("Skipping test as it is not relevant for this run")
-			}
 			ctx := t.Context()
 
 			logRecorder, metricReader, traceReader := testutil.OtelExporters(t)
