@@ -73,8 +73,6 @@ func TestOtlpSetup(t *testing.T) {
 }
 func TestOtlpSetupWith(t *testing.T) {
 
-	logger := otelslog.NewLogger("mytest")
-
 	ctx := t.Context()
 	assert := assert.New(t)
 	require := require.New(t)
@@ -84,6 +82,7 @@ func TestOtlpSetupWith(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to setup OTel SDK: %v", err)
 	}
+	logger := otelslog.NewLogger("mytest")
 
 	mProvider := otel.GetMeterProvider()
 	assert.NotNil(mProvider)
@@ -94,6 +93,9 @@ func TestOtlpSetupWith(t *testing.T) {
 
 	flushErr := flush(ctx)
 	require.NoError(flushErr, "failed to flush OTel SDK")
+
+	err = otelShutdown(ctx)
+	require.NoError(err, "failed to shutdown OTel SDK")
 	foundLogs := false
 
 	for _, scopelogRecords := range lr.Result() {
@@ -105,6 +107,6 @@ func TestOtlpSetupWith(t *testing.T) {
 			}
 		}
 	}
-	err = otelShutdown(ctx)
+
 	assert.True(foundLogs, "expected log not found")
 }
