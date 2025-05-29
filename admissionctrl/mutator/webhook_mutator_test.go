@@ -116,6 +116,9 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				job := &api.Job{}
 				json.NewDecoder(req.Body).Decode(job)
 				assert.Equal(t, job, tt.args.job, "Ensure job is set")
+				for key, value := range tt.wantedHeaders {
+					assert.Equal(t, value, req.Header.Get(key), "Header %s does not match", key)
+				}
 				rw.WriteHeader(http.StatusOK)
 				json.NewEncoder(rw).Encode(tt.wantOut)
 
@@ -129,7 +132,7 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				endpoint: endpoint,
 				method:   tt.fields.method,
 			}
-			payload := &types.Payload{Job: tt.args.job}
+			payload := &types.Payload{Job: tt.args.job, Context: tt.args.context}
 			gotOut, gotMutated, gotWarnings, err := w.Mutate(payload)
 			assert.True(t, endpointCalled, "Ensure endpoint was called")
 			if (err != nil) != tt.wantErr {
