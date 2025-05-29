@@ -93,7 +93,7 @@ func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, bool
 	patchedJobJson, err := patch.Apply(jobJson)
 
 	if err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, fmt.Errorf("failed to apply patch: %w", err)
 	}
 	var patchedJob api.Job
 	err = json.Unmarshal(patchedJobJson, &patchedJob)

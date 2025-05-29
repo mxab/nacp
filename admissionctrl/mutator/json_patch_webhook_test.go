@@ -65,6 +65,24 @@ func TestJsonPatchMutator(t *testing.T) {
 			wantMutated: true,
 		},
 		{
+			name:         "faulty patch",
+			endpointPath: "/mutate",
+			method:       "POST",
+
+			response: []byte(`{
+				"patch": [
+					{"op": "ae233 4 fä", "path": "/Meta", "value": null}
+				]
+			}`),
+
+			job: &api.Job{},
+
+			wantErr:     fmt.Errorf("failed to apply patch"),
+			wantWarns:   nil,
+			wantJob:     nil,
+			wantMutated: false,
+		},
+		{
 			name:         "with warnings",
 			endpointPath: "/mutate",
 			method:       "POST",
@@ -148,7 +166,11 @@ func TestJsonPatchMutator(t *testing.T) {
 			job, mutated, warnings, err := mutator.Mutate(payload)
 
 			require.True(t, webhookCalled)
-			assert.Equal(t, tc.wantErr, err)
+			if tc.wantErr != nil {
+				assert.ErrorContains(t, err, tc.wantErr.Error(), "Ensure error matches expected")
+			} else {
+				assert.NoError(t, err, "Ensure no error occurred")
+			}
 			assert.Equal(t, tc.wantWarns, warnings)
 			assert.Equal(t, tc.wantJob, job)
 			assert.Equal(t, tc.wantMutated, mutated)
