@@ -94,6 +94,36 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 			wantWarnings: nil,
 			wantErr:      true,
 		},
+		{
+			name: "error when elements are not queryable",
+			//faultypatch has only a patch, no errors or warnings
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch.rego"),
+				`errors = data.faultypatch.errors`,
+			),
+
+			args: args{
+				job: &api.Job{},
+			},
+			wantMutated:  false,
+			wantOut:      nil,
+			wantWarnings: nil,
+			wantErr:      true,
+		},
+		{
+			name: "error when result is not a patch",
+			//faultypatch has only a patch does not contain valid patch data
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch.rego"),
+				`patch = data.faultypatch.patch`,
+			),
+
+			args: args{
+				job: &api.Job{},
+			},
+			wantMutated:  false,
+			wantOut:      nil,
+			wantWarnings: nil,
+			wantErr:      true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
