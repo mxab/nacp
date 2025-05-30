@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"syscall"
 	"testing"
@@ -1327,4 +1328,70 @@ func freePort(t *testing.T) int {
 	}()
 	randomFreePort = listener.Addr().(*net.TCPAddr).Port
 	return randomFreePort
+}
+
+func Test_buildConfig(t *testing.T) {
+	type args struct {
+		configPath string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    func() *config.Config
+		wantErr bool
+	}{
+		{
+			name: "default config",
+			args: args{
+				configPath: "",
+			},
+			want:    config.DefaultConfig,
+			wantErr: false,
+		},
+		{
+			name: "custom config",
+			args: args{
+				configPath: "../../testdata/testconfig.hcl",
+			},
+			want: func() *config.Config {
+				c := config.DefaultConfig()
+				c.Nomad.Address = "http://localhost:4321"
+				c.Port = 1234
+				return c
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid config",
+			args: args{
+				configPath: "../../testdata/brokenconfig.hcl",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := buildConfig(tt.args.configPath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("buildConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.want == nil {
+				if got != nil {
+					t.Errorf("buildConfig() = %v, want nil", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Errorf("buildConfig() = nil, want %v", tt.want())
+				return
+			}
+
+			expectedConfig := tt.want()
+			if !reflect.DeepEqual(got, expectedConfig) {
+				t.Errorf("buildConfig() = %v, want %v", got, expectedConfig)
+			}
+		})
+	}
 }
