@@ -125,7 +125,7 @@ func TestProxy(t *testing.T) {
 			}),
 
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -151,7 +151,7 @@ func TestProxy(t *testing.T) {
 			nomadResponseEncoding: "gzip",
 
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -172,7 +172,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -196,7 +196,7 @@ func TestProxy(t *testing.T) {
 				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
 			}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -221,7 +221,7 @@ func TestProxy(t *testing.T) {
 			}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -241,7 +241,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobPlanResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -279,7 +279,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobValidateResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -300,7 +300,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobValidateResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningError("some error"),
+				testutil.MockValidatorReturningError("some error"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -321,7 +321,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -346,7 +346,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -517,35 +517,7 @@ func buildNomadClient(t *testing.T, proxyServer *httptest.Server) *api.Client {
 	}
 	return nomadClient
 }
-func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
 
-	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
-	return validator
-}
-
-func mockValidatorReturningError(err string) admissionctrl.JobValidator {
-
-	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
-	return validator
-}
-func mockMutatorReturningWarnings(warning string) admissionctrl.JobMutator {
-	mutator := new(testutil.MockMutator)
-	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{fmt.Errorf("%s", warning)}, nil)
-	return mutator
-}
-func mockMutatorReturningError(err string) admissionctrl.JobMutator {
-	mutator := new(testutil.MockMutator)
-	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{}, fmt.Errorf("%s", err))
-	return mutator
-}
-func mockMutatorMutating(mutatedJob *api.Job) admissionctrl.JobMutator {
-	mutator := new(testutil.MockMutator)
-
-	mutator.On("Mutate", mock.Anything).Return(mutatedJob, true, []error{}, nil)
-	return mutator
-}
 func readClosterToString(t *testing.T, rc io.ReadCloser) string {
 	t.Helper()
 	data, err := io.ReadAll(rc)
@@ -993,7 +965,7 @@ func TestOtelInstrumentation(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 
 			expectedMetricWithValue: []map[string]metricdata.Aggregation{
@@ -1021,7 +993,7 @@ func TestOtelInstrumentation(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningError("some error"),
+				testutil.MockValidatorReturningError("some error"),
 			},
 
 			expectedMetricWithValue: []map[string]metricdata.Aggregation{
@@ -1046,7 +1018,7 @@ func TestOtelInstrumentation(t *testing.T) {
 			},
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			mutators: []admissionctrl.JobMutator{
-				mockMutatorReturningWarnings("some warning"),
+				testutil.MockMutatorReturningWarnings("some warning"),
 			},
 			expectedMetricWithValue: []map[string]metricdata.Aggregation{
 				{
@@ -1070,7 +1042,7 @@ func TestOtelInstrumentation(t *testing.T) {
 			},
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			mutators: []admissionctrl.JobMutator{
-				mockMutatorReturningError("some error"),
+				testutil.MockMutatorReturningError("some error"),
 			},
 			expectedMetricWithValue: []map[string]metricdata.Aggregation{
 				{
@@ -1094,7 +1066,7 @@ func TestOtelInstrumentation(t *testing.T) {
 			},
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			mutators: []admissionctrl.JobMutator{
-				mockMutatorMutating(testutil.ReadJob(t, "job.json")), // we don't care about the mutated job
+				testutil.MockMutatorMutating(testutil.ReadJob(t, "job.json")), // we don't care about the mutated job
 			},
 			expectedMetricWithValue: []map[string]metricdata.Aggregation{
 				{

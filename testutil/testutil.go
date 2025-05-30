@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -102,4 +103,33 @@ func OtelExporters(t *testing.T) (*logtest.Recorder, *metricSdk.ManualReader, *t
 	manualReader := metricSdk.NewManualReader()
 
 	return logRecorder, manualReader, spanExporter
+}
+func MockValidatorReturningWarnings(warning string) *MockValidator {
+
+	validator := new(MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
+	return validator
+}
+
+func MockValidatorReturningError(err string) *MockValidator {
+
+	validator := new(MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
+	return validator
+}
+func MockMutatorReturningWarnings(warning string) *MockMutator {
+	mutator := new(MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{fmt.Errorf("%s", warning)}, nil)
+	return mutator
+}
+func MockMutatorReturningError(err string) *MockMutator {
+	mutator := new(MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{}, fmt.Errorf("%s", err))
+	return mutator
+}
+func MockMutatorMutating(mutatedJob *api.Job) *MockMutator {
+	mutator := new(MockMutator)
+
+	mutator.On("Mutate", mock.Anything).Return(mutatedJob, true, []error{}, nil)
+	return mutator
 }
