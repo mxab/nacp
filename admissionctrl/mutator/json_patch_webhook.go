@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -49,17 +50,7 @@ func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, bool
 		return nil, false, nil, err
 	}
 
-	// Add context headers and body if available
-	if payload.Context != nil {
-		// Add standard headers for backward compatibility
-		if payload.Context.ClientIP != "" {
-			req.Header.Set("X-Forwarded-For", payload.Context.ClientIP) // Standard proxy header
-			req.Header.Set("NACP-Client-IP", payload.Context.ClientIP)  // NACP specific
-		}
-		if payload.Context.AccessorID != "" {
-			req.Header.Set("NACP-Accessor-ID", payload.Context.AccessorID)
-		}
-	}
+	remoteutil.ApplyContextHeaders(req, payload)
 
 	httpClient := &http.Client{}
 	res, err := httpClient.Do(req)

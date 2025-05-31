@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
@@ -29,17 +30,7 @@ func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, mutated b
 		return nil, false, nil, err
 	}
 
-	// Add context headers and body if available
-	if payload.Context != nil {
-		// Add standard headers for backward compatibility
-		if payload.Context.ClientIP != "" {
-			req.Header.Set("X-Forwarded-For", payload.Context.ClientIP) // Standard proxy header
-			req.Header.Set("NACP-Client-IP", payload.Context.ClientIP)  // NACP specific
-		}
-		if payload.Context.AccessorID != "" {
-			req.Header.Set("NACP-Accessor-ID", payload.Context.AccessorID)
-		}
-	}
+	remoteutil.ApplyContextHeaders(req, payload)
 
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
 	req.ContentLength = int64(len(data))
