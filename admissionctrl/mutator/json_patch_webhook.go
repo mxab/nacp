@@ -73,7 +73,9 @@ func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, bool
 	}
 
 	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchResponse.Patch)
-
+	if err != nil {
+		return nil, false, nil, err
+	}
 	return patchedJob, mutated, warnings, nil
 
 }
