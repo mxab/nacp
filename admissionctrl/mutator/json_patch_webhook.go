@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/mxab/nacp/admissionctrl/mutator/jsonpatcher"
 	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/hashicorp/nomad/api"
 )
 
@@ -72,27 +72,9 @@ func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, bool
 		}
 	}
 
-	patchJson, err := json.Marshal(patchResponse.Patch)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	patch, err := jsonpatch.DecodePatch(patchJson)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	j.logger.Debug("Got patch fom rule", "rule", j.name, "patch", string(patchJson), "job", payload.Job.ID)
-	patchedJobJson, err := patch.Apply(jobJson)
+	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchResponse.Patch)
 
-	if err != nil {
-		return nil, false, nil, fmt.Errorf("failed to apply patch: %w", err)
-	}
-	var patchedJob api.Job
-	err = json.Unmarshal(patchedJobJson, &patchedJob)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	mutated := len(patch) > 0
-	return &patchedJob, mutated, warnings, nil
+	return patchedJob, mutated, warnings, nil
 
 }
 func (j *JsonPatchWebhookMutator) Name() string {

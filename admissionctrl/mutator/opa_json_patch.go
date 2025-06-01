@@ -2,13 +2,12 @@ package mutator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/mutator/jsonpatcher"
 	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
 	"github.com/mxab/nacp/admissionctrl/types"
@@ -49,33 +48,12 @@ func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, bool, []
 		}
 	}
 	patchData := results.GetPatch()
-	patchJSON, err := json.Marshal(patchData)
+	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchData)
 	if err != nil {
 		return nil, false, nil, err
 	}
 
-	patch, err := jsonpatch.DecodePatch(patchJSON)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON), "job", payload.Job.ID)
-	jobJson, err := json.Marshal(payload.Job)
-	if err != nil {
-		return nil, false, nil, err
-	}
-
-	patched, err := patch.Apply(jobJson)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	var patchedJob api.Job
-	err = json.Unmarshal(patched, &patchedJob)
-	if err != nil {
-		return nil, false, nil, err
-	}
-	payload.Job = &patchedJob
-	mutated := len(patch) > 0
-	return payload.Job, mutated, allWarnings, nil
+	return patchedJob, mutated, allWarnings, nil
 }
 func (j *OpaJsonPatchMutator) Name() string {
 	return j.name
