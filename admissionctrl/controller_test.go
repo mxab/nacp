@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/mitchellh/copystructure"
 	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
@@ -12,9 +13,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type AddMetaMutator struct {
+	Field string
+}
+
+func (m *AddMetaMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
+	copy, err := copystructure.Copy(payload.Job)
+
+	if err != nil {
+		return nil, false, nil, fmt.Errorf("failed to copy job: %w", err)
+	}
+	job := copy.(*api.Job)
+	// Simulate a mutation by adding a field to the job's Meta
+	if job.Meta == nil {
+		job.Meta = make(map[string]string)
+	}
+	job.Meta[m.Field] = "applied"
+	return job, true, nil, nil
+}
+func (m *AddMetaMutator) Name() string {
+	return m.Field
+}
 func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	type fields struct {
-		mutator   func() *testutil.MockMutator
+		mutators  func() []JobMutator
 		validator func() *testutil.MockValidator
 	}
 	type args struct {
@@ -27,6 +49,9 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		mutator := new(testutil.MockMutator)
 		mutator.On("Mutate", payload).Return(payload.Job, true, []error{}, nil)
 		return mutator
+	}
+	defaultMutators := func() []JobMutator {
+		return []JobMutator{defaultMutator()}
 	}
 	defaultValidator := func() *testutil.MockValidator {
 
@@ -48,7 +73,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		{
 			name: "test",
 			fields: fields{
-				mutator:   defaultMutator,
+				mutators:  defaultMutators,
 				validator: defaultValidator,
 			},
 			args: args{
@@ -64,7 +89,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		{
 			name: "test validator error",
 			fields: fields{
-				mutator: defaultMutator,
+				mutators: defaultMutators,
 				validator: func() *testutil.MockValidator {
 					return testutil.MockValidatorReturningError("Validator error")
 				},
@@ -82,8 +107,10 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		{
 			name: "test mutator error",
 			fields: fields{
-				mutator: func() *testutil.MockMutator {
-					return testutil.MockMutatorReturningError("Mutator error")
+				mutators: func() []JobMutator {
+					return []JobMutator{
+						testutil.MockMutatorReturningError("Mutator error"),
+					}
 				},
 				validator: defaultValidator,
 			},
@@ -99,7 +126,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		{
 			name: "test validator warnings",
 			fields: fields{
-				mutator: defaultMutator,
+				mutators: defaultMutators,
 				validator: func() *testutil.MockValidator {
 					return testutil.MockValidatorReturningWarnings("Validator warning")
 				},
@@ -117,8 +144,10 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 		{
 			name: "test mutator warnings",
 			fields: fields{
-				mutator: func() *testutil.MockMutator {
-					return testutil.MockMutatorReturningWarnings("Mutator warning")
+				mutators: func() []JobMutator {
+					return []JobMutator{
+						testutil.MockMutatorReturningWarnings("Mutator warning"),
+					}
 				},
 
 				validator: defaultValidator,
@@ -132,15 +161,58 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			wantedCalledMutator:   true,
 			wantedCalledValidator: true,
 		},
+		{
+			name: "two mutators with changes are applied",
+			fields: fields{
+				mutators: func() []JobMutator {
+
+					return []JobMutator{&AddMetaMutator{Field: "mutator1"}, &AddMetaMutator{Field: "mutator2"}}
+				},
+				validator: defaultValidator,
+			},
+			args: args{
+				job: job,
+			},
+			want: &api.Job{
+				Meta: map[string]string{
+					"mutator1": "applied",
+					"mutator2": "applied",
+				},
+			},
+			wantWarnings:          nil,
+			wantErr:               false,
+			wantedCalledMutator:   true,
+			wantedCalledValidator: true,
+		},
+		{
+			name: "mutator returns nil job results in error",
+			fields: fields{
+				mutators: func() []JobMutator {
+					mutator := new(testutil.MockMutator)
+					mutator.On("Mutate", payload).Return(nil, false, []error{}, nil)
+					return []JobMutator{mutator}
+				},
+				validator: defaultValidator,
+			},
+			args: args{
+				job: job,
+			},
+			want:                  nil,
+			wantWarnings:          nil,
+			wantErr:               true,
+			wantedCalledMutator:   true,
+			wantedCalledValidator: false, // validator should not be called if mutator returns nil job
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mutator := tt.fields.mutator()
+			mutators := tt.fields.mutators()
+
 			validator := tt.fields.validator()
-			j := NewJobHandler([]JobMutator{mutator}, []JobValidator{validator}, slog.New(slog.DiscardHandler), tt.resolveToken)
+			j := NewJobHandler(mutators, []JobValidator{validator}, slog.New(slog.DiscardHandler), tt.resolveToken)
 			payload := &types.Payload{Job: tt.args.job}
-			_, warnings, err := j.ApplyAdmissionControllers(payload)
+			job, warnings, err := j.ApplyAdmissionControllers(payload)
 
 			assert.Equal(t, tt.wantWarnings, warnings, "Warnings should be equal")
 
@@ -149,12 +221,17 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 				return
 			}
 			if !tt.wantErr {
-				assert.Equal(t, tt.want, tt.args.job, "Jobs should be equal")
+				assert.Equal(t, tt.want, job, "Jobs should be equal")
 				assert.Equal(t, tt.wantWarnings, warnings, "Warnings should be equal")
 
 			}
 			if tt.wantedCalledMutator {
-				mutator.AssertExpectations(t)
+				for _, mutator := range mutators {
+					if mutator, ok := mutator.(*testutil.MockMutator); ok {
+						// Assert that the mutator was called
+						mutator.AssertExpectations(t)
+					}
+				}
 			}
 			if tt.wantedCalledValidator {
 				validator.AssertExpectations(t)

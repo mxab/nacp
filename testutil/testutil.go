@@ -119,7 +119,7 @@ func MockValidatorReturningError(err string) *MockValidator {
 }
 func MockMutatorReturningWarnings(warning string) *MockMutator {
 	mutator := new(MockMutator)
-	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{fmt.Errorf("%s", warning)}, nil)
+	mutator.On("Mutate", mock.Anything).Return(&api.Job{}, false, []error{fmt.Errorf("%s", warning)}, nil)
 	return mutator
 }
 func MockMutatorReturningError(err string) *MockMutator {
