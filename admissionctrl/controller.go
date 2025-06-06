@@ -151,7 +151,7 @@ func (j *JobHandler) AdmissionValidators(payload *types.Payload) ([]error, error
 		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
 		w, err := validator.Validate(payload)
 		j.metrics.validatorWarningCount.Add(context.Background(), float64(len(w)), validator.Name())
-		j.logger.Debug("job validate results", "validator", validator.Name(), "warnings", w, "error", err)
+		j.logger.Debug("job validate results", "job", payload.Job.ID, "validator", validator.Name(), "warnings", w, "error", err)
 		if err != nil {
 			j.metrics.validatorErrorCount.Add(context.Background(), 1, validator.Name())
 			errs = multierror.Append(errs, err)
