@@ -98,10 +98,11 @@ func TestOtlpSetupWith(t *testing.T) {
 	require.NoError(err, "failed to shutdown OTel SDK")
 	foundLogs := false
 
+	//TODO: use logtest to check logs
 	for _, scopelogRecords := range lr.Result() {
 
-		for _, log := range scopelogRecords.Records {
-			if strings.Contains(log.Body().String(), "some test log") {
+		for _, log := range scopelogRecords {
+			if strings.Contains(log.Body.String(), "some test log") {
 				foundLogs = true
 				break
 			}
