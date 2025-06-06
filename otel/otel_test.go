@@ -1,6 +1,7 @@
 package otel
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/log/logtest"
 )
 
 func TestHclog(t *testing.T) {
@@ -96,18 +99,28 @@ func TestOtlpSetupWith(t *testing.T) {
 
 	err = otelShutdown(ctx)
 	require.NoError(err, "failed to shutdown OTel SDK")
-	foundLogs := false
 
-	//TODO: use logtest to check logs
-	for _, scopelogRecords := range lr.Result() {
-
-		for _, log := range scopelogRecords {
-			if strings.Contains(log.Body.String(), "some test log") {
-				foundLogs = true
-				break
-			}
-		}
+	wantLogs := logtest.Recording{
+		logtest.Scope{
+			Name: "mytest",
+		}: []logtest.Record{
+			{
+				Context:      context.Background(),
+				Severity:     log.SeverityInfo,
+				SeverityText: log.SeverityInfo.String(),
+				Body:         log.StringValue("some test log"),
+				Attributes: []log.KeyValue{
+					log.String("foo", "bar"),
+					log.String("error", "test error"),
+				},
+			},
+		},
 	}
+	logtest.AssertEqual(t, wantLogs, lr.Result(),
+		// Ignore Timestamps.
+		logtest.Transform(func(time.Time) time.Time {
+			return time.Time{}
+		}),
+	)
 
-	assert.True(foundLogs, "expected log not found")
 }
