@@ -3,12 +3,14 @@ package mutator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +23,8 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 		method       string
 	}
 	type args struct {
-		job *api.Job
+		job     *api.Job
+		context *config.RequestContext
 	}
 
 	tests := []struct {
@@ -29,8 +32,11 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 		fields       fields
 		args         args
 		wantOut      *api.Job
+		wantMutated  bool
 		wantWarnings []error
 		wantErr      bool
+
+		wantedHeaders map[string]string
 	}{
 		{
 			name: "Test simple mutation",
@@ -47,6 +53,54 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 					"test": "test",
 				},
 			},
+			wantMutated: true,
+		},
+		{
+			name: "with context client ip",
+			fields: fields{
+				name:         "test",
+				endpointPath: "/test",
+				method:       "POST",
+			},
+			args: args{
+				job: &api.Job{},
+				context: &config.RequestContext{
+					ClientIP: "127.0.0.1",
+				},
+			},
+			wantOut: &api.Job{
+				Meta: map[string]string{
+					"test": "test",
+				},
+			},
+			wantMutated: true,
+			wantedHeaders: map[string]string{
+				"X-Forwarded-For": "127.0.0.1",
+				"NACP-Client-IP":  "127.0.0.1",
+			},
+		},
+		{
+			name: "with context accessor id",
+			fields: fields{
+				name:         "test",
+				endpointPath: "/test",
+				method:       "POST",
+			},
+			args: args{
+				job: &api.Job{},
+				context: &config.RequestContext{
+					AccessorID: "1234",
+				},
+			},
+			wantOut: &api.Job{
+				Meta: map[string]string{
+					"test": "test",
+				},
+			},
+			wantMutated: true,
+			wantedHeaders: map[string]string{
+				"NACP-Accessor-ID": "1234",
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -62,6 +116,9 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				job := &api.Job{}
 				json.NewDecoder(req.Body).Decode(job)
 				assert.Equal(t, job, tt.args.job, "Ensure job is set")
+				for key, value := range tt.wantedHeaders {
+					assert.Equal(t, value, req.Header.Get(key), "Header %s does not match", key)
+				}
 				rw.WriteHeader(http.StatusOK)
 				json.NewEncoder(rw).Encode(tt.wantOut)
 
@@ -75,14 +132,15 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				endpoint: endpoint,
 				method:   tt.fields.method,
 			}
-			payload := &types.Payload{Job: tt.args.job}
-			gotOut, gotWarnings, err := w.Mutate(payload)
+			payload := &types.Payload{Job: tt.args.job, Context: tt.args.context}
+			gotOut, gotMutated, gotWarnings, err := w.Mutate(payload)
 			assert.True(t, endpointCalled, "Ensure endpoint was called")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WebhookMutator.Mutate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, gotOut, tt.wantOut, "Ensure job is set")
+			assert.Equal(t, tt.wantMutated, gotMutated, "WebhookMutator.Mutate() mutated = %v, want %v", gotMutated, tt.wantMutated)
 			assert.Equal(t, gotWarnings, tt.wantWarnings, "Ensure warnings are set")
 
 		})

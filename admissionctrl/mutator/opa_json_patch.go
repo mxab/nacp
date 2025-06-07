@@ -2,12 +2,12 @@ package mutator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/hashicorp/go-hclog"
+	"log/slog"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/admissionctrl/mutator/jsonpatcher"
 	"github.com/mxab/nacp/admissionctrl/notation"
 	"github.com/mxab/nacp/admissionctrl/opa"
 	"github.com/mxab/nacp/admissionctrl/types"
@@ -15,17 +15,17 @@ import (
 
 type OpaJsonPatchMutator struct {
 	query  *opa.OpaQuery
-	logger hclog.Logger
+	logger *slog.Logger
 	name   string
 }
 
-func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, []error, error) {
+func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
 	allWarnings := make([]error, 0)
 	ctx := context.TODO()
 
 	results, err := j.query.Query(ctx, payload)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 
 	errors := results.GetErrors()
@@ -36,7 +36,7 @@ func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, []error,
 		for _, warn := range errors {
 			allErrors = multierror.Append(allErrors, fmt.Errorf("%s (%s)", warn, j.Name()))
 		}
-		return nil, nil, allErrors
+		return nil, false, nil, allErrors
 	}
 
 	warnings := results.GetWarnings()
@@ -48,39 +48,18 @@ func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, []error,
 		}
 	}
 	patchData := results.GetPatch()
-	patchJSON, err := json.Marshal(patchData)
+	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchData)
 	if err != nil {
-		return nil, nil, err
+		return nil, false, nil, err
 	}
 
-	patch, err := jsonpatch.DecodePatch(patchJSON)
-	if err != nil {
-		return nil, nil, err
-	}
-	j.logger.Debug("Got patch fom rule", "rule", j.Name(), "patch", string(patchJSON), "job", payload.Job.ID)
-	jobJson, err := json.Marshal(payload.Job)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	patched, err := patch.Apply(jobJson)
-	if err != nil {
-		return nil, nil, err
-	}
-	var patchedJob api.Job
-	err = json.Unmarshal(patched, &patchedJob)
-	if err != nil {
-		return nil, nil, err
-	}
-	payload.Job = &patchedJob
-
-	return payload.Job, allWarnings, nil
+	return patchedJob, mutated, allWarnings, nil
 }
 func (j *OpaJsonPatchMutator) Name() string {
 	return j.name
 }
 
-func NewOpaJsonPatchMutator(name, filename, query string, logger hclog.Logger, ImageVerifier notation.ImageVerifier) (*OpaJsonPatchMutator, error) {
+func NewOpaJsonPatchMutator(name, filename, query string, logger *slog.Logger, ImageVerifier notation.ImageVerifier) (*OpaJsonPatchMutator, error) {
 
 	ctx := context.TODO()
 	// read the policy file

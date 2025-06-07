@@ -1,0 +1,101 @@
+package remoteutil
+
+import (
+	"net/http"
+	"testing"
+
+	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/config"
+)
+
+func TestApplyContextHeders(t *testing.T) {
+	type args struct {
+		req     *http.Request
+		payload *types.Payload
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantedHeaders map[string]string
+	}{
+		{
+			name: "with context client ip",
+			args: args{
+				req: &http.Request{
+					Header: http.Header{},
+				},
+				payload: &types.Payload{
+					Context: &config.RequestContext{
+						ClientIP: "127.0.0.1",
+					},
+				},
+			},
+			wantedHeaders: map[string]string{
+				"X-Forwarded-For": "127.0.0.1",
+				"NACP-Client-IP":  "127.0.0.1"},
+		},
+		{
+			name: "with context accessor id",
+			args: args{
+				req: &http.Request{
+					Header: http.Header{},
+				},
+				payload: &types.Payload{
+					Context: &config.RequestContext{
+						AccessorID: "accessor-id",
+					},
+				},
+			},
+			wantedHeaders: map[string]string{
+				"NACP-Accessor-ID": "accessor-id",
+			},
+		},
+		{
+			name: "without context",
+			args: args{
+				req: &http.Request{
+					Header: http.Header{},
+				},
+				payload: &types.Payload{
+					Context: nil,
+				},
+			},
+			wantedHeaders: map[string]string{},
+		},
+		{
+			name: "with empty context",
+			args: args{
+				req: &http.Request{
+					Header: http.Header{},
+				},
+				payload: &types.Payload{
+					Context: &config.RequestContext{},
+				},
+			},
+			wantedHeaders: map[string]string{},
+		},
+
+		{
+			name: "without context",
+			args: args{
+				req: &http.Request{
+					Header: http.Header{},
+				},
+				payload: &types.Payload{
+					Context: nil,
+				},
+			},
+			wantedHeaders: map[string]string{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ApplyContextHeaders(tt.args.req, tt.args.payload)
+			for header, expectedValue := range tt.wantedHeaders {
+				if tt.args.req.Header.Get(header) != expectedValue {
+					t.Errorf("Expected header %s to be %s, got %s", header, expectedValue, tt.args.req.Header.Get(header))
+				}
+			}
+		})
+	}
+}

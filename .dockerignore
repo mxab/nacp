@@ -1,0 +1,13 @@
+**/*_test.go
+
+templates/
+testutil/
+.vscode/
+.github/
+.mypy_cache/
+
+config/testdata/
+
+example/
+
+.dccache/

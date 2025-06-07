@@ -2,15 +2,20 @@ package testutil
 
 import (
 	"encoding/json"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/mock"
+	"go.opentelemetry.io/otel/log/logtest"
+	metricSdk "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func readJobJson(t *testing.T, name string) []byte {
@@ -55,9 +60,13 @@ type MockMutator struct {
 	mock.Mock
 }
 
-func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
 	args := m.Called(payload)
-	return args.Get(0).(*api.Job), args.Get(1).([]error), args.Error(2)
+	job := out
+	if args.Get(0) != nil {
+		job = args.Get(0).(*api.Job)
+	}
+	return job, args.Bool(1), args.Get(2).([]error), args.Error(3)
 }
 func (m *MockMutator) Name() string {
 	return "mock-mutator"
@@ -84,4 +93,43 @@ func Filepath(t *testing.T, name string) string {
 	}
 
 	return path.Join(path.Dir(filename), "..", "testdata", name)
+}
+
+func OtelExporters(t *testing.T) (*logtest.Recorder, *metricSdk.ManualReader, *tracetest.InMemoryExporter) {
+	t.Helper()
+	spanExporter := tracetest.NewInMemoryExporter()
+	logRecorder := logtest.NewRecorder()
+
+	manualReader := metricSdk.NewManualReader()
+
+	return logRecorder, manualReader, spanExporter
+}
+func MockValidatorReturningWarnings(warning string) *MockValidator {
+
+	validator := new(MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
+	return validator
+}
+
+func MockValidatorReturningError(err string) *MockValidator {
+
+	validator := new(MockValidator)
+	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
+	return validator
+}
+func MockMutatorReturningWarnings(warning string) *MockMutator {
+	mutator := new(MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(&api.Job{}, false, []error{fmt.Errorf("%s", warning)}, nil)
+	return mutator
+}
+func MockMutatorReturningError(err string) *MockMutator {
+	mutator := new(MockMutator)
+	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{}, fmt.Errorf("%s", err))
+	return mutator
+}
+func MockMutatorMutating(mutatedJob *api.Job) *MockMutator {
+	mutator := new(MockMutator)
+
+	mutator.On("Mutate", mock.Anything).Return(mutatedJob, true, []error{}, nil)
+	return mutator
 }

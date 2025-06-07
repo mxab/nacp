@@ -1,0 +1,39 @@
+
+templates:
+  - pattern: metric.go.j2
+    filter: >
+      .groups
+      | map(select(.type == "metric"))
+    application_mode: single
+    file_name: metric.go
+comment_formats:
+  go:
+    format: markdown
+    prefix: "// "
+    indent_first_level_list_items: true
+    shortcut_reference_link: true
+    trim: true
+    word_wrap:
+      line_length: 80
+default_comment_format: go
+text_maps:
+  attribute_type_method:
+    string: String
+    string[]: StringSlice
+    int: Int
+    int[]: IntSlice
+    double: Float64
+    double[]: FloatSlice
+    boolean: Bool
+    boolean[]: BoolSlice
+  attribute_type_value:
+    string: string
+    string[]: "...string"
+    int: int
+    int[]: "...int"
+    double: float64
+    double[]: "...float64"
+    boolean: bool
+    boolean[]: "...bool"
+  metric_type_interface:
+    counter: Float64Counter

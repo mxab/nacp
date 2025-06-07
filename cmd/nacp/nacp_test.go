@@ -7,17 +7,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
-
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/hashicorp/nomad/helper/tlsutil"
@@ -32,7 +34,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// rewrite the test above as table driven test
 func TestProxy(t *testing.T) {
 
 	type test struct {
@@ -116,7 +117,7 @@ func TestProxy(t *testing.T) {
 			}),
 
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -142,7 +143,7 @@ func TestProxy(t *testing.T) {
 			nomadResponseEncoding: "gzip",
 
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -163,7 +164,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobRegisterResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -187,7 +188,7 @@ func TestProxy(t *testing.T) {
 				Warnings: multierror.Append(nil, fmt.Errorf("some warning")).Error(),
 			}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -212,7 +213,7 @@ func TestProxy(t *testing.T) {
 			}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -232,7 +233,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobPlanResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -270,7 +271,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobValidateResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -291,7 +292,7 @@ func TestProxy(t *testing.T) {
 
 			nomadResponse: toJson(t, &api.JobValidateResponse{}),
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningError("some error"),
+				testutil.MockValidatorReturningError("some error"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -312,7 +313,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -337,7 +338,7 @@ func TestProxy(t *testing.T) {
 			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
-				mockValidatorReturningWarnings("some warning"),
+				testutil.MockValidatorReturningWarnings("some warning"),
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
@@ -391,11 +392,11 @@ func TestProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				tc.resolveToken,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, hclog.NewNullLogger(), proxyTransport)
+			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport)
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
@@ -479,10 +480,10 @@ func TestJobUpdateProxy(t *testing.T) {
 			jobHandler := admissionctrl.NewJobHandler(
 				tc.mutators,
 				tc.validators,
-				hclog.NewNullLogger(),
+				slog.New(slog.DiscardHandler),
 				false,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 			defer proxyServer.Close()
@@ -507,18 +508,6 @@ func buildNomadClient(t *testing.T, proxyServer *httptest.Server) *api.Client {
 		t.Fatal(err)
 	}
 	return nomadClient
-}
-func mockValidatorReturningWarnings(warning string) admissionctrl.JobValidator {
-
-	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf(warning)}, nil)
-	return validator
-}
-func mockValidatorReturningError(err string) admissionctrl.JobValidator {
-
-	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf(err))
-	return validator
 }
 
 func readClosterToString(t *testing.T, rc io.ReadCloser) string {
@@ -580,10 +569,10 @@ func TestAdmissionControllerErrors(t *testing.T) {
 	jobHandler := admissionctrl.NewJobHandler(
 		[]admissionctrl.JobMutator{},
 		[]admissionctrl.JobValidator{validator},
-		hclog.NewNullLogger(),
+		slog.New(slog.DiscardHandler),
 		false,
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, hclog.NewNullLogger(), nil)
+	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
 
@@ -608,39 +597,40 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 	return http.DefaultClient.Do(req)
 }
 
+func discardFactory(name string) *slog.Logger {
+	return slog.New(slog.DiscardHandler)
+}
 func TestDefaultBuildServer(t *testing.T) {
-	logger := hclog.NewNullLogger()
-	c := buildConfig(logger)
-	server, err := buildServer(c, logger)
+
+	c, err := buildConfig("")
+	require.NoError(t, err)
+	server, err := buildServer(c, discardFactory, false)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, server)
 
 }
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
-	logger := hclog.NewNullLogger()
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err)
 
 }
 func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
 	c := config.DefaultConfig()
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
-	logger := hclog.NewNullLogger()
 	c := config.DefaultConfig()
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, logger)
+	_, err := buildServer(c, discardFactory, false)
 	assert.Error(t, err, "failed to create mutators: unknown mutator type doesnotexit")
 }
 func TestCreateValidators(t *testing.T) {
@@ -699,7 +689,7 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			validators, _, err := createValidators(c, hclog.NewNullLogger())
+			validators, _, err := createValidators(c, discardFactory)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -757,7 +747,7 @@ func TestNotationValidatorConfig(t *testing.T) {
 		},
 	}
 
-	validators, _, err := createValidators(c, hclog.NewNullLogger())
+	validators, _, err := createValidators(c, discardFactory)
 
 	assert.NoError(t, err)
 	assert.IsType(t, &validator.NotationValidator{}, validators[0])
@@ -818,7 +808,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, _, err := createMutators(c, hclog.NewNullLogger())
+			mutators, _, err := createMutators(c, discardFactory)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -937,5 +927,147 @@ func writeTLSStuff(t *testing.T, name, data string) {
 	t.Helper()
 	if err := file.WriteAtomicWithPerms(name, []byte(data), 0755, 0600); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestRunTerminatesOnSIGINT(t *testing.T) {
+
+	tt := []struct {
+		name   string
+		config func() *config.Config
+	}{
+		{
+			name: "default config",
+			config: func() *config.Config {
+				cfg := config.DefaultConfig()
+				cfg.Port = freePort(t)
+				return cfg
+			},
+		},
+		{
+			name: "with otel",
+			config: func() *config.Config {
+				cfg := config.DefaultConfig()
+				cfg.Port = freePort(t)
+				cfg.Telemetry.Logging.Type = "otel"
+				cfg.Telemetry.Metrics.Enabled = true
+				cfg.Telemetry.Tracing.Enabled = true
+				return cfg
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			cfg := tc.config()
+
+			done := make(chan struct{})
+
+			go func() {
+				err := run(cfg)
+				assert.NoError(t, err)
+				close(done) // Signal that the run function has finished.
+			}()
+			time.Sleep(3 * time.Second)
+
+			t.Log("Sending OS interrupt signal (SIGINT)...")
+
+			require.NoError(t, syscall.Kill(syscall.Getpid(), syscall.SIGINT))
+
+			// Wait for the 'run' function to complete, with a timeout.
+			// This ensures the test doesn't hang indefinitely if 'run' fails to exit.
+			select {
+			case <-done:
+				t.Log("run function completed successfully after interrupt.")
+				// Test passed: the function exited as expected.
+			case <-time.After(5 * time.Second): // Adjust timeout as needed
+				t.Fatal("run function did not complete within the timeout after interrupt.")
+			}
+		})
+	}
+}
+
+func freePort(t *testing.T) int {
+	t.Helper()
+	var randomFreePort int
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		t.Fatalf("Failed to create listener: %v", err)
+	}
+
+	defer func() {
+		err := listener.Close()
+		if err != nil {
+			t.Fatalf("Failed to close listener: %v", err)
+		}
+	}()
+	randomFreePort = listener.Addr().(*net.TCPAddr).Port
+	return randomFreePort
+}
+
+func Test_buildConfig(t *testing.T) {
+	type args struct {
+		configPath string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    func() *config.Config
+		wantErr bool
+	}{
+		{
+			name: "default config",
+			args: args{
+				configPath: "",
+			},
+			want:    config.DefaultConfig,
+			wantErr: false,
+		},
+		{
+			name: "custom config",
+			args: args{
+				configPath: "../../testdata/testconfig.hcl",
+			},
+			want: func() *config.Config {
+				c := config.DefaultConfig()
+				c.Nomad.Address = "http://localhost:4321"
+				c.Port = 1234
+				return c
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid config",
+			args: args{
+				configPath: "../../testdata/brokenconfig.hcl",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := buildConfig(tt.args.configPath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("buildConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.want == nil {
+				if got != nil {
+					t.Errorf("buildConfig() = %v, want nil", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Errorf("buildConfig() = nil, want %v", tt.want())
+				return
+			}
+
+			expectedConfig := tt.want()
+			if !reflect.DeepEqual(got, expectedConfig) {
+				t.Errorf("buildConfig() = %v, want %v", got, expectedConfig)
+			}
+		})
 	}
 }

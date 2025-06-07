@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"log/slog"
 	"net/http"
 	"net/url"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/mxab/nacp/admissionctrl/remoteutil"
+	"github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/hashicorp/go-multierror"
 )
 
 type WebhookValidator struct {
 	endpoint *url.URL
-	logger   hclog.Logger
+	logger   *slog.Logger
 	method   string
 	name     string
 }
@@ -34,18 +36,7 @@ func (w *WebhookValidator) Validate(payload *types.Payload) ([]error, error) {
 		return nil, err
 	}
 
-	// Add context headers and body if available
-	if payload.Context != nil {
-		// Add standard headers for backward compatibility
-		if payload.Context.ClientIP != "" {
-			req.Header.Set("X-Forwarded-For", payload.Context.ClientIP) // Standard proxy header
-			req.Header.Set("NACP-Client-IP", payload.Context.ClientIP)  // NACP specific
-		}
-		if payload.Context.AccessorID != "" {
-			req.Header.Set("NACP-Accessor-ID", payload.Context.AccessorID)
-		}
-	}
-
+	remoteutil.ApplyContextHeaders(req, payload)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -81,7 +72,7 @@ func (w *WebhookValidator) Validate(payload *types.Payload) ([]error, error) {
 func (w *WebhookValidator) Name() string {
 	return w.name
 }
-func NewWebhookValidator(name string, endpoint string, method string, logger hclog.Logger) (*WebhookValidator, error) {
+func NewWebhookValidator(name string, endpoint string, method string, logger *slog.Logger) (*WebhookValidator, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err

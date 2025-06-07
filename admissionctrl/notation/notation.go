@@ -3,9 +3,9 @@ package notation
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"os"
 
-	"github.com/hashicorp/go-hclog"
 	_ "github.com/notaryproject/notation-core-go/signature/cose"
 	_ "github.com/notaryproject/notation-core-go/signature/jws"
 	"github.com/notaryproject/notation-go"
@@ -29,7 +29,7 @@ type notationImageVerifier struct {
 	verifier             notation.Verifier
 	repoPlainHTTP        bool
 	maxSignatureAttempts int
-	logger               hclog.Logger
+	logger               *slog.Logger
 	client               remote.Client
 }
 
@@ -63,7 +63,7 @@ func NewClientWithFileCredStore(path string) (remote.Client, error) {
 
 // NewImageVerifier creates a new ImageVerifier instance with the given trust policy, trust store, and repoPlainHTTP flag.
 // It returns the ImageVerifier instance or an error if the verifier cannot be created.
-func NewImageVerifier(policy *trustpolicy.Document, truststore truststore.X509TrustStore, repoPlainHTTP bool, maxSignatureAttempts int, credStorePath string, logger hclog.Logger) (ImageVerifier, error) {
+func NewImageVerifier(policy *trustpolicy.Document, truststore truststore.X509TrustStore, repoPlainHTTP bool, maxSignatureAttempts int, credStorePath string, logger *slog.Logger) (ImageVerifier, error) {
 
 	verifier, err := verifier.New(policy, truststore, nil)
 	if err != nil {
