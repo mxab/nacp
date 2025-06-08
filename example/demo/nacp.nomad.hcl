@@ -32,6 +32,8 @@ job "nacp" {
                 OTEL_EXPORTER_OTLP_ENDPOINT = "http://${attr.unique.network.ip-address}:4318"
 
                 OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
+
+                OTEL_RESOURCE_ATTRIBUTES = "service.name=nacp,service.version=0.8.0,service.instance.id=${NOMAD_SHORT_ALLOC_ID}"
             }
             template {
                 data = file("nacp.conf")
@@ -67,7 +69,7 @@ job "nacp" {
 
 
             config {
-                image = "grafana/otel-lgtm"
+                image = "grafana/otel-lgtm:0.11.4"
                 ports = ["grafana", "otlp_http"]
             }
 

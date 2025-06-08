@@ -1,7 +1,7 @@
 job "app" {
 
   meta {
-    costcenter = "cccode-123"
+
   }
   group "app" {
 
