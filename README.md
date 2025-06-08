@@ -209,7 +209,7 @@ It will launch per default on port 6464.
 NOMAD_ADDR=http://localhost:6464 nomad job run job.hcl
 ```
 
-### Other Configuration
+## Other Configuration
 
 ### NACP Server
 
@@ -290,6 +290,43 @@ e.g.:
 }
 ```
 
+### OpenTelemetry
+
+NACP has built-in support for OpenTelemetry (OTLP) to provide observability and monitoring capabilities for admission requests and responses.
+
+The OpenTelemetry exporter can be configured using the following settings in the configuration file:
+
+```hcl
+telemetry {
+  logging {
+    type = "otel" # Use OpenTelemetry
+  }
+  metrics {
+    enabled = true # Enable metrics collection
+  }
+  tracing {
+    enabled = true # Enable tracing
+  }
+}
+```
+
+The OTLP exporter is configured using the common OpenTelemetry environment variables. You can set these variables to specify the endpoint, and other settings for the OTLP exporter. (e.g., `OTEL_SERVICE_NAME=nacp`, `OTEL_RESOURCE_ATTRIBUTES=...`, etc.)
+
+### slog logging
+
+To use `log/slog` for logging, you can configure the telemetry logging settings in your NACP configuration file. This allows you to set the logging type, level, and handler.
+
+```hcl
+telemetry {
+  logging {
+    type = "slog" # Use slog for logging
+    level = "info" # Set the logging level (e.g., debug, info, warn, error)
+    slog {
+      handler = "text" # Set the slog handler (e.g., text, json)
+    }
+  }
+}
+```
 
 # Note
 This work was inspired by the internal [Nomad Admission Controller](https://github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint_hooks.go#L74)
