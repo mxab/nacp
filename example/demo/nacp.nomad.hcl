@@ -17,6 +17,7 @@ job "nacp" {
 
             config {
                 image = "nacp-local:v1"
+                #image = "ghcr.io/mxab/nacp:v0.8.0"
                 ports = ["nacp"]
                 args  = ["-config", "/local/nacp.conf.hcl"]
             }

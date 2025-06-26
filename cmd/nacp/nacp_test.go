@@ -261,9 +261,9 @@ func TestProxy(t *testing.T) {
 			method: "PUT",
 
 			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
-				return c.Jobs().Validate(&api.Job{}, nil)
+				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
-			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
 
 			wantProxyResponse: &api.JobValidateResponse{
 				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
@@ -281,9 +281,9 @@ func TestProxy(t *testing.T) {
 			method: "PUT",
 
 			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
-				return c.Jobs().Validate(&api.Job{}, nil)
+				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
-			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
 
 			wantProxyResponse: &api.JobValidateResponse{
 				ValidationErrors: []string{"some error"},
@@ -302,9 +302,9 @@ func TestProxy(t *testing.T) {
 			method: "PUT",
 
 			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
-				return c.Jobs().Validate(&api.Job{}, nil)
+				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
-			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
 
 			wantProxyResponse: &api.JobValidateResponse{
 				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
@@ -327,9 +327,9 @@ func TestProxy(t *testing.T) {
 			accessorID:   "test-accessor",
 
 			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
-				return c.Jobs().Validate(&api.Job{}, nil)
+				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
-			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: &api.Job{}}),
+			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
 
 			wantProxyResponse: &api.JobValidateResponse{
 				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
@@ -396,8 +396,8 @@ func TestProxy(t *testing.T) {
 				tc.resolveToken,
 			)
 
-			proxy := NewProxyHandler(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport)
-			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+			proxy := NewProxyAsHandlerFunc(nomadURL, jobHandler, slog.New(slog.DiscardHandler), proxyTransport)
+			proxyServer := httptest.NewServer(proxy)
 			defer proxyServer.Close()
 			nomadClient := buildNomadClient(t, proxyServer)
 			if tc.token != "" {
@@ -483,9 +483,9 @@ func TestJobUpdateProxy(t *testing.T) {
 				slog.New(slog.DiscardHandler),
 				false,
 			)
-			proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
+			proxy := NewProxyAsHandlerFunc(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
-			proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+			proxyServer := httptest.NewServer(proxy)
 			defer proxyServer.Close()
 
 			res, err := sendPut(t, fmt.Sprintf("%s%s", proxyServer.URL, tc.path), strings.NewReader(tc.requestJson))
@@ -572,9 +572,9 @@ func TestAdmissionControllerErrors(t *testing.T) {
 		slog.New(slog.DiscardHandler),
 		false,
 	)
-	proxy := NewProxyHandler(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
+	proxy := NewProxyAsHandlerFunc(nomad, jobHandler, slog.New(slog.DiscardHandler), nil)
 
-	proxyServer := httptest.NewServer(http.HandlerFunc(proxy))
+	proxyServer := httptest.NewServer(proxy)
 
 	defer proxyServer.Close()
 

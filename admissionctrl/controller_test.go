@@ -42,7 +42,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	type args struct {
 		job *api.Job
 	}
-	job := &api.Job{} // testutil.ReadJob(t)
+	job := testutil.BaseJob()
 	payload := &types.Payload{Job: job}
 
 	defaultMutator := func() *testutil.MockMutator {
@@ -174,6 +174,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 				job: job,
 			},
 			want: &api.Job{
+				ID: job.ID,
 				Meta: map[string]string{
 					"mutator1": "applied",
 					"mutator2": "applied",
@@ -212,7 +213,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			validator := tt.fields.validator()
 			j := NewJobHandler(mutators, []JobValidator{validator}, slog.New(slog.DiscardHandler), tt.resolveToken)
 			payload := &types.Payload{Job: tt.args.job}
-			job, warnings, err := j.ApplyAdmissionControllers(payload)
+			job, warnings, err := j.ApplyAdmissionControllers(t.Context(), payload)
 
 			assert.Equal(t, tt.wantWarnings, warnings, "Warnings should be equal")
 

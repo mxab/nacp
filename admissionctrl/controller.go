@@ -12,6 +12,9 @@ import (
 	"github.com/mxab/nacp/admissionctrl/types"
 	"github.com/mxab/nacp/o11y"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
@@ -77,6 +80,7 @@ type JobHandler struct {
 	resolveToken bool
 	logger       *slog.Logger
 	metrics      *Metrics
+	tracer       trace.Tracer
 }
 
 func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger *slog.Logger, resolverToken bool) *JobHandler {
@@ -86,18 +90,25 @@ func NewJobHandler(mutators []JobMutator, validators []JobValidator, logger *slo
 		logger:       logger,
 		resolveToken: resolverToken,
 		metrics:      newMetrics(),
+		tracer:       otel.Tracer("github.com/mxab/nacp"),
 	}
 }
 
-func (j *JobHandler) ApplyAdmissionControllers(payload *types.Payload) (out *api.Job, warnings []error, err error) {
+func (j *JobHandler) ApplyAdmissionControllers(ctx context.Context, payload *types.Payload) (out *api.Job, warnings []error, err error) {
 	// Mutators run first before validators, so validators view the final rendered job.
 	// So, mutators must handle invalid jobs.
-	out, warnings, err = j.AdmissionMutators(payload)
+
+	_, span := j.tracer.Start(ctx, "ApplyAdmissionControllers")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("nomad.job.id", *payload.Job.ID))
+
+	out, warnings, err = j.AdmissionMutators(ctx, payload)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	validateWarnings, err := j.AdmissionValidators(payload)
+	validateWarnings, err := j.AdmissionValidators(ctx, payload)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -107,56 +118,95 @@ func (j *JobHandler) ApplyAdmissionControllers(payload *types.Payload) (out *api
 }
 
 // AdmissionMutators returns an updated job as well as warnings or an error.
-func (j *JobHandler) AdmissionMutators(payload *types.Payload) (job *api.Job, warnings []error, err error) {
+func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Payload) (job *api.Job, warnings []error, err error) {
+
+	ctx, span := j.tracer.Start(ctx, "Mutators Loop")
+	defer span.End()
 	var w []error
 	job = payload.Job
-	j.logger.Debug("applying job mutators", "mutators", len(j.mutators), "job", payload.Job.ID)
+	j.logger.DebugContext(ctx, "applying job mutators", "mutators", len(j.mutators), "job", payload.Job.ID)
 	for _, mutator := range j.mutators {
-		j.logger.Debug("applying job mutator", "mutator", mutator.Name(), "job", payload.Job.ID)
-		var mutated bool
-		job, mutated, w, err = mutator.Mutate(&types.Payload{
-			Job:     job,
-			Context: payload.Context})
+
+		err = func() (err error) {
+
+			jobId := *payload.Job.ID
+			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("mutate %s", mutator.Name()), trace.WithAttributes(
+				attribute.String("nomad.job.id", jobId),
+				attribute.String("mutator.name", mutator.Name()),
+			))
+
+			defer span.End()
+
+			j.logger.DebugContext(ctx, "applying job mutator", "mutator", mutator.Name(), "job", jobId)
+			var mutated bool
+			job, mutated, w, err = mutator.Mutate(&types.Payload{
+				Job:     job,
+				Context: payload.Context})
+			if err != nil {
+				span.SetStatus(codes.Error, "error in mutator")
+				span.RecordError(err)
+
+				j.metrics.mutatorErrorCount.Add(ctx, 1, mutator.Name())
+				return fmt.Errorf("error in job mutator %s: %v", mutator.Name(), err)
+			}
+			if job == nil {
+				span.SetStatus(codes.Error, "job mutator returned nil job")
+				j.metrics.mutatorErrorCount.Add(ctx, 1, mutator.Name())
+				return fmt.Errorf("job mutator %s returned nil job", mutator.Name())
+			}
+			if mutated {
+				span.SetAttributes(attribute.Bool("mutated", true))
+				j.metrics.mutatorMutationCount.Add(ctx, 1, mutator.Name())
+			}
+			j.metrics.mutatorWarningCount.Add(ctx, float64(len(w)), mutator.Name())
+
+			j.logger.DebugContext(ctx, "job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
+
+			warnings = append(warnings, w...)
+			return nil
+
+		}()
 		if err != nil {
-			j.metrics.mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
-			return nil, nil, fmt.Errorf("error in job mutator %s: %v", mutator.Name(), err)
+			return nil, nil, err
 		}
-		if job == nil {
-			j.metrics.mutatorErrorCount.Add(context.Background(), 1, mutator.Name())
-			return nil, nil, fmt.Errorf("job mutator %s returned nil job", mutator.Name())
-		}
-		if mutated {
-			j.metrics.mutatorMutationCount.Add(context.Background(), 1, mutator.Name())
-		}
-		j.metrics.mutatorWarningCount.Add(context.Background(), float64(len(w)), mutator.Name())
-
-		j.logger.Debug("job mutate results", "mutator", mutator.Name(), "warnings", w, "error", err)
-
-		warnings = append(warnings, w...)
 	}
 	return job, warnings, err
 }
 
 // AdmissionValidators returns a slice of validation warnings and a multierror
 // of validation failures.
-func (j *JobHandler) AdmissionValidators(payload *types.Payload) ([]error, error) {
+func (j *JobHandler) AdmissionValidators(ctx context.Context, payload *types.Payload) ([]error, error) {
 	// ensure job is not mutated
-	j.logger.Debug("applying job validators", "validators", len(j.validators), "job", payload.Job.ID)
+
+	ctx, span := j.tracer.Start(ctx, "Validators Loop")
+	defer span.End()
+	j.logger.DebugContext(ctx, "applying job validators", "validators", len(j.validators), "job", payload.Job.ID)
 	job := copyJob(payload.Job)
 
 	var warnings []error
 	var errs error
 
 	for _, validator := range j.validators {
-		j.logger.Debug("applying job validator", "validator", validator.Name(), "job", job.ID)
-		w, err := validator.Validate(payload)
-		j.metrics.validatorWarningCount.Add(context.Background(), float64(len(w)), validator.Name())
-		j.logger.Debug("job validate results", "job", payload.Job.ID, "validator", validator.Name(), "warnings", w, "error", err)
-		if err != nil {
-			j.metrics.validatorErrorCount.Add(context.Background(), 1, validator.Name())
-			errs = multierror.Append(errs, err)
-		}
-		warnings = append(warnings, w...)
+
+		func() {
+			jobId := *job.ID
+			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("validate %s", validator.Name()), trace.WithAttributes(
+				attribute.String("nomad.job.id", jobId),
+				attribute.String("validator.name", validator.Name()),
+			))
+			defer span.End()
+			j.logger.DebugContext(ctx, "applying job validator", "validator", validator.Name(), "job", jobId)
+			w, err := validator.Validate(payload)
+			j.metrics.validatorWarningCount.Add(ctx, float64(len(w)), validator.Name())
+			j.logger.DebugContext(ctx, "job validate results", "job", jobId, "validator", validator.Name(), "warnings", w, "error", err)
+			if err != nil {
+				span.SetStatus(codes.Error, "error in validator")
+				span.RecordError(err)
+				j.metrics.validatorErrorCount.Add(ctx, 1, validator.Name())
+				errs = multierror.Append(errs, err)
+			}
+			warnings = append(warnings, w...)
+		}()
 	}
 
 	return warnings, errs

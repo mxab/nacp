@@ -106,7 +106,15 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 
 	return &aclToken, nil
 }
-func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
+func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) http.HandlerFunc {
+
+	proxy := newProxyHandler(nomadAddress, jobHandler, appLogger, transport)
+	handlerFunc := http.HandlerFunc(proxy)
+	handlerFunc = otelhttp.NewHandler(handlerFunc, "/").(http.HandlerFunc)
+
+	return handlerFunc
+}
+func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -132,7 +140,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 			err = handleJobValdidateResponse(resp, appLogger)
 		}
 		if err != nil {
-			appLogger.Error("Preparing response failed", "error", err)
+			appLogger.ErrorContext(resp.Request.Context(), "Preparing response failed", "error", err)
 			return err
 		}
 
@@ -153,16 +161,16 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		if jobHandler.ResolveToken() {
 			tokenInfo, err := resolveTokenAccessor(transport, nomadAddress, token)
 			if err != nil {
-				appLogger.Error("Resolving token failed", "error", err)
+				appLogger.ErrorContext(ctx, "Resolving token failed", "error", err)
 				writeError(w, err)
 			}
 			if tokenInfo != nil {
 				reqCtx.AccessorID = tokenInfo.AccessorID
 				reqCtx.TokenInfo = tokenInfo
 			}
-			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
+			appLogger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
 		} else {
-			appLogger.Info("Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
+			appLogger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
 		}
 
 		ctx = context.WithValue(ctx, "request_context", reqCtx)
@@ -180,7 +188,7 @@ func NewProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		}
 		if err != nil {
-			appLogger.Warn("Error applying admission controllers", "error", err)
+			appLogger.WarnContext(ctx, "Error applying admission controllers", "error", err)
 			writeError(w, err)
 
 		} else {
@@ -368,6 +376,7 @@ func handleRegister(r *http.Request, appLogger *slog.Logger, jobHandler *admissi
 	body := r.Body
 	jobRegisterRequest := &api.JobRegisterRequest{}
 
+	ctx := r.Context()
 	if err := json.NewDecoder(body).Decode(jobRegisterRequest); err != nil {
 
 		return r, fmt.Errorf("failed decoding job, skipping admission controller: %w", err)
@@ -377,11 +386,11 @@ func handleRegister(r *http.Request, appLogger *slog.Logger, jobHandler *admissi
 		Job: orginalJob,
 	}
 
-	if reqCtx, ok := r.Context().Value("request_context").(*config.RequestContext); ok {
+	if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
 		payload.Context = reqCtx
 	}
 
-	job, warnings, err := jobHandler.ApplyAdmissionControllers(payload)
+	job, warnings, err := jobHandler.ApplyAdmissionControllers(ctx, payload)
 	if err != nil {
 		return r, fmt.Errorf("admission controllers send an error, returning error: %w", err)
 	}
@@ -393,7 +402,6 @@ func handleRegister(r *http.Request, appLogger *slog.Logger, jobHandler *admissi
 		return r, fmt.Errorf("error marshalling job: %w", err)
 	}
 
-	ctx := r.Context()
 	if len(warnings) > 0 {
 		ctx = context.WithValue(ctx, ctxWarnings, warnings)
 	}
@@ -419,7 +427,7 @@ func handlePlan(r *http.Request, appLogger *slog.Logger, jobHandler *admissionct
 		payload.Context = reqCtx
 	}
 
-	job, warnings, err := jobHandler.ApplyAdmissionControllers(payload)
+	job, warnings, err := jobHandler.ApplyAdmissionControllers(r.Context(), payload)
 	if err != nil {
 		return r, fmt.Errorf("admission controllers send an error, returning error: %w", err)
 	}
@@ -444,6 +452,7 @@ func handlePlan(r *http.Request, appLogger *slog.Logger, jobHandler *admissionct
 
 func handleValidate(r *http.Request, applogger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
 
+	ctx := r.Context()
 	body := r.Body
 	jobValidateRequest := &api.JobValidateRequest{}
 	err := json.NewDecoder(body).Decode(jobValidateRequest)
@@ -455,21 +464,20 @@ func handleValidate(r *http.Request, applogger *slog.Logger, jobHandler *admissi
 		Job: job,
 	}
 
-	if reqCtx, ok := r.Context().Value("request_context").(*config.RequestContext); ok {
+	if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
 		payload.Context = reqCtx
 	}
 
-	job, mutateWarnings, err := jobHandler.AdmissionMutators(payload)
+	job, mutateWarnings, err := jobHandler.AdmissionMutators(ctx, payload)
 	if err != nil {
 		return r, err
 	}
 	jobValidateRequest.Job = job
 	payload.Job = job
 
-	validateWarnings, err := jobHandler.AdmissionValidators(payload)
+	validateWarnings, err := jobHandler.AdmissionValidators(ctx, payload)
 	//copied from https: //github.com/hashicorp/nomad/blob/v1.5.0/nomad/job_endpoint.go#L574
 
-	ctx := r.Context()
 	ctx = context.WithValue(ctx, ctxValidationError, err)
 
 	validateWarnings = append(validateWarnings, mutateWarnings...)
@@ -685,7 +693,7 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		resolveToken,
 	)
 
-	proxy := NewProxyHandler(backend, jobHandler, loggerFactory("proxy-handler"), proxyTransport)
+	handlerFunc := NewProxyAsHandlerFunc(backend, jobHandler, loggerFactory("proxy-handler"), proxyTransport)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -696,11 +704,6 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 			return nil, fmt.Errorf("failed to create tls config: %w", err)
 
 		}
-	}
-
-	handlerFunc := http.HandlerFunc(proxy)
-	if otelInstrumentation {
-		handlerFunc = otelhttp.NewHandler(handlerFunc, "/").(http.HandlerFunc)
 	}
 
 	server := &http.Server{
