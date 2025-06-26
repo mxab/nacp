@@ -66,12 +66,12 @@ type AdmissionController interface {
 
 type JobMutator interface {
 	AdmissionController
-	Mutate(*types.Payload) (*api.Job, bool, []error, error)
+	Mutate(context.Context, *types.Payload) (*api.Job, bool, []error, error)
 }
 
 type JobValidator interface {
 	AdmissionController
-	Validate(*types.Payload) (warnings []error, err error)
+	Validate(context.Context, *types.Payload) (warnings []error, err error)
 }
 
 type JobHandler struct {
@@ -139,7 +139,7 @@ func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Paylo
 
 			j.logger.DebugContext(ctx, "applying job mutator", "mutator", mutator.Name(), "job", jobId)
 			var mutated bool
-			job, mutated, w, err = mutator.Mutate(&types.Payload{
+			job, mutated, w, err = mutator.Mutate(ctx, &types.Payload{
 				Job:     job,
 				Context: payload.Context})
 			if err != nil {
@@ -196,7 +196,7 @@ func (j *JobHandler) AdmissionValidators(ctx context.Context, payload *types.Pay
 			))
 			defer span.End()
 			j.logger.DebugContext(ctx, "applying job validator", "validator", validator.Name(), "job", jobId)
-			w, err := validator.Validate(payload)
+			w, err := validator.Validate(ctx, payload)
 			j.metrics.validatorWarningCount.Add(ctx, float64(len(w)), validator.Name())
 			j.logger.DebugContext(ctx, "job validate results", "job", jobId, "validator", validator.Name(), "warnings", w, "error", err)
 			if err != nil {

@@ -164,7 +164,7 @@ func TestJsonPatchMutator(t *testing.T) {
 			require.NoError(t, err)
 
 			payload := &types.Payload{Job: tc.job, Context: tc.context}
-			job, mutated, warnings, err := mutator.Mutate(payload)
+			job, mutated, warnings, err := mutator.Mutate(t.Context(), payload)
 
 			require.True(t, webhookCalled)
 			if tc.wantErr != nil {

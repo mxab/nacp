@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -60,8 +61,8 @@ type MockMutator struct {
 	mock.Mock
 }
 
-func (m *MockMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
-	args := m.Called(payload)
+func (m *MockMutator) Mutate(ctx context.Context, payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
+	args := m.Called(ctx, payload)
 	job := out
 	if args.Get(0) != nil {
 		job = args.Get(0).(*api.Job)
@@ -76,8 +77,8 @@ type MockValidator struct {
 	mock.Mock
 }
 
-func (m *MockValidator) Validate(payload *types.Payload) (warnings []error, err error) {
-	args := m.Called(payload)
+func (m *MockValidator) Validate(ctx context.Context, payload *types.Payload) (warnings []error, err error) {
+	args := m.Called(ctx, payload)
 	return args.Get(0).([]error), args.Error(1)
 }
 func (m *MockValidator) Name() string {
@@ -107,30 +108,30 @@ func OtelExporters(t *testing.T) (*logtest.Recorder, *metricSdk.ManualReader, *t
 func MockValidatorReturningWarnings(warning string) *MockValidator {
 
 	validator := new(MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
+	validator.On("Validate", mock.Anything, mock.Anything).Return([]error{fmt.Errorf("%s", warning)}, nil)
 	return validator
 }
 
 func MockValidatorReturningError(err string) *MockValidator {
 
 	validator := new(MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
+	validator.On("Validate", mock.Anything, mock.Anything).Return([]error{}, fmt.Errorf("%s", err))
 	return validator
 }
 func MockMutatorReturningWarnings(warning string) *MockMutator {
 	mutator := new(MockMutator)
-	mutator.On("Mutate", mock.Anything).Return(BaseJob(), false, []error{fmt.Errorf("%s", warning)}, nil)
+	mutator.On("Mutate", mock.Anything, mock.Anything).Return(BaseJob(), false, []error{fmt.Errorf("%s", warning)}, nil)
 	return mutator
 }
 func MockMutatorReturningError(err string) *MockMutator {
 	mutator := new(MockMutator)
-	mutator.On("Mutate", mock.Anything).Return(nil, false, []error{}, fmt.Errorf("%s", err))
+	mutator.On("Mutate", mock.Anything, mock.Anything).Return(nil, false, []error{}, fmt.Errorf("%s", err))
 	return mutator
 }
 func MockMutatorMutating(mutatedJob *api.Job) *MockMutator {
 	mutator := new(MockMutator)
 
-	mutator.On("Mutate", mock.Anything).Return(mutatedJob, true, []error{}, nil)
+	mutator.On("Mutate", mock.Anything, mock.Anything).Return(mutatedJob, true, []error{}, nil)
 	return mutator
 }
 

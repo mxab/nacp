@@ -2,6 +2,7 @@ package validator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -26,7 +27,7 @@ type validationWebhookResponse struct {
 	Warnings []string `json:"warnings"`
 }
 
-func (w *WebhookValidator) Validate(payload *types.Payload) ([]error, error) {
+func (w *WebhookValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err

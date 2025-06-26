@@ -130,7 +130,7 @@ func TestNotationValidatorValidate(t *testing.T) {
 				},
 			}
 
-			errors, err := notationValidator.Validate(payload)
+			errors, err := notationValidator.Validate(t.Context(), payload)
 			require.Equal(t, tc.expectedErrors, errors)
 			require.NoError(t, err)
 

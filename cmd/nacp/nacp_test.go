@@ -560,7 +560,7 @@ func TestAdmissionControllerErrors(t *testing.T) {
 	defer nomadDummy.Close()
 
 	validator := new(testutil.MockValidator)
-	validator.On("Validate", mock.Anything).Return([]error{}, fmt.Errorf("some error"))
+	validator.On("Validate", mock.Anything, mock.Anything).Return([]error{}, fmt.Errorf("some error"))
 
 	nomad, err := url.Parse(nomadDummy.URL)
 	if err != nil {

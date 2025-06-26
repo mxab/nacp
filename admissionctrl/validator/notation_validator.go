@@ -15,7 +15,7 @@ type NotationValidator struct {
 	verifier notation.ImageVerifier
 }
 
-func (v *NotationValidator) Validate(payload *types.Payload) ([]error, error) {
+func (v *NotationValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
 	for _, tg := range payload.Job.TaskGroups {
 		for _, task := range tg.Tasks {
 			// check if the task driver is docker
@@ -28,7 +28,7 @@ func (v *NotationValidator) Validate(payload *types.Payload) ([]error, error) {
 			if !ok {
 				continue
 			}
-			err := v.verifier.VerifyImage(context.Background(), image)
+			err := v.verifier.VerifyImage(ctx, image)
 			if err != nil {
 				return []error{err}, nil
 			}

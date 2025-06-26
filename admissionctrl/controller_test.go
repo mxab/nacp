@@ -1,6 +1,7 @@
 package admissionctrl
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"testing"
@@ -11,13 +12,14 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type AddMetaMutator struct {
 	Field string
 }
 
-func (m *AddMetaMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
+func (m *AddMetaMutator) Mutate(ctx context.Context, payload *types.Payload) (*api.Job, bool, []error, error) {
 	copy, err := copystructure.Copy(payload.Job)
 
 	if err != nil {
@@ -47,7 +49,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 
 	defaultMutator := func() *testutil.MockMutator {
 		mutator := new(testutil.MockMutator)
-		mutator.On("Mutate", payload).Return(payload.Job, true, []error{}, nil)
+		mutator.On("Mutate", mock.Anything, payload).Return(payload.Job, true, []error{}, nil)
 		return mutator
 	}
 	defaultMutators := func() []JobMutator {
@@ -56,7 +58,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	defaultValidator := func() *testutil.MockValidator {
 
 		validator := new(testutil.MockValidator)
-		validator.On("Validate", payload).Return([]error{}, nil)
+		validator.On("Validate", mock.Anything, payload).Return([]error{}, nil)
 		return validator
 	}
 	tests := []struct {
@@ -190,7 +192,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			fields: fields{
 				mutators: func() []JobMutator {
 					mutator := new(testutil.MockMutator)
-					mutator.On("Mutate", payload).Return(nil, false, []error{}, nil)
+					mutator.On("Mutate", mock.Anything, payload).Return(nil, false, []error{}, nil)
 					return []JobMutator{mutator}
 				},
 				validator: defaultValidator,

@@ -19,9 +19,8 @@ type OpaJsonPatchMutator struct {
 	name   string
 }
 
-func (j *OpaJsonPatchMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
+func (j *OpaJsonPatchMutator) Mutate(ctx context.Context, payload *types.Payload) (*api.Job, bool, []error, error) {
 	allWarnings := make([]error, 0)
-	ctx := context.TODO()
 
 	results, err := j.query.Query(ctx, payload)
 	if err != nil {

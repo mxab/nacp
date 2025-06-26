@@ -2,6 +2,7 @@ package mutator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -39,7 +40,7 @@ func NewJsonPatchWebhookMutator(name string, endpoint string, method string, log
 		method:   method,
 	}, nil
 }
-func (j *JsonPatchWebhookMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
+func (j *JsonPatchWebhookMutator) Mutate(ctx context.Context, payload *types.Payload) (*api.Job, bool, []error, error) {
 	jobJson, err := json.Marshal(payload)
 	if err != nil {
 		return nil, false, nil, err
