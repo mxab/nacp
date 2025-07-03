@@ -98,7 +98,7 @@ func (j *JobHandler) ApplyAdmissionControllers(ctx context.Context, payload *typ
 	// Mutators run first before validators, so validators view the final rendered job.
 	// So, mutators must handle invalid jobs.
 
-	_, span := j.tracer.Start(ctx, "ApplyAdmissionControllers")
+	ctx, span := j.tracer.Start(ctx, "admission.apply")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("nomad.job.id", *payload.Job.ID))
@@ -120,7 +120,7 @@ func (j *JobHandler) ApplyAdmissionControllers(ctx context.Context, payload *typ
 // AdmissionMutators returns an updated job as well as warnings or an error.
 func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Payload) (job *api.Job, warnings []error, err error) {
 
-	ctx, span := j.tracer.Start(ctx, "Mutators Loop")
+	ctx, span := j.tracer.Start(ctx, "mutators.process")
 	defer span.End()
 	var w []error
 	job = payload.Job
@@ -130,7 +130,7 @@ func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Paylo
 		err = func() (err error) {
 
 			jobId := *payload.Job.ID
-			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("mutate %s", mutator.Name()), trace.WithAttributes(
+			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("mutate: %s", mutator.Name()), trace.WithAttributes(
 				attribute.String("nomad.job.id", jobId),
 				attribute.String("mutator.name", mutator.Name()),
 			))
@@ -178,7 +178,7 @@ func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Paylo
 func (j *JobHandler) AdmissionValidators(ctx context.Context, payload *types.Payload) ([]error, error) {
 	// ensure job is not mutated
 
-	ctx, span := j.tracer.Start(ctx, "Validators Loop")
+	ctx, span := j.tracer.Start(ctx, "validators.process")
 	defer span.End()
 	j.logger.DebugContext(ctx, "applying job validators", "validators", len(j.validators), "job", payload.Job.ID)
 	job := copyJob(payload.Job)
@@ -190,7 +190,7 @@ func (j *JobHandler) AdmissionValidators(ctx context.Context, payload *types.Pay
 
 		func() {
 			jobId := *job.ID
-			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("validate %s", validator.Name()), trace.WithAttributes(
+			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("validate: %s", validator.Name()), trace.WithAttributes(
 				attribute.String("nomad.job.id", jobId),
 				attribute.String("validator.name", validator.Name()),
 			))

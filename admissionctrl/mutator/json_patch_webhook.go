@@ -46,14 +46,14 @@ func (j *JsonPatchWebhookMutator) Mutate(ctx context.Context, payload *types.Pay
 		return nil, false, nil, err
 	}
 
-	req, err := http.NewRequest(j.method, j.endpoint.String(), bytes.NewBuffer(jobJson))
+	req, err := http.NewRequestWithContext(ctx, j.method, j.endpoint.String(), bytes.NewBuffer(jobJson))
 	if err != nil {
 		return nil, false, nil, err
 	}
 
 	remoteutil.ApplyContextHeaders(req, payload)
 
-	httpClient := &http.Client{}
+	httpClient := remoteutil.NewInstrumentedClient()
 	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, false, nil, err

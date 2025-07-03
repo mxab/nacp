@@ -2,6 +2,7 @@ package mutator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -20,12 +21,12 @@ type WebhookMutator struct {
 	method   string
 }
 
-func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
+func (w *WebhookMutator) Mutate(ctx context.Context, payload *types.Payload) (out *api.Job, mutated bool, warnings []error, err error) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, false, nil, err
 	}
-	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, w.method, w.endpoint.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, false, nil, err
 	}
@@ -36,7 +37,7 @@ func (w *WebhookMutator) Mutate(payload *types.Payload) (out *api.Job, mutated b
 	req.ContentLength = int64(len(data))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := remoteutil.NewInstrumentedClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, false, nil, err

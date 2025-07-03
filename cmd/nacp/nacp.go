@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
 	nacpOtel "github.com/mxab/nacp/otel"
 
@@ -67,7 +68,7 @@ func getClientIP(r *http.Request) string {
 	return ip
 }
 
-func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, token string) (*api.ACLToken, error) {
+func resolveTokenAccessor(ctx context.Context, transport http.RoundTripper, nomadAddress *url.URL, token string) (*api.ACLToken, error) {
 	if token == "" {
 		return nil, nil
 	}
@@ -82,7 +83,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 	selfURL := *nomadAddress
 	selfURL.Path = "/v1/acl/token/self"
 
-	req, err := http.NewRequest("GET", selfURL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", selfURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func resolveTokenAccessor(transport http.RoundTripper, nomadAddress *url.URL, to
 
 	return &aclToken, nil
 }
-func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) http.HandlerFunc {
+func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport http.RoundTripper) http.HandlerFunc {
 
 	proxy := newProxyHandler(nomadAddress, jobHandler, appLogger, transport)
 	handlerFunc := http.HandlerFunc(proxy)
@@ -114,7 +115,7 @@ func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobH
 
 	return handlerFunc
 }
-func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport *http.Transport) func(http.ResponseWriter, *http.Request) {
+func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport http.RoundTripper) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -159,7 +160,7 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		token := r.Header.Get("X-Nomad-Token")
 		if jobHandler.ResolveToken() {
-			tokenInfo, err := resolveTokenAccessor(transport, nomadAddress, token)
+			tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
 			if err != nil {
 				appLogger.ErrorContext(ctx, "Resolving token failed", "error", err)
 				writeError(w, err)
@@ -586,7 +587,7 @@ func run(c *config.Config) (err error) {
 	}
 	slog.SetLogLoggerLevel(level)
 
-	server, err := buildServer(c, loggerFactory, setupOtel)
+	server, err := buildServer(c, loggerFactory)
 
 	if err != nil {
 		return fmt.Errorf("failed to build server: %w", err)
@@ -649,7 +650,7 @@ func buildLoggerFactory(c *config.Config) (lf loggerFactory, err error) {
 	return
 }
 
-func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentation bool) (*http.Server, error) {
+func buildServer(c *config.Config, loggerFactory loggerFactory) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -660,6 +661,8 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		KeepAlive: nomadTimeout,
 	}).DialContext
 	proxyTransport.TLSHandshakeTimeout = nomadTimeout
+
+	instrumentedProxyTransport := remoteutil.InstrumentedTransport(proxyTransport)
 
 	if c.Nomad.TLS != nil {
 		nomadTlsConfig, err := buildTlsConfig(*c.Nomad.TLS)
@@ -693,7 +696,7 @@ func buildServer(c *config.Config, loggerFactory loggerFactory, otelInstrumentat
 		resolveToken,
 	)
 
-	handlerFunc := NewProxyAsHandlerFunc(backend, jobHandler, loggerFactory("proxy-handler"), proxyTransport)
+	handlerFunc := NewProxyAsHandlerFunc(backend, jobHandler, loggerFactory("proxy-handler"), instrumentedProxyTransport)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config

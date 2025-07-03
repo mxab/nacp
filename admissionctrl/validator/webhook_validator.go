@@ -32,13 +32,13 @@ func (w *WebhookValidator) Validate(ctx context.Context, payload *types.Payload)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(ctx, w.method, w.endpoint.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 
 	remoteutil.ApplyContextHeaders(req, payload)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := remoteutil.NewInstrumentedClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

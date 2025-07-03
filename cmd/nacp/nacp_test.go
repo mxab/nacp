@@ -604,7 +604,7 @@ func TestDefaultBuildServer(t *testing.T) {
 
 	c, err := buildConfig("")
 	require.NoError(t, err)
-	server, err := buildServer(c, discardFactory, false)
+	server, err := buildServer(c, discardFactory)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, server)
@@ -613,7 +613,7 @@ func TestDefaultBuildServer(t *testing.T) {
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
-	_, err := buildServer(c, discardFactory, false)
+	_, err := buildServer(c, discardFactory)
 	assert.Error(t, err)
 
 }
@@ -622,7 +622,7 @@ func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, discardFactory, false)
+	_, err := buildServer(c, discardFactory)
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
@@ -630,7 +630,7 @@ func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
 	})
-	_, err := buildServer(c, discardFactory, false)
+	_, err := buildServer(c, discardFactory)
 	assert.Error(t, err, "failed to create mutators: unknown mutator type doesnotexit")
 }
 func TestCreateValidators(t *testing.T) {
