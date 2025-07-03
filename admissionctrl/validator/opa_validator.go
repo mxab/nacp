@@ -17,9 +17,8 @@ type OpaValidator struct {
 	name   string
 }
 
-func (v *OpaValidator) Validate(payload *types.Payload) ([]error, error) {
+func (v *OpaValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
 
-	ctx := context.TODO()
 	//iterate over rulesets and evaluate
 	allErrs := &multierror.Error{}
 	allWarnings := make([]error, 0)

@@ -127,7 +127,7 @@ func TestWebhookValidator(t *testing.T) {
 			require.NoError(t, err)
 
 			payload := &types.Payload{Job: &api.Job{ID: &tc.name}, Context: tc.context}
-			warnings, err := validator.Validate(payload)
+			warnings, err := validator.Validate(t.Context(), payload)
 
 			require.True(t, webhookCalled, "webhook was not called")
 			assert.Equal(t, tc.wantErr, err)

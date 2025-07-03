@@ -9,6 +9,7 @@ import (
 
 	"github.com/mxab/nacp/admissionctrl/types"
 	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/testutil"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
@@ -40,10 +41,10 @@ func TestJsonPatchMutator(t *testing.T) {
 
 			response: []byte(`{}`),
 
-			job:         &api.Job{},
+			job:         testutil.BaseJob(),
 			wantErr:     nil,
 			wantWarns:   nil,
-			wantJob:     &api.Job{},
+			wantJob:     testutil.BaseJob(),
 			wantMutated: false,
 		},
 		{
@@ -57,11 +58,11 @@ func TestJsonPatchMutator(t *testing.T) {
 				]
 			}`),
 
-			job: &api.Job{},
+			job: testutil.BaseJob(),
 
 			wantErr:     nil,
 			wantWarns:   nil,
-			wantJob:     &api.Job{Meta: map[string]string{"foo": "bar"}},
+			wantJob:     &api.Job{ID: testutil.BaseJob().ID, Meta: map[string]string{"foo": "bar"}},
 			wantMutated: true,
 		},
 		{
@@ -75,7 +76,7 @@ func TestJsonPatchMutator(t *testing.T) {
 				]
 			}`),
 
-			job: &api.Job{},
+			job: testutil.BaseJob(),
 
 			wantErr:     fmt.Errorf("failed to apply patch"),
 			wantWarns:   nil,
@@ -94,11 +95,11 @@ func TestJsonPatchMutator(t *testing.T) {
 				]
 			}`),
 
-			job: &api.Job{},
+			job: testutil.BaseJob(),
 
 			wantErr:     nil,
 			wantWarns:   []error{fmt.Errorf("Warning 1"), fmt.Errorf("Warning 2")},
-			wantJob:     &api.Job{},
+			wantJob:     testutil.BaseJob(),
 			wantMutated: false,
 		},
 		{
@@ -106,13 +107,13 @@ func TestJsonPatchMutator(t *testing.T) {
 			endpointPath: "/mutate",
 			method:       "POST",
 			response:     []byte(`{}`),
-			job:          &api.Job{},
+			job:          testutil.BaseJob(),
 			context: &config.RequestContext{
 				ClientIP: "127.0.0.1",
 			},
 			wantErr:     nil,
 			wantWarns:   nil,
-			wantJob:     &api.Job{},
+			wantJob:     testutil.BaseJob(),
 			wantMutated: false,
 			wantedHeaders: map[string]string{
 				"X-Forwarded-For": "127.0.0.1",
@@ -124,13 +125,13 @@ func TestJsonPatchMutator(t *testing.T) {
 			endpointPath: "/mutate",
 			method:       "POST",
 			response:     []byte(`{}`),
-			job:          &api.Job{},
+			job:          testutil.BaseJob(),
 			context: &config.RequestContext{
 				AccessorID: "1234",
 			},
 			wantErr:     nil,
 			wantWarns:   nil,
-			wantJob:     &api.Job{},
+			wantJob:     testutil.BaseJob(),
 			wantMutated: false,
 			wantedHeaders: map[string]string{
 				"NACP-Accessor-ID": "1234",
@@ -163,7 +164,7 @@ func TestJsonPatchMutator(t *testing.T) {
 			require.NoError(t, err)
 
 			payload := &types.Payload{Job: tc.job, Context: tc.context}
-			job, mutated, warnings, err := mutator.Mutate(payload)
+			job, mutated, warnings, err := mutator.Mutate(t.Context(), payload)
 
 			require.True(t, webhookCalled)
 			if tc.wantErr != nil {

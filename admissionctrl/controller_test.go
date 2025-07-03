@@ -1,6 +1,7 @@
 package admissionctrl
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"testing"
@@ -11,13 +12,14 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type AddMetaMutator struct {
 	Field string
 }
 
-func (m *AddMetaMutator) Mutate(payload *types.Payload) (*api.Job, bool, []error, error) {
+func (m *AddMetaMutator) Mutate(ctx context.Context, payload *types.Payload) (*api.Job, bool, []error, error) {
 	copy, err := copystructure.Copy(payload.Job)
 
 	if err != nil {
@@ -42,12 +44,12 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	type args struct {
 		job *api.Job
 	}
-	job := &api.Job{} // testutil.ReadJob(t)
+	job := testutil.BaseJob()
 	payload := &types.Payload{Job: job}
 
 	defaultMutator := func() *testutil.MockMutator {
 		mutator := new(testutil.MockMutator)
-		mutator.On("Mutate", payload).Return(payload.Job, true, []error{}, nil)
+		mutator.On("Mutate", mock.Anything, payload).Return(payload.Job, true, []error{}, nil)
 		return mutator
 	}
 	defaultMutators := func() []JobMutator {
@@ -56,7 +58,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	defaultValidator := func() *testutil.MockValidator {
 
 		validator := new(testutil.MockValidator)
-		validator.On("Validate", payload).Return([]error{}, nil)
+		validator.On("Validate", mock.Anything, payload).Return([]error{}, nil)
 		return validator
 	}
 	tests := []struct {
@@ -174,6 +176,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 				job: job,
 			},
 			want: &api.Job{
+				ID: job.ID,
 				Meta: map[string]string{
 					"mutator1": "applied",
 					"mutator2": "applied",
@@ -189,7 +192,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			fields: fields{
 				mutators: func() []JobMutator {
 					mutator := new(testutil.MockMutator)
-					mutator.On("Mutate", payload).Return(nil, false, []error{}, nil)
+					mutator.On("Mutate", mock.Anything, payload).Return(nil, false, []error{}, nil)
 					return []JobMutator{mutator}
 				},
 				validator: defaultValidator,
@@ -212,7 +215,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			validator := tt.fields.validator()
 			j := NewJobHandler(mutators, []JobValidator{validator}, slog.New(slog.DiscardHandler), tt.resolveToken)
 			payload := &types.Payload{Job: tt.args.job}
-			job, warnings, err := j.ApplyAdmissionControllers(payload)
+			job, warnings, err := j.ApplyAdmissionControllers(t.Context(), payload)
 
 			assert.Equal(t, tt.wantWarnings, warnings, "Warnings should be equal")
 

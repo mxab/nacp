@@ -133,7 +133,7 @@ func TestWebhookMutator_Mutate(t *testing.T) {
 				method:   tt.fields.method,
 			}
 			payload := &types.Payload{Job: tt.args.job, Context: tt.args.context}
-			gotOut, gotMutated, gotWarnings, err := w.Mutate(payload)
+			gotOut, gotMutated, gotWarnings, err := w.Mutate(t.Context(), payload)
 			assert.True(t, endpointCalled, "Ensure endpoint was called")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WebhookMutator.Mutate() error = %v, wantErr %v", err, tt.wantErr)

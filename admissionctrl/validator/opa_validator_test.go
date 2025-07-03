@@ -42,7 +42,7 @@ func TestOpaValidator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			job := testutil.ReadJob(t, tt.jobFile)
 			payload := &types.Payload{Job: job}
-			_, err := opaValidator.Validate(payload)
+			_, err := opaValidator.Validate(t.Context(), payload)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 
 		})
@@ -98,7 +98,7 @@ func TestOpaValidatorSimple(t *testing.T) {
 				tt.query, slog.New(slog.DiscardHandler), nil)
 			require.NoError(t, err)
 			payload := &types.Payload{Job: dummyJob}
-			warnings, err := opaValidator.Validate(payload)
+			warnings, err := opaValidator.Validate(t.Context(), payload)
 			require.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			assert.Len(t, warnings, tt.wantWarnings, "OpaValidator.Validate() warnings = %v, wantWarnings %v", warnings, tt.wantWarnings)
 		})
@@ -193,7 +193,7 @@ func TestOpaValidatorContext(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			warnings, err := validator.Validate(tt.payload)
+			warnings, err := validator.Validate(t.Context(), tt.payload)
 			assert.Equal(t, tt.wantErr, err != nil, "OpaValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			assert.Len(t, warnings, tt.wantWarnings, "OpaValidator.Validate() warnings = %v, wantWarnings %v", warnings, tt.wantWarnings)
 		})

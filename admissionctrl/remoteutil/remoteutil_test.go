@@ -6,6 +6,7 @@ import (
 
 	"github.com/mxab/nacp/admissionctrl/types"
 	"github.com/mxab/nacp/config"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func TestApplyContextHeders(t *testing.T) {
@@ -97,5 +98,16 @@ func TestApplyContextHeders(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestNewInstrumentedClient(t *testing.T) {
+	client := NewInstrumentedClient()
+	if client == nil {
+		t.Fatal("Expected NewInstrumentedClient to return a non-nil client")
+	}
+
+	if _, ok := client.Transport.(*otelhttp.Transport); !ok {
+		t.Fatal("Expected the client's transport to be of type InstrumentedTransport")
 	}
 }

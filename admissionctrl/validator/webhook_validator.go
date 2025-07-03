@@ -2,6 +2,7 @@ package validator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -26,18 +27,18 @@ type validationWebhookResponse struct {
 	Warnings []string `json:"warnings"`
 }
 
-func (w *WebhookValidator) Validate(payload *types.Payload) ([]error, error) {
+func (w *WebhookValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(w.method, w.endpoint.String(), bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(ctx, w.method, w.endpoint.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 
 	remoteutil.ApplyContextHeaders(req, payload)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := remoteutil.NewInstrumentedClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

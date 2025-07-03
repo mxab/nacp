@@ -128,7 +128,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			payload := &types.Payload{Job: tt.args.job}
-			gotOut, mutated, gotWarnings, err := tt.j.Mutate(payload)
+			gotOut, mutated, gotWarnings, err := tt.j.Mutate(t.Context(), payload)
 			require.Equal(t, tt.wantErr, err != nil, "JSONPatcher.Mutate() error = %v, wantErr %v", err, tt.wantErr)
 
 			assert.Equal(t, tt.wantWarnings, gotWarnings, "JSONPatcher.Mutate() gotWarnings = %v, want %v", gotWarnings, tt.wantWarnings)
