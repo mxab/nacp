@@ -43,6 +43,10 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
+var (
+	version = "dev"
+)
+
 type contextKeyWarnings struct{}
 type contextKeyValidationError struct{}
 
@@ -568,7 +572,7 @@ func run(c *config.Config) (err error) {
 	setupOtel := c.Telemetry.Logging.IsOtel() || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
 	if setupOtel {
 		// Set up OpenTelemetry.
-		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, c.Telemetry.Logging.IsOtel(), c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled)
+		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, c.Telemetry.Logging.IsOtel(), c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled, version)
 		if err != nil {
 			return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
 		}

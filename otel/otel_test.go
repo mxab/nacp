@@ -42,7 +42,7 @@ func TestOtlpSetup(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	otelShutdown, err := SetupOTelSDK(ctx, true, true, true)
+	otelShutdown, err := SetupOTelSDK(ctx, true, true, true, "0.0.0")
 	if err != nil {
 		t.Fatalf("failed to setup OTel SDK: %v", err)
 	}

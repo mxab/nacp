@@ -40,7 +40,7 @@ job "nacp" {
 
         OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
 
-        OTEL_RESOURCE_ATTRIBUTES = "service.name=nacp,service.version=0.8.0,service.instance.id=${NOMAD_SHORT_ALLOC_ID}"
+        OTEL_RESOURCE_ATTRIBUTES = "service.instance.id=${NOMAD_SHORT_ALLOC_ID}"
       }
       template {
         data        = file("nacp.conf")

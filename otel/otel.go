@@ -10,6 +10,8 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	logApi "go.opentelemetry.io/otel/log"
 	metricApi "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	traceApi "go.opentelemetry.io/otel/trace"
 
 	"go.opentelemetry.io/otel/log/global"
@@ -52,11 +54,11 @@ func SetupOTelSDKWith(ctx context.Context, loggerProvider logApi.LoggerProvider,
 
 	shutdown, _, shutdownFnAppender := cleanupConfig(ctx)
 
-	tracerProvider := newTracerProvider(traceExporter)
+	tracerProvider := newTracerProvider(traceExporter, nil)
 
 	shutdownFnAppender(tracerProvider.Shutdown)
 
-	meterProvider := newMeterProvider(metricReader)
+	meterProvider := newMeterProvider(metricReader, nil)
 
 	shutdownFnAppender(meterProvider.Shutdown)
 	shutdownFnAppender(traceExporter.Shutdown)
@@ -78,8 +80,13 @@ func SetupOTelSDKWith(ctx context.Context, loggerProvider logApi.LoggerProvider,
 	return shutdown, flush, nil
 }
 
-func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown func(context.Context) error, err error) {
+func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool, versionKey string) (shutdown func(context.Context) error, err error) {
 
+	res := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String("nacp"),
+		semconv.ServiceVersionKey.String(versionKey),
+	)
 	shutdown, handleErr, shutdownFnAppender := cleanupConfig(ctx)
 
 	var tp traceApi.TracerProvider
@@ -92,7 +99,7 @@ func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown
 			err = handleErr(err)
 			return nil, err
 		}
-		tracerProvider := newTracerProvider(tracerExporter)
+		tracerProvider := newTracerProvider(tracerExporter, res)
 		shutdownFnAppender(tracerProvider.Shutdown)
 		tp = tracerProvider
 	}
@@ -105,7 +112,7 @@ func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown
 			return nil, err
 		}
 
-		meterProvider := newMeterProvider(metric.NewPeriodicReader(metricExporter)) // Updated to remove error handling
+		meterProvider := newMeterProvider(metric.NewPeriodicReader(metricExporter), res) // Updated to remove error handling
 
 		shutdownFnAppender(meterProvider.Shutdown)
 		mp = meterProvider
@@ -120,7 +127,7 @@ func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool) (shutdown
 			return nil, err
 		}
 
-		loggerProvider := newLoggerProvider(loggerExporter)
+		loggerProvider := newLoggerProvider(loggerExporter, res)
 
 		shutdownFnAppender(loggerProvider.Shutdown)
 		lp = loggerProvider
@@ -154,27 +161,30 @@ func newPropagator() propagation.TextMapPropagator {
 	)
 }
 
-func newTracerProvider(exporter trace.SpanExporter) *trace.TracerProvider {
+func newTracerProvider(exporter trace.SpanExporter, res *resource.Resource) *trace.TracerProvider {
 
 	tracerProvider := trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
+		trace.WithResource(res),
 	)
 	return tracerProvider
 }
 
-func newMeterProvider(reader metric.Reader) *metric.MeterProvider {
+func newMeterProvider(reader metric.Reader, res *resource.Resource) *metric.MeterProvider {
 
 	meterProvider := metric.NewMeterProvider(
 		metric.WithReader(reader),
+		metric.WithResource(res),
 	)
 
 	return meterProvider
 }
 
-func newLoggerProvider(exporter log.Exporter) *log.LoggerProvider {
+func newLoggerProvider(exporter log.Exporter, res *resource.Resource) *log.LoggerProvider {
 
 	loggerProvider := log.NewLoggerProvider(
 		log.WithProcessor(log.NewBatchProcessor(exporter)),
+		log.WithResource(res),
 	)
 	return loggerProvider
 }
