@@ -13,7 +13,7 @@ COPY config ./config
 ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target=/root/.cache/go-build go build -o nacp ./cmd/nacp
 
-FROM ubuntu
+FROM ubuntu:24.10
 COPY --from=0 /app/nacp /nacp
 COPY --from=0 /etc/passwd /etc/passwd
 USER nobody
