@@ -2,8 +2,7 @@ telemetry {
     logging {
 
         slog {
-            json = true
-            text = false
+            text_out = "banana"
         }
     }
 }

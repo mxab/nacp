@@ -1,6 +1,9 @@
 telemetry {
     logging {
-        type = "otel"
+
+        otel {
+            enabled = true
+        }
     }
     metrics {
         enabled = true

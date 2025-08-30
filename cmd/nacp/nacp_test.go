@@ -28,6 +28,7 @@ import (
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/logutil"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -597,11 +598,9 @@ func sendPut(t *testing.T, url string, body io.Reader) (*http.Response, error) {
 	return http.DefaultClient.Do(req)
 }
 
-func discardFactory(name string) *slog.Logger {
-	return slog.New(slog.DiscardHandler)
-}
 func TestDefaultBuildServer(t *testing.T) {
 
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
 	c, err := buildConfig("")
 	require.NoError(t, err)
 	server, err := buildServer(c, discardFactory)
@@ -611,6 +610,8 @@ func TestDefaultBuildServer(t *testing.T) {
 
 }
 func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+
 	c := config.DefaultConfig()
 	c.Nomad.Address = ":localhost:4646"
 	_, err := buildServer(c, discardFactory)
@@ -618,6 +619,8 @@ func TestBuildServerFailsOnInvalidNomadUrl(t *testing.T) {
 
 }
 func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+
 	c := config.DefaultConfig()
 	c.Validators = append(c.Validators, config.Validator{
 		Type: "doesnotexit",
@@ -626,6 +629,8 @@ func TestBuildServerFailsInvalidValidatorTypes(t *testing.T) {
 	assert.Error(t, err, "failed to create validators: unknown validator type doesnotexit")
 }
 func TestBuildServerFailsInvalidMutatorTypes(t *testing.T) {
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+
 	c := config.DefaultConfig()
 	c.Mutators = append(c.Mutators, config.Mutator{
 		Type: "doesnotexit",
@@ -685,6 +690,9 @@ func TestCreateValidators(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+
+			discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+
 			c := &config.Config{
 				Validators: []config.Validator{tc.validators},
 			}
@@ -703,6 +711,7 @@ func TestCreateValidators(t *testing.T) {
 	}
 }
 func TestNotationValidatorConfig(t *testing.T) {
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
 
 	policyDir := t.TempDir()
 
@@ -804,6 +813,9 @@ func TestCreateMutatators(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+
+			discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+
 			c := &config.Config{
 				Mutators: []config.Mutator{tc.mutators},
 			}
@@ -949,7 +961,7 @@ func TestRunTerminatesOnSIGINT(t *testing.T) {
 			config: func() *config.Config {
 				cfg := config.DefaultConfig()
 				cfg.Port = freePort(t)
-				cfg.Telemetry.Logging.Type = "otel"
+				cfg.Telemetry.Logging.OtelLogging.Enabled = config.Ptr(true)
 				cfg.Telemetry.Metrics.Enabled = true
 				cfg.Telemetry.Tracing.Enabled = true
 				return cfg

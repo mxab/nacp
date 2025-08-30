@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
@@ -80,7 +81,7 @@ func SetupOTelSDKWith(ctx context.Context, loggerProvider logApi.LoggerProvider,
 	return shutdown, flush, nil
 }
 
-func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool, versionKey string) (shutdown func(context.Context) error, err error) {
+func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool, versionKey string, severitier minsev.Severitier) (shutdown func(context.Context) error, err error) {
 
 	res := resource.NewWithAttributes(
 		semconv.SchemaURL,
@@ -127,7 +128,7 @@ func SetupOTelSDK(ctx context.Context, logging, metrics, tracing bool, versionKe
 			return nil, err
 		}
 
-		loggerProvider := newLoggerProvider(loggerExporter, res)
+		loggerProvider := newLoggerProvider(loggerExporter, res, severitier)
 
 		shutdownFnAppender(loggerProvider.Shutdown)
 		lp = loggerProvider
@@ -180,10 +181,13 @@ func newMeterProvider(reader metric.Reader, res *resource.Resource) *metric.Mete
 	return meterProvider
 }
 
-func newLoggerProvider(exporter log.Exporter, res *resource.Resource) *log.LoggerProvider {
+func newLoggerProvider(exporter log.Exporter, res *resource.Resource, severietier minsev.Severitier) *log.LoggerProvider {
 
+	batchProcessor := log.NewBatchProcessor(exporter)
+	processor := minsev.NewLogProcessor(batchProcessor, severietier)
 	loggerProvider := log.NewLoggerProvider(
-		log.WithProcessor(log.NewBatchProcessor(exporter)),
+
+		log.WithProcessor(processor),
 		log.WithResource(res),
 	)
 	return loggerProvider

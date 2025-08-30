@@ -24,6 +24,7 @@ import (
 
 	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/logutil"
 	nacpOtel "github.com/mxab/nacp/otel"
 
 	"log/slog"
@@ -39,7 +40,6 @@ import (
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/verifier/truststore"
 
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -111,15 +111,15 @@ func resolveTokenAccessor(ctx context.Context, transport http.RoundTripper, noma
 
 	return &aclToken, nil
 }
-func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport http.RoundTripper) http.HandlerFunc {
+func NewProxyAsHandlerFunc(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, logger *slog.Logger, transport http.RoundTripper) http.HandlerFunc {
 
-	proxy := newProxyHandler(nomadAddress, jobHandler, appLogger, transport)
+	proxy := newProxyHandler(nomadAddress, jobHandler, logger, transport)
 	handlerFunc := http.HandlerFunc(proxy)
 	handlerFunc = otelhttp.NewHandler(handlerFunc, "/").(http.HandlerFunc)
 
 	return handlerFunc
 }
-func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, appLogger *slog.Logger, transport http.RoundTripper) func(http.ResponseWriter, *http.Request) {
+func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler, logger *slog.Logger, transport http.RoundTripper) func(http.ResponseWriter, *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(nomadAddress)
 
@@ -138,14 +138,14 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		var err error
 
 		if isRegister(resp.Request) {
-			err = handRegisterResponse(resp, appLogger)
+			err = handRegisterResponse(resp, logger)
 		} else if isPlan(resp.Request) {
-			err = handleJobPlanResponse(resp, appLogger)
+			err = handleJobPlanResponse(resp, logger)
 		} else if isValidate(resp.Request) {
-			err = handleJobValdidateResponse(resp, appLogger)
+			err = handleJobValdidateResponse(resp, logger)
 		}
 		if err != nil {
-			appLogger.ErrorContext(resp.Request.Context(), "Preparing response failed", "error", err)
+			logger.ErrorContext(resp.Request.Context(), "Preparing response failed", "error", err)
 			return err
 		}
 
@@ -166,16 +166,16 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		if jobHandler.ResolveToken() {
 			tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
 			if err != nil {
-				appLogger.ErrorContext(ctx, "Resolving token failed", "error", err)
+				logger.ErrorContext(ctx, "Resolving token failed", "error", err)
 				writeError(w, err)
 			}
 			if tokenInfo != nil {
 				reqCtx.AccessorID = tokenInfo.AccessorID
 				reqCtx.TokenInfo = tokenInfo
 			}
-			appLogger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
+			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
 		} else {
-			appLogger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
+			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
 		}
 
 		ctx = context.WithValue(ctx, "request_context", reqCtx)
@@ -183,17 +183,17 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		var err error
 		if isRegister(r) {
-			r, err = handleRegister(r, appLogger, jobHandler)
+			r, err = handleRegister(r, logger, jobHandler)
 
 		} else if isPlan(r) {
-			r, err = handlePlan(r, appLogger, jobHandler)
+			r, err = handlePlan(r, logger, jobHandler)
 
 		} else if isValidate(r) {
-			r, err = handleValidate(r, appLogger, jobHandler)
+			r, err = handleValidate(r, logger, jobHandler)
 
 		}
 		if err != nil {
-			appLogger.WarnContext(ctx, "Error applying admission controllers", "error", err)
+			logger.WarnContext(ctx, "Error applying admission controllers", "error", err)
 			writeError(w, err)
 
 		} else {
@@ -205,7 +205,7 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 }
 
-func handRegisterResponse(resp *http.Response, applogger *slog.Logger) error {
+func handRegisterResponse(resp *http.Response, logger *slog.Logger) error {
 
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
 	if !ok && len(warnings) == 0 {
@@ -254,7 +254,7 @@ func checkIfGzipAndTransformReader(resp *http.Response, reader io.ReadCloser) (b
 	}
 	return isGzip, reader, nil
 }
-func handleJobPlanResponse(resp *http.Response, applogger *slog.Logger) error {
+func handleJobPlanResponse(resp *http.Response, logger *slog.Logger) error {
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
 	if !ok && len(warnings) == 0 {
 		return nil
@@ -286,7 +286,7 @@ func handleJobPlanResponse(resp *http.Response, applogger *slog.Logger) error {
 	}
 	return nil
 }
-func handleJobValdidateResponse(resp *http.Response, appLogger *slog.Logger) error {
+func handleJobValdidateResponse(resp *http.Response, logger *slog.Logger) error {
 
 	ctx := resp.Request.Context()
 	validationErr, okErr := ctx.Value(ctxValidationError).(error)
@@ -530,18 +530,23 @@ func isValidate(r *http.Request) bool {
 
 // https://www.codedodle.com/go-reverse-proxy-example.html
 // https://joshsoftware.wordpress.com/2021/05/25/simple-and-powerful-reverseproxy-in-go/
+
+func buildSlogHandler(json bool, level slog.Level) slog.Handler {
+	opts := &slog.HandlerOptions{
+		Level: level,
+	}
+	if json {
+		return slog.NewJSONHandler(os.Stdout, opts)
+	}
+	return slog.NewTextHandler(os.Stdout, opts)
+}
 func main() {
 
 	configPtr := flag.String("config", "", "point to a nacp config file")
 	bootstrapLoggerHandlerPtr := flag.Bool("bootstrap-json-logger", false, "use json for initial logging until config is loaded")
 	flag.Parse()
-	var bootstrapLogger *slog.Logger
-	if *bootstrapLoggerHandlerPtr {
-		bootstrapLogger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	} else {
-		bootstrapLogger = slog.New(slog.NewTextHandler(os.Stdout, nil))
-	}
-	slog.SetDefault(bootstrapLogger)
+
+	slog.SetDefault(slog.New(buildSlogHandler(*bootstrapLoggerHandlerPtr, slog.LevelInfo)))
 
 	c, err := buildConfig(*configPtr)
 	if err != nil {
@@ -561,18 +566,22 @@ func run(c *config.Config) (err error) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	loggerFactory, err := buildLoggerFactory(c)
+	rootFactory, leveler := logutil.NewLoggerFactoryFromConfig(c.Telemetry.Logging)
+
+	if err != nil {
+		return fmt.Errorf("failed to build logger factory: %w", err)
+	}
+	appLogger := rootFactory.GetLogger("nacp")
+	slog.SetDefault(appLogger)
+
 	if err != nil {
 		return fmt.Errorf("failed to build logger factory: %w", err)
 	}
 
-	logger := loggerFactory("nacp")
-	slog.SetDefault(logger)
-	appLogger := logger
-	setupOtel := c.Telemetry.Logging.IsOtel() || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
+	setupOtel := *c.Telemetry.Logging.OtelLogging.Enabled || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
 	if setupOtel {
 		// Set up OpenTelemetry.
-		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, c.Telemetry.Logging.IsOtel(), c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled, version)
+		otelShutdown, err := nacpOtel.SetupOTelSDK(ctx, *c.Telemetry.Logging.OtelLogging.Enabled, c.Telemetry.Metrics.Enabled, c.Telemetry.Tracing.Enabled, version, leveler.GetSeverietier())
 		if err != nil {
 			return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
 		}
@@ -585,13 +594,7 @@ func run(c *config.Config) (err error) {
 
 	}
 
-	level := slog.Level(0)
-	if err := level.UnmarshalText([]byte(c.Telemetry.Logging.Level)); err != nil {
-		return fmt.Errorf("failed to parse log level: %w", err)
-	}
-	slog.SetLogLoggerLevel(level)
-
-	server, err := buildServer(c, loggerFactory)
+	server, err := buildServer(c, rootFactory)
 
 	if err != nil {
 		return fmt.Errorf("failed to build server: %w", err)
@@ -627,34 +630,16 @@ func run(c *config.Config) (err error) {
 
 }
 
-func buildLoggerFactory(c *config.Config) (lf loggerFactory, err error) {
-	if c.Telemetry.Logging.IsSlog() {
-		if c.Telemetry.Logging.SlogLogging.Handler == "json" {
-			lf = func(_ string) *slog.Logger {
-				return slog.New(slog.NewJSONHandler(os.Stdout, nil))
-			}
-
-		} else if c.Telemetry.Logging.SlogLogging.Handler == "text" {
-			lf = func(_ string) *slog.Logger {
-				return slog.New(slog.NewTextHandler(os.Stdout, nil))
-			}
-
-		} else {
-			return nil, fmt.Errorf("invalid slog logging handler, only json and text are supported")
-		}
-
-	} else if c.Telemetry.Logging.IsOtel() {
-		lf = func(name string) *slog.Logger {
-			return otelslog.NewLogger(name)
-		}
-
-	} else {
-		return nil, fmt.Errorf("invalid logging type, only slog and otel are supported")
+func logLevel(loggingLevel string) (slog.Level, error) {
+	level := slog.Level(0)
+	if err := level.UnmarshalText([]byte(loggingLevel)); err != nil {
+		return 0, fmt.Errorf("failed to parse log level: %w", err)
 	}
-	return
+
+	return level, nil
 }
 
-func buildServer(c *config.Config, loggerFactory loggerFactory) (*http.Server, error) {
+func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -696,11 +681,11 @@ func buildServer(c *config.Config, loggerFactory loggerFactory) (*http.Server, e
 
 		jobMutators,
 		jobValidators,
-		loggerFactory("handler"),
+		loggerFactory.GetLogger("handler"),
 		resolveToken,
 	)
 
-	handlerFunc := NewProxyAsHandlerFunc(backend, jobHandler, loggerFactory("proxy-handler"), instrumentedProxyTransport)
+	handlerFunc := NewProxyAsHandlerFunc(backend, jobHandler, loggerFactory.GetLogger("proxy-handler"), instrumentedProxyTransport)
 
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
@@ -760,7 +745,7 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutators(c *config.Config, loggerFactory loggerFactory) ([]admissionctrl.JobMutator, bool, error) {
+func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]admissionctrl.JobMutator, bool, error) {
 	var jobMutators []admissionctrl.JobMutator
 	var resolveToken bool
 	for _, m := range c.Mutators {
@@ -769,18 +754,18 @@ func createMutators(c *config.Config, loggerFactory loggerFactory) ([]admissionc
 		}
 		switch m.Type {
 		case "opa_json_patch":
-			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, loggerFactory("notation_verifier"))
+			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, loggerFactory.GetLogger("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, loggerFactory("opa_mutator"), notationVerifier)
+			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, loggerFactory.GetLogger("opa_mutator"), notationVerifier)
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobMutators = append(jobMutators, mutator)
 
 		case "json_patch_webhook":
-			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, loggerFactory("json_patch_webhook_mutator"))
+			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, loggerFactory.GetLogger("json_patch_webhook_mutator"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
@@ -793,7 +778,7 @@ func createMutators(c *config.Config, loggerFactory loggerFactory) ([]admissionc
 	}
 	return jobMutators, resolveToken, nil
 }
-func createValidators(c *config.Config, loggerFactory loggerFactory) ([]admissionctrl.JobValidator, bool, error) {
+func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]admissionctrl.JobValidator, bool, error) {
 	var jobValidators []admissionctrl.JobValidator
 	var resolveToken bool
 	for _, v := range c.Validators {
@@ -802,28 +787,28 @@ func createValidators(c *config.Config, loggerFactory loggerFactory) ([]admissio
 		}
 		switch v.Type {
 		case "opa":
-			notationVerifier, err := buildVerifierIfEnabled(v.Notation, loggerFactory("notation_verifier"))
+			notationVerifier, err := buildVerifierIfEnabled(v.Notation, loggerFactory.GetLogger("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, loggerFactory("opa_validator"), notationVerifier)
+			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, loggerFactory.GetLogger("opa_validator"), notationVerifier)
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
 
 		case "webhook":
-			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, loggerFactory("webhook_validator"))
+			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, loggerFactory.GetLogger("webhook_validator"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, validator)
 		case "notation":
-			notationVerifier, err := buildVerifier(v.Notation, loggerFactory("notation_verifier"))
+			notationVerifier, err := buildVerifier(v.Notation, loggerFactory.GetLogger("notation_verifier"))
 			if err != nil {
 				return nil, resolveToken, err
 			}
-			validator := validator.NewNotationValidator(loggerFactory("notation_validator"), v.Name, notationVerifier)
+			validator := validator.NewNotationValidator(loggerFactory.GetLogger("notation_validator"), v.Name, notationVerifier)
 
 			jobValidators = append(jobValidators, validator)
 
