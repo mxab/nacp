@@ -623,15 +623,6 @@ func run(c *config.Config) (err error) {
 
 }
 
-func logLevel(loggingLevel string) (slog.Level, error) {
-	level := slog.Level(0)
-	if err := level.UnmarshalText([]byte(loggingLevel)); err != nil {
-		return 0, fmt.Errorf("failed to parse log level: %w", err)
-	}
-
-	return level, nil
-}
-
 func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
