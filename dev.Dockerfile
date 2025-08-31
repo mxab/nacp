@@ -9,6 +9,7 @@ COPY admissionctrl ./admissionctrl
 COPY cmd ./cmd
 COPY o11y ./o11y
 COPY otel ./otel
+COPY logutil ./logutil
 COPY config ./config
 ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target=/root/.cache/go-build go build -o nacp ./cmd/nacp

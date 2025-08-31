@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +10,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
+
 	type args struct {
 		name string
 	}
@@ -35,9 +38,14 @@ func TestLoadConfig(t *testing.T) {
 				Telemetry: &Telemetry{
 					Logging: &Logging{
 						Level: "info",
-						Type:  "slog",
-						SlogLogging: &SlogLogging{ //just default part
-							Handler: "text",
+						SlogLogging: &SlogLogging{
+							Text:    Ptr(true),
+							TextOut: Ptr("stdout"),
+							Json:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(false),
 						},
 					},
 					Metrics: &Metrics{
@@ -103,9 +111,14 @@ func TestLoadConfig(t *testing.T) {
 				Telemetry: &Telemetry{
 					Logging: &Logging{
 						Level: "info",
-						Type:  "slog",
-						SlogLogging: &SlogLogging{ //just default part
-							Handler: "text",
+						SlogLogging: &SlogLogging{
+							Text:    Ptr(true),
+							TextOut: Ptr("stdout"),
+							Json:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(false),
 						},
 					},
 					Metrics: &Metrics{
@@ -118,7 +131,7 @@ func TestLoadConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "with slog / json logging",
+			name: "with slog and json logging",
 			args: args{name: "testdata/loggingjson.hcl"},
 			want: &Config{
 				Port: port,
@@ -132,9 +145,14 @@ func TestLoadConfig(t *testing.T) {
 				Telemetry: &Telemetry{
 					Logging: &Logging{
 						Level: "info",
-						Type:  "slog",
 						SlogLogging: &SlogLogging{
-							Handler: "json",
+							Json:    Ptr(true),
+							Text:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+							TextOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(false),
 						},
 					},
 					Metrics: &Metrics{
@@ -162,9 +180,14 @@ func TestLoadConfig(t *testing.T) {
 				Telemetry: &Telemetry{
 					Logging: &Logging{
 						Level: "info",
-						Type:  "otel",
 						SlogLogging: &SlogLogging{ //just default part
-							Handler: "text",
+							Text:    Ptr(true),
+							TextOut: Ptr("stdout"),
+							Json:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(true),
 						},
 					},
 					Metrics: &Metrics{
@@ -177,6 +200,54 @@ func TestLoadConfig(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:    "fail if slog text_out is not valid",
+			args:    args{name: "testdata/not_valid_text_out.hcl"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "fail if slog json_out is not valid",
+			args:    args{name: "testdata/not_valid_json_out.hcl"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "log level is default info",
+			args: args{name: "testdata/emptylogging.hcl"},
+			want: &Config{
+				Port: port,
+				Bind: bind,
+
+				Nomad: &NomadServer{
+					Address: nomadAddr,
+				},
+				Validators: []Validator{},
+				Mutators:   []Mutator{},
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						SlogLogging: &SlogLogging{
+							Text:    Ptr(true),
+							TextOut: Ptr("stdout"),
+							Json:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(false),
+						},
+					},
+					Metrics: &Metrics{
+						Enabled: false,
+					},
+					Tracing: &Tracing{
+						Enabled: false,
+					},
+				},
+			},
+
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,6 +258,114 @@ func TestLoadConfig(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, config)
 			}
+
+		})
+	}
+}
+
+func TestLoadConfigDefaults(t *testing.T) {
+
+	defaultConfig := &Config{
+		Port: 6464,
+		Bind: "0.0.0.0",
+
+		Nomad: &NomadServer{
+			Address: "http://localhost:4646",
+		},
+		Validators: []Validator{},
+		Mutators:   []Mutator{},
+		Telemetry: &Telemetry{
+			Logging: &Logging{
+				Level: "info",
+				SlogLogging: &SlogLogging{
+					Text:    Ptr(true),
+					TextOut: Ptr("stdout"),
+					Json:    Ptr(false),
+					JsonOut: Ptr("stdout"),
+				},
+				OtelLogging: &OtelLogging{
+					Enabled: Ptr(false),
+				},
+			},
+			Metrics: &Metrics{
+				Enabled: false,
+			},
+			Tracing: &Tracing{
+				Enabled: false,
+			},
+		},
+	}
+
+	tt := []struct {
+		name         string
+		configAsText string
+		want         *Config
+	}{
+		{
+			name:         "empty",
+			configAsText: ``,
+			want:         defaultConfig,
+		},
+		{
+			name:         "just telemetry empty",
+			configAsText: `telemetry {}`,
+			want:         defaultConfig,
+		},
+		{
+			name: "just telemetry logging empty",
+			configAsText: `telemetry {
+			logging {
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry logging slog empty",
+			configAsText: `telemetry {
+			logging {
+				slog {
+				}
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry logging otel empty",
+			configAsText: `telemetry {
+			logging {
+				otel {
+				}
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry metric empty",
+			configAsText: `telemetry {
+			metrics {
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry tracing empty",
+			configAsText: `telemetry {
+			tracing {
+			}
+			}`,
+			want: defaultConfig,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			dir := t.TempDir()
+			configFile := filepath.Join(dir, "config.hcl")
+			os.WriteFile(configFile, []byte(tc.configAsText), 0644)
+			config, err := LoadConfig(configFile)
+
+			require.NoError(t, err)
+			assert.EqualValues(t, tc.want, config)
 
 		})
 	}

@@ -1,10 +1,17 @@
 package config
 
 import (
+	"fmt"
+	"slices"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsimple"
 	"github.com/hashicorp/nomad/api"
 )
+
+func Ptr[T any](v T) *T {
+	return &v
+}
 
 type Webhook struct {
 	Endpoint string `hcl:"endpoint"`
@@ -65,19 +72,19 @@ type NotationVerifierConfig struct {
 }
 
 type SlogLogging struct {
-	Handler string `hcl:"handler,optional"` // "json" or "text"
+	Text    *bool   `hcl:"text,optional"`
+	TextOut *string `hcl:"text_out,optional"`
+
+	Json    *bool   `hcl:"json,optional"`
+	JsonOut *string `hcl:"json_out,optional"`
+}
+type OtelLogging struct {
+	Enabled *bool `hcl:"enabled,optional"`
 }
 type Logging struct {
 	Level       string       `hcl:"level,optional"`
-	Type        string       `hcl:"type,optional"` // "slog" or "otel"
 	SlogLogging *SlogLogging `hcl:"slog,block"`
-}
-
-func (l *Logging) IsOtel() bool {
-	return l.Type == "otel"
-}
-func (l *Logging) IsSlog() bool {
-	return l.Type == "slog"
+	OtelLogging *OtelLogging `hcl:"otel,block"`
 }
 
 type Metrics struct {
@@ -119,9 +126,15 @@ func DefaultConfig() *Config {
 		Telemetry: &Telemetry{
 			Logging: &Logging{
 				Level: "info",
-				Type:  "slog",
+
 				SlogLogging: &SlogLogging{
-					Handler: "text",
+					Text:    Ptr(true),
+					TextOut: Ptr("stdout"),
+					Json:    Ptr(false),
+					JsonOut: Ptr("stdout"),
+				},
+				OtelLogging: &OtelLogging{
+					Enabled: Ptr(false),
 				},
 			},
 			Metrics: &Metrics{
@@ -152,5 +165,13 @@ func LoadConfig(name string) (*Config, error) {
 		}
 	}
 
+	// verify json/text out
+	var validOuts = []string{"stdout", "stderr"}
+	if !slices.Contains(validOuts, *c.Telemetry.Logging.SlogLogging.TextOut) {
+		return nil, fmt.Errorf("invalid slog text output: %s", *c.Telemetry.Logging.SlogLogging.TextOut)
+	}
+	if !slices.Contains(validOuts, *c.Telemetry.Logging.SlogLogging.JsonOut) {
+		return nil, fmt.Errorf("invalid slog json output: %s", *c.Telemetry.Logging.SlogLogging.JsonOut)
+	}
 	return c, nil
 }

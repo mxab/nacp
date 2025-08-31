@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/log/logtest"
@@ -42,7 +43,7 @@ func TestOtlpSetup(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	otelShutdown, err := SetupOTelSDK(ctx, true, true, true, "0.0.0")
+	otelShutdown, err := SetupOTelSDK(ctx, true, true, true, "0.0.0", minsev.SeverityDebug)
 	if err != nil {
 		t.Fatalf("failed to setup OTel SDK: %v", err)
 	}
