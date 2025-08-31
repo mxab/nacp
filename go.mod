@@ -16,7 +16,6 @@ require (
 	github.com/notaryproject/notation-go v1.3.2
 	github.com/open-policy-agent/opa v1.5.1
 	github.com/oras-project/oras-credentials-go v0.4.0
-	github.com/samber/slog-mock v0.1.0
 	github.com/samber/slog-multi v1.4.1
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.37.0
