@@ -528,9 +528,6 @@ func isValidate(r *http.Request) bool {
 	return (r.Method == "PUT" || r.Method == "POST") && r.URL.Path == "/v1/validate/job"
 }
 
-// https://www.codedodle.com/go-reverse-proxy-example.html
-// https://joshsoftware.wordpress.com/2021/05/25/simple-and-powerful-reverseproxy-in-go/
-
 func buildSlogHandler(json bool, level slog.Level) slog.Handler {
 	opts := &slog.HandlerOptions{
 		Level: level,
@@ -540,6 +537,10 @@ func buildSlogHandler(json bool, level slog.Level) slog.Handler {
 	}
 	return slog.NewTextHandler(os.Stdout, opts)
 }
+
+// https://www.codedodle.com/go-reverse-proxy-example.html
+// https://joshsoftware.wordpress.com/2021/05/25/simple-and-powerful-reverseproxy-in-go/
+
 func main() {
 
 	configPtr := flag.String("config", "", "point to a nacp config file")
@@ -568,15 +569,8 @@ func run(c *config.Config) (err error) {
 
 	rootFactory, leveler := logutil.NewLoggerFactoryFromConfig(c.Telemetry.Logging)
 
-	if err != nil {
-		return fmt.Errorf("failed to build logger factory: %w", err)
-	}
 	appLogger := rootFactory.GetLogger("nacp")
 	slog.SetDefault(appLogger)
-
-	if err != nil {
-		return fmt.Errorf("failed to build logger factory: %w", err)
-	}
 
 	setupOtel := *c.Telemetry.Logging.OtelLogging.Enabled || c.Telemetry.Metrics.Enabled || c.Telemetry.Tracing.Enabled
 	if setupOtel {
@@ -589,7 +583,6 @@ func run(c *config.Config) (err error) {
 		// https://opentelemetry.io/docs/languages/go/getting-started/
 		defer func() {
 			err = errors.Join(err, otelShutdown(context.Background()))
-
 		}()
 
 	}
