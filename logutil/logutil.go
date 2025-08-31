@@ -119,10 +119,25 @@ func NewLoggerFactoryFromConfig(logging *config.Logging) (*LoggerFactory, *Level
 }
 
 func (lf *LoggerFactory) GetLogger(name string) *slog.Logger {
-	slogHandler := slog.NewJSONHandler(lf.jsonOut, &slog.HandlerOptions{
-		Level: lf.leveler.GetSlogLeveler(),
-	})
-	otelHandler := otelslog.NewHandler(name)
-	logger := slog.New(slogmulti.Fanout(slogHandler, otelHandler))
-	return logger
+
+	var handlers []slog.Handler
+
+	if lf.jsonOut != nil {
+		slogHandler := slog.NewJSONHandler(lf.jsonOut, &slog.HandlerOptions{
+			Level: lf.leveler.GetSlogLeveler(),
+		})
+		handlers = append(handlers, slogHandler)
+	}
+	if lf.textOut != nil {
+		textHandler := slog.NewTextHandler(lf.textOut, &slog.HandlerOptions{
+			Level: lf.leveler.GetSlogLeveler(),
+		})
+		handlers = append(handlers, textHandler)
+	}
+	if lf.otel {
+		otelHandler := otelslog.NewHandler(name)
+		handlers = append(handlers, otelHandler)
+	}
+
+	return slog.New(slogmulti.Fanout(handlers...))
 }

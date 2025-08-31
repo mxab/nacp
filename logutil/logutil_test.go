@@ -91,11 +91,14 @@ func TestFilterLevel(t *testing.T) {
 			levler := NewLeveler(Debug)
 			levler.Set(Level(tt.level.String()))
 
-			buf, otelMockExporter, loggerProvider := setup(levler)
+			jsonOut := &bytes.Buffer{}
+			textOut := &bytes.Buffer{}
+			otelMockExporter, loggerProvider := setup(levler)
 			defer loggerProvider.Shutdown(t.Context())
 			lf := &LoggerFactory{
 				leveler: levler,
-				jsonOut: buf,
+				jsonOut: jsonOut,
+				textOut: textOut,
 				otel:    true,
 			}
 
@@ -108,10 +111,15 @@ func TestFilterLevel(t *testing.T) {
 
 			records := otelMockExporter.Calls[0].Arguments.Get(1).([]log.Record)
 			assert.Len(t, records, len(tt.expectedMessages))
-			output := buf.String()
-			assert.Len(t, strings.Split(strings.TrimSpace(output), "\n"), len(tt.expectedMessages))
+			jsonOutput := jsonOut.String()
+			textOutput := textOut.String()
+			assert.Len(t, strings.Split(strings.TrimSpace(jsonOutput), "\n"), len(tt.expectedMessages))
+			assert.Len(t, strings.Split(strings.TrimSpace(textOutput), "\n"), len(tt.expectedMessages))
+
 			for _, expected := range tt.expectedMessages {
-				assert.Contains(t, output, expected.input)
+
+				assert.Contains(t, jsonOutput, fmt.Sprintf("\"msg\":\"%s\"", expected.input))
+				assert.Contains(t, textOutput, fmt.Sprintf("msg=\"%s\"", expected.input))
 			}
 
 		})
@@ -122,7 +130,8 @@ func TestFilterLevel(t *testing.T) {
 func TestLevelChange(t *testing.T) {
 	levler := NewLeveler(Debug)
 
-	buf, otelMockExporter, loggerProvider := setup(levler)
+	buf := &bytes.Buffer{}
+	otelMockExporter, loggerProvider := setup(levler)
 	defer loggerProvider.Shutdown(t.Context())
 	lf := &LoggerFactory{
 		leveler: levler,
@@ -181,8 +190,8 @@ func TestLevelChange(t *testing.T) {
 
 }
 
-func setup(levler *Leveler) (buf *bytes.Buffer, mockExporter *MockExporter, loggerProvider *log.LoggerProvider) {
-	buf = &bytes.Buffer{}
+func setup(levler *Leveler) (mockExporter *MockExporter, loggerProvider *log.LoggerProvider) {
+
 	mockExporter = &MockExporter{}
 	mockExporter.On("Export", mock.Anything, mock.Anything).Return(nil)
 	mockExporter.On("Shutdown", mock.Anything).Return(nil)
