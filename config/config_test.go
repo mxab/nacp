@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -256,6 +258,114 @@ func TestLoadConfig(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, config)
 			}
+
+		})
+	}
+}
+
+func TestLoadConfigDefaults(t *testing.T) {
+
+	defaultConfig := &Config{
+		Port: 6464,
+		Bind: "0.0.0.0",
+
+		Nomad: &NomadServer{
+			Address: "http://localhost:4646",
+		},
+		Validators: []Validator{},
+		Mutators:   []Mutator{},
+		Telemetry: &Telemetry{
+			Logging: &Logging{
+				Level: "info",
+				SlogLogging: &SlogLogging{
+					Text:    Ptr(true),
+					TextOut: Ptr("stdout"),
+					Json:    Ptr(false),
+					JsonOut: Ptr("stdout"),
+				},
+				OtelLogging: &OtelLogging{
+					Enabled: Ptr(false),
+				},
+			},
+			Metrics: &Metrics{
+				Enabled: false,
+			},
+			Tracing: &Tracing{
+				Enabled: false,
+			},
+		},
+	}
+
+	tt := []struct {
+		name         string
+		configAsText string
+		want         *Config
+	}{
+		{
+			name:         "empty",
+			configAsText: ``,
+			want:         defaultConfig,
+		},
+		{
+			name:         "just telemetry empty",
+			configAsText: `telemetry {}`,
+			want:         defaultConfig,
+		},
+		{
+			name: "just telemetry logging empty",
+			configAsText: `telemetry {
+			logging {
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry logging slog empty",
+			configAsText: `telemetry {
+			logging {
+				slog {
+				}
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry logging otel empty",
+			configAsText: `telemetry {
+			logging {
+				otel {
+				}
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry metric empty",
+			configAsText: `telemetry {
+			metrics {
+			}
+			}`,
+			want: defaultConfig,
+		},
+		{
+			name: "just telemetry tracing empty",
+			configAsText: `telemetry {
+			tracing {
+			}
+			}`,
+			want: defaultConfig,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			dir := t.TempDir()
+			configFile := filepath.Join(dir, "config.hcl")
+			os.WriteFile(configFile, []byte(tc.configAsText), 0644)
+			config, err := LoadConfig(configFile)
+
+			require.NoError(t, err)
+			assert.EqualValues(t, tc.want, config)
 
 		})
 	}

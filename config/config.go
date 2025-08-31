@@ -165,39 +165,6 @@ func LoadConfig(name string) (*Config, error) {
 		}
 	}
 
-	// apply telemetry defaults
-	if c.Telemetry == nil {
-		c.Telemetry = &Telemetry{}
-	}
-	if c.Telemetry.Logging == nil {
-		c.Telemetry.Logging = &Logging{}
-	}
-	if c.Telemetry.Logging.SlogLogging == nil {
-		c.Telemetry.Logging.SlogLogging = &SlogLogging{}
-	}
-	if c.Telemetry.Logging.SlogLogging.Text == nil && c.Telemetry.Logging.SlogLogging.Json == nil {
-		c.Telemetry.Logging.SlogLogging.Text = Ptr(true)
-		c.Telemetry.Logging.SlogLogging.Json = Ptr(false)
-	}
-	if c.Telemetry.Logging.SlogLogging.Text == nil {
-		c.Telemetry.Logging.SlogLogging.Text = Ptr(false)
-	}
-	if c.Telemetry.Logging.SlogLogging.Json == nil {
-		c.Telemetry.Logging.SlogLogging.Json = Ptr(false)
-	}
-	if c.Telemetry.Logging.SlogLogging.TextOut == nil {
-		c.Telemetry.Logging.SlogLogging.TextOut = Ptr("stdout")
-	}
-	if c.Telemetry.Logging.SlogLogging.JsonOut == nil {
-		c.Telemetry.Logging.SlogLogging.JsonOut = Ptr("stdout")
-	}
-	if c.Telemetry.Logging.OtelLogging == nil {
-		c.Telemetry.Logging.OtelLogging = &OtelLogging{}
-	}
-	if c.Telemetry.Logging.OtelLogging.Enabled == nil {
-		c.Telemetry.Logging.OtelLogging.Enabled = Ptr(false)
-	}
-
 	// verify json/text out
 	var validOuts = []string{"stdout", "stderr"}
 	if !slices.Contains(validOuts, *c.Telemetry.Logging.SlogLogging.TextOut) {
