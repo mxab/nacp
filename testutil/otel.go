@@ -37,7 +37,7 @@ func LaunchCollector(t *testing.T) (tc.Container, *LogConsumer) {
 
 	logConsumer := &LogConsumer{}
 	req := tc.ContainerRequest{
-		Image:        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.123.0",
+		Image:        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.133.0",
 		ExposedPorts: []string{"4318/tcp"},
 
 		Cmd: []string{
