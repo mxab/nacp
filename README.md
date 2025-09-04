@@ -17,6 +17,10 @@ Currently validation comes into two flavors:
 - Embedded OPA rules
 - Webhooks
 
+## Input
+
+The input for mutation and validation is the job data and the request metadata. See the [`types.Payload` struct](./admissionctrl/types/opa_payload.go) and its json representation for more details.
+
 ## Mutation
 
 During the mutation phase the job data is modified by the configured mutators.
