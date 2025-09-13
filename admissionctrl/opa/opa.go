@@ -3,13 +3,14 @@ package opa
 import (
 	"context"
 	"errors"
-	types2 "github.com/mxab/nacp/admissionctrl/types"
 	"os"
 
+	types2 "github.com/mxab/nacp/admissionctrl/types"
+
 	"github.com/mxab/nacp/admissionctrl/notation"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/types"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
+	"github.com/open-policy-agent/opa/v1/types"
 )
 
 type OpaQuery struct {

@@ -20,7 +20,7 @@ errors contains msg if {
 }
 
 # Debug warnings
-warnings[msg] {
+warnings contains msg if {
     warn_policy := {"nomad_warn"}
     policy = input.context.tokenInfo.Policies[_]
     warn_policy[policy]

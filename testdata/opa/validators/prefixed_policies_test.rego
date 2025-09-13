@@ -55,7 +55,7 @@ test_errors_for_wrong_task_policy if {
 	}
 
 }
-test_errors_for_multi_wrong_policy {
+test_errors_for_multi_wrong_policy if {
 
 	count(errors) == 2 with input as {
 		"ID": "example",
@@ -66,7 +66,7 @@ test_errors_for_multi_wrong_policy {
 		}],
 		"Type": "service",
 	}
-    
+
 
 }
 

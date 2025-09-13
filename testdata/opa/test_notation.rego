@@ -1,6 +1,6 @@
 package opatest
 
-errors[errMsg] {
+errors contains errMsg if {
 
 	image := input.job.TaskGroups[0].Tasks[0].Config.image
 

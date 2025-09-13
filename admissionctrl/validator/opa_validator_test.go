@@ -20,7 +20,7 @@ func TestOpaValidator(t *testing.T) {
 	opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
 		"errors = data.prefixed_policies.errors", slog.New(slog.DiscardHandler), nil)
 
-	require.Equal(t, nil, err)
+	require.NoError(t, err)
 
 	tests := []struct {
 		name    string

@@ -12,13 +12,13 @@ task_policies contains name if {
 }
 policy_prefix := sprintf("%s-", [input.job.ID])
 
-errors[msg] {
+errors contains msg if {
 
 	some p in task_policies
 	not startswith(p, policy_prefix)
 	msg := sprintf("Task policy '%v' must start with '%v'", [p, policy_prefix])
 }
-errors[msg] {
+errors contains msg if {
 
 	some p in task_group_policies
 	not startswith(p, policy_prefix)

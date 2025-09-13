@@ -3,8 +3,9 @@ package opa
 import (
 	"context"
 	"errors"
-	"github.com/mxab/nacp/admissionctrl/types"
 	"testing"
+
+	"github.com/mxab/nacp/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl/notation"
@@ -23,7 +24,7 @@ func TestOpa(t *testing.T) {
 		patch = data.opatest.patch
 
 	`, ctx, nil)
-	require.Nil(t, err, "No error creating query")
+	require.NoError(t, err, "No error creating query")
 	assert.NotNil(t, query, "Query is not nil")
 
 	job := &api.Job{}
