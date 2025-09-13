@@ -29,7 +29,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 
 		{
 			name: "hello world",
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting/opajsonpatchtesting.rego"),
 				"patch = data.opajsonpatchtesting.patch",
 			),
 
@@ -47,7 +47,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		},
 		{
 			name: "warning",
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting/opajsonpatchtesting.rego"),
 				`warnings = data.opajsonpatchtesting.warnings`,
 			),
 
@@ -61,7 +61,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		},
 		{
 			name: "warning and hello world",
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting/opajsonpatchtesting.rego"),
 				`
 				patch = data.opajsonpatchtesting.patch
 				warnings = data.opajsonpatchtesting.warnings
@@ -82,7 +82,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		},
 		{
 			name: "error",
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/opajsonpatchtesting/opajsonpatchtesting.rego"),
 				`errors = data.opajsonpatchtesting.errors`,
 			),
 
@@ -97,7 +97,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		{
 			name: "error when elements are not queryable",
 			//faultypatch has only a patch, no errors or warnings
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch/faultypatch.rego"),
 				`errors = data.faultypatch.errors`,
 			),
 
@@ -112,7 +112,7 @@ func TestJSONPatcher_Mutate(t *testing.T) {
 		{
 			name: "error when result is not a patch",
 			//faultypatch has only a patch does not contain valid patch data
-			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch.rego"),
+			j: newMutator(t, testutil.Filepath(t, "opa/mutators/faultypatch/faultypatch.rego"),
 				`patch = data.faultypatch.patch`,
 			),
 
