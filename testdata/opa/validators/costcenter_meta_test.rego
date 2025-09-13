@@ -1,4 +1,5 @@
 package costcenter_meta_test
+
 import data.costcenter_meta.errors
 
 import future.keywords
@@ -8,15 +9,13 @@ test_missing_costcenter if {
 		"ID": "my-job",
 		"Meta": {},
 	}
-	
 }
 
 test_costcenter_prefix_wrong if {
-	count(errors)==1 with input as {
+	count(errors) == 1 with input as {
 		"ID": "my-job",
 		"Meta": {"costcenter": "my-costcenter"},
 	}
-	
 }
 
 test_costcenter_correct if {
@@ -24,5 +23,4 @@ test_costcenter_correct if {
 		"ID": "my-job",
 		"Meta": {"costcenter": "cccode-my-costcenter"},
 	}
-	
 }

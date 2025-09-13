@@ -5,7 +5,7 @@ import data.prefixed_policies.errors
 import future.keywords
 
 test_no_errors if {
-    count(errors) == 0 with input as {
+	count(errors) == 0 with input as {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -14,7 +14,6 @@ test_no_errors if {
 		}],
 		"Type": "service",
 	}
-
 }
 
 test_no_errors_for_valid_policy if {
@@ -28,8 +27,9 @@ test_no_errors_for_valid_policy if {
 		"Type": "service",
 	}
 }
-test_no_errors_for_multi_valid_policy  if {
-    count(errors) == 0 with input as {
+
+test_no_errors_for_multi_valid_policy if {
+	count(errors) == 0 with input as {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -53,21 +53,18 @@ test_errors_for_wrong_task_policy if {
 		}],
 		"Type": "service",
 	}
-
 }
-test_errors_for_multi_wrong_policy if {
 
+test_errors_for_multi_wrong_policy if {
 	count(errors) == 2 with input as {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
 			"Name": "cache",
-			"Tasks": [{"Vault": {"Policies": ["some-randome-policy","also-not-valid"]}}],
+			"Tasks": [{"Vault": {"Policies": ["some-randome-policy", "also-not-valid"]}}],
 		}],
 		"Type": "service",
 	}
-
-
 }
 
 test_errors_for_wrong_task_group_policy if {
@@ -75,11 +72,10 @@ test_errors_for_wrong_task_group_policy if {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
-            "Vault": {"Policies": ["some-randome-policy"]},
+			"Vault": {"Policies": ["some-randome-policy"]},
 			"Name": "cache",
 			"Tasks": [],
 		}],
 		"Type": "service",
 	}
-
 }
