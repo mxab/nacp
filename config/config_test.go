@@ -81,7 +81,7 @@ func TestLoadConfig(t *testing.T) {
 						OpaRule: &OpaRule{
 
 							Query:    "errors = data.costcenter_meta.errors",
-							Filename: "testdata/opa/validators/costcenter_meta.rego",
+							Filename: "testdata/opa/validators/costcenter_meta/costcenter_meta.rego",
 						},
 					},
 					{

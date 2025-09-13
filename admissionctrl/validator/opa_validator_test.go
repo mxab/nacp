@@ -17,7 +17,7 @@ func TestOpaValidator(t *testing.T) {
 	// create a context with a timeout
 
 	// create a new OPA object
-	opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies.rego"),
+	opaValidator, err := NewOpaValidator("testopavalidator", testutil.Filepath(t, "opa/validators/prefixed_policies/prefixed_policies.rego"),
 		"errors = data.prefixed_policies.errors", slog.New(slog.DiscardHandler), nil)
 
 	require.NoError(t, err)
@@ -186,7 +186,7 @@ func TestOpaValidatorContext(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			validator, err := NewOpaValidator(
 				"test_context_validator",
-				testutil.Filepath(t, "opa/validators/context.rego"),
+				testutil.Filepath(t, "opa/validators/context/context.rego"),
 				tt.query,
 				slog.New(slog.DiscardHandler),
 				nil,

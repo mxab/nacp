@@ -3,7 +3,7 @@ validator "opa" "some_opa_validator" {
 
     opa_rule {
         query = "errors = data.costcenter_meta.errors"
-        filename = "testdata/opa/validators/costcenter_meta.rego"
+        filename = "testdata/opa/validators/costcenter_meta/costcenter_meta.rego"
     }
 }
 validator "notation" "some_notation_validator" {

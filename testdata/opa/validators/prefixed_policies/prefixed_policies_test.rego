@@ -5,7 +5,7 @@ import data.prefixed_policies.errors
 import future.keywords
 
 test_no_errors if {
-	count(errors) == 0 with input as {
+	count(errors) == 0 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -13,11 +13,11 @@ test_no_errors if {
 			"Tasks": [],
 		}],
 		"Type": "service",
-	}
+	}}
 }
 
 test_no_errors_for_valid_policy if {
-	count(errors) == 0 with input as {
+	count(errors) == 0 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -25,11 +25,11 @@ test_no_errors_for_valid_policy if {
 			"Tasks": [{"Vault": {"Policies": ["example-redis"]}}],
 		}],
 		"Type": "service",
-	}
+	}}
 }
 
 test_no_errors_for_multi_valid_policy if {
-	count(errors) == 0 with input as {
+	count(errors) == 0 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -40,11 +40,11 @@ test_no_errors_for_multi_valid_policy if {
 			]}}],
 		}],
 		"Type": "service",
-	}
+	}}
 }
 
 test_errors_for_wrong_task_policy if {
-	count(errors) == 1 with input as {
+	count(errors) == 1 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -52,11 +52,11 @@ test_errors_for_wrong_task_policy if {
 			"Tasks": [{"Vault": {"Policies": ["some-randome-policy"]}}],
 		}],
 		"Type": "service",
-	}
+	}}
 }
 
 test_errors_for_multi_wrong_policy if {
-	count(errors) == 2 with input as {
+	count(errors) == 2 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -64,11 +64,11 @@ test_errors_for_multi_wrong_policy if {
 			"Tasks": [{"Vault": {"Policies": ["some-randome-policy", "also-not-valid"]}}],
 		}],
 		"Type": "service",
-	}
+	}}
 }
 
 test_errors_for_wrong_task_group_policy if {
-	count(errors) == 1 with input as {
+	count(errors) == 1 with input as {"job": {
 		"ID": "example",
 		"Name": "example",
 		"TaskGroups": [{
@@ -77,5 +77,5 @@ test_errors_for_wrong_task_group_policy if {
 			"Tasks": [],
 		}],
 		"Type": "service",
-	}
+	}}
 }
