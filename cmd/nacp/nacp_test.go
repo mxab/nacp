@@ -28,7 +28,7 @@ import (
 	"github.com/mxab/nacp/admissionctrl/mutator"
 	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
-	"github.com/mxab/nacp/logutil"
+	"github.com/mxab/nacp/pkg/logutil"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

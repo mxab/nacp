@@ -24,8 +24,8 @@ import (
 
 	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/logutil"
 	nacpOtel "github.com/mxab/nacp/otel"
+	"github.com/mxab/nacp/pkg/logutil"
 
 	"log/slog"
 
