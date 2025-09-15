@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 
-	"github.com/mxab/nacp/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
 )
 
 type NotationValidator struct {

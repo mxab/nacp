@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptrace"
 
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )

@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxab/nacp/admissionctrl/remoteutil"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/logutil"
 	nacpOtel "github.com/mxab/nacp/pkg/otel"
 
@@ -32,11 +32,11 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
-	"github.com/mxab/nacp/admissionctrl"
-	"github.com/mxab/nacp/admissionctrl/mutator"
-	"github.com/mxab/nacp/admissionctrl/notation"
-	"github.com/mxab/nacp/admissionctrl/validator"
 	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/admissionctrl"
+	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/validator"
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/verifier/truststore"
 
