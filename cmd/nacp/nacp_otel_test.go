@@ -12,7 +12,7 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/admissionctrl"
-	"github.com/mxab/nacp/otel"
+	"github.com/mxab/nacp/pkg/otel"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

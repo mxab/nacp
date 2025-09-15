@@ -24,8 +24,8 @@ import (
 
 	"github.com/mxab/nacp/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/admissionctrl/types"
-	nacpOtel "github.com/mxab/nacp/otel"
 	"github.com/mxab/nacp/pkg/logutil"
+	nacpOtel "github.com/mxab/nacp/pkg/otel"
 
 	"log/slog"
 
@@ -152,9 +152,7 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		return nil
 	}
 	var proxyHandler http.Handler = proxy
-	// if otelInstrumentation {
-	// 	proxyHandler = otelhttp.NewHandler(proxyHandler, "/")
-	// }
+
 	nacpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
@@ -849,5 +847,3 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	}
 	return tlsConfig, err
 }
-
-type loggerFactory func(name string) *slog.Logger
