@@ -5,9 +5,9 @@ import (
 	"errors"
 	"os"
 
-	types2 "github.com/mxab/nacp/admissionctrl/types"
+	types2 "github.com/mxab/nacp/pkg/admissionctrl/types"
 
-	"github.com/mxab/nacp/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
 	"github.com/open-policy-agent/opa/v1/ast"
 	"github.com/open-policy-agent/opa/v1/rego"
 	"github.com/open-policy-agent/opa/v1/types"

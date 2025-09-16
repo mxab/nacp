@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/mxab/nacp/admissionctrl/mutator/jsonpatcher"
-	"github.com/mxab/nacp/admissionctrl/remoteutil"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/mutator/jsonpatcher"
+	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 )

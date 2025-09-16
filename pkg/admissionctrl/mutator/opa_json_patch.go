@@ -7,10 +7,10 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
-	"github.com/mxab/nacp/admissionctrl/mutator/jsonpatcher"
-	"github.com/mxab/nacp/admissionctrl/notation"
-	"github.com/mxab/nacp/admissionctrl/opa"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/mutator/jsonpatcher"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/opa"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 )
 
 type OpaJsonPatchMutator struct {

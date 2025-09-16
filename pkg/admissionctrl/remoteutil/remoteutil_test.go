@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/config"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 

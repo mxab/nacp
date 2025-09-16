@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/config"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"

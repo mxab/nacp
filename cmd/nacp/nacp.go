@@ -22,21 +22,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxab/nacp/admissionctrl/remoteutil"
-	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/logutil"
-	nacpOtel "github.com/mxab/nacp/otel"
+	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/logutil"
+	nacpOtel "github.com/mxab/nacp/pkg/otel"
 
 	"log/slog"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/helper"
-	"github.com/mxab/nacp/admissionctrl"
-	"github.com/mxab/nacp/admissionctrl/mutator"
-	"github.com/mxab/nacp/admissionctrl/notation"
-	"github.com/mxab/nacp/admissionctrl/validator"
-	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/admissionctrl"
+	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/validator"
+	"github.com/mxab/nacp/pkg/config"
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/verifier/truststore"
 
@@ -152,9 +152,7 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		return nil
 	}
 	var proxyHandler http.Handler = proxy
-	// if otelInstrumentation {
-	// 	proxyHandler = otelhttp.NewHandler(proxyHandler, "/")
-	// }
+
 	nacpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
@@ -849,5 +847,3 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	}
 	return tlsConfig, err
 }
-
-type loggerFactory func(name string) *slog.Logger

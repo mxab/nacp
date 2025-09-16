@@ -6,9 +6,9 @@ import (
 	"log/slog"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/mxab/nacp/admissionctrl/notation"
-	"github.com/mxab/nacp/admissionctrl/opa"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/notation"
+	"github.com/mxab/nacp/pkg/admissionctrl/opa"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 )
 
 type OpaValidator struct {

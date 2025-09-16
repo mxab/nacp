@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/mxab/nacp/admissionctrl/remoteutil"
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 )

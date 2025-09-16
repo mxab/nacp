@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mxab/nacp/admissionctrl/types"
-	"github.com/mxab/nacp/o11y"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/o11y"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"

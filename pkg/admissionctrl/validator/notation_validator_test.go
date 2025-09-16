@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/mxab/nacp/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/require"

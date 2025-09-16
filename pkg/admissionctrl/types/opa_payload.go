@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/hashicorp/nomad/api"
-	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/config"
 )
 
 type Payload struct {
