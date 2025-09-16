@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mxab/nacp/config"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/mxab/nacp/pkg/config"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"

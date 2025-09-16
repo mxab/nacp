@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mxab/nacp/config"
+	"github.com/mxab/nacp/pkg/config"
 	slogmulti "github.com/samber/slog-multi"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/processors/minsev"
