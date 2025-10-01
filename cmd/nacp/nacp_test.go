@@ -319,7 +319,7 @@ func TestProxy(t *testing.T) {
 			mutators: []admissionctrl.JobMutator{},
 		},
 		{
-			name: "resolves token during job creation",
+			name: "resolves token during job validation",
 			path: "/v1/validate/job",
 
 			method:       "PUT",
@@ -337,6 +337,31 @@ func TestProxy(t *testing.T) {
 			},
 
 			nomadResponse:         toJson(t, &api.JobValidateResponse{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				testutil.MockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+			name: "resolves token during job registration",
+			path: "/v1/jobs",
+
+			method:       "PUT",
+			token:        "test-token",
+			resolveToken: true,
+			accessorID:   "test-accessor",
+
+			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+				return c.Jobs().Register(testutil.BaseJob(), nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobRegisterRequest{Job: testutil.BaseJob()}),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse:         toJson(t, &api.JobRegisterResponse{}),
 			nomadResponseEncoding: "gzip",
 			validators: []admissionctrl.JobValidator{
 				testutil.MockValidatorReturningWarnings("some warning"),
