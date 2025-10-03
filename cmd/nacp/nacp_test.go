@@ -42,13 +42,16 @@ func TestProxy(t *testing.T) {
 		path   string
 		method string
 
-		token        string
-		resolveToken bool
-		accessorID   string
+		token                      string
+		resolveToken               bool
+		wantTokenResolveToBeCalled bool
 
-		requestSender         func(*api.Client) (interface{}, *api.WriteMeta, error)
+		accessorID string
+
+		requestSender         func(*api.Client) (interface{}, any, error)
 		wantNomadRequestJson  string
-		wantProxyResponse     interface{}
+		wantProxyResponse     any
+		wantError             string
 		nomadResponse         string
 		nomadResponseEncoding string
 		//	responseWarnings []error
@@ -57,13 +60,12 @@ func TestProxy(t *testing.T) {
 	}
 
 	tests := []test{
-
 		{
 			name:   "create job adds hello meta",
 			path:   "/v1/jobs",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
 			},
 			wantNomadRequestJson: registerRequestJson(t, jobWithHelloWorldMeta(t)),
@@ -82,7 +84,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/job/example/plan",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
 			},
 
@@ -102,7 +104,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/job/example/plan",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
 			},
 
@@ -127,7 +129,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/job/example/plan",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
 			},
 
@@ -153,7 +155,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/jobs",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
 			},
 
@@ -174,7 +176,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/jobs",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
 			},
 
@@ -198,7 +200,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/jobs",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Register(testutil.ReadJob(t, "job.json"), nil)
 			},
 
@@ -222,7 +224,7 @@ func TestProxy(t *testing.T) {
 			name:   "plan job adds warnings",
 			path:   "/v1/job/example/plan",
 			method: "PUT",
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Plan(testutil.ReadJob(t, "job.json"), false, nil)
 			},
 
@@ -243,7 +245,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/validate/job",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Validate(testutil.ReadJob(t, "job.json"), nil)
 			},
 			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: jobWithHelloWorldMeta(t)}),
@@ -261,7 +263,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/validate/job",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
 			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
@@ -281,7 +283,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/validate/job",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
 			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
@@ -302,7 +304,7 @@ func TestProxy(t *testing.T) {
 			path:   "/v1/validate/job",
 			method: "PUT",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
 			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
@@ -319,15 +321,16 @@ func TestProxy(t *testing.T) {
 			mutators: []admissionctrl.JobMutator{},
 		},
 		{
-			name: "resolves token during job creation",
+			name: "resolves token during job validation",
 			path: "/v1/validate/job",
 
-			method:       "PUT",
-			token:        "test-token",
-			resolveToken: true,
-			accessorID:   "test-accessor",
+			method:                     "PUT",
+			token:                      "test-token",
+			resolveToken:               true,
+			wantTokenResolveToBeCalled: true,
+			accessorID:                 "test-accessor",
 
-			requestSender: func(c *api.Client) (interface{}, *api.WriteMeta, error) {
+			requestSender: func(c *api.Client) (interface{}, any, error) {
 				return c.Jobs().Validate(testutil.BaseJob(), nil)
 			},
 			wantNomadRequestJson: toJson(t, &api.JobValidateRequest{Job: testutil.BaseJob()}),
@@ -343,9 +346,88 @@ func TestProxy(t *testing.T) {
 			},
 			mutators: []admissionctrl.JobMutator{},
 		},
+		{
+			name: "resolves token during job registration",
+			path: "/v1/jobs",
+
+			method:                     "PUT",
+			token:                      "test-token",
+			resolveToken:               true,
+			wantTokenResolveToBeCalled: true,
+			accessorID:                 "test-accessor",
+
+			requestSender: func(c *api.Client) (interface{}, any, error) {
+				return c.Jobs().Register(testutil.BaseJob(), nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobRegisterRequest{Job: testutil.BaseJob()}),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse:         toJson(t, &api.JobRegisterResponse{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				testutil.MockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+			name: "resolves token auth error during job registration",
+			path: "/v1/jobs",
+
+			method:                     "PUT",
+			token:                      "bad-token",
+			resolveToken:               true,
+			wantTokenResolveToBeCalled: true,
+			accessorID:                 "test-accessor",
+			wantError:                  "failed to resolve token",
+
+			requestSender: func(c *api.Client) (interface{}, any, error) {
+				return c.Jobs().Register(testutil.BaseJob(), nil)
+			},
+			wantNomadRequestJson: toJson(t, &api.JobRegisterRequest{Job: testutil.BaseJob()}),
+
+			wantProxyResponse: &api.JobRegisterResponse{
+				Warnings: helper.MergeMultierrorWarnings(errors.New("some warning")),
+			},
+
+			nomadResponse:         toJson(t, &api.JobRegisterResponse{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				testutil.MockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
+		{
+
+			name: "resolves token auth error is not a problem for non admissionable endpoints",
+			path: "/v1/jobs",
+
+			method:                     "GET",
+			token:                      "bad-token",
+			resolveToken:               true,
+			wantTokenResolveToBeCalled: false,
+			accessorID:                 "test-accessor",
+
+			requestSender: func(c *api.Client) (interface{}, any, error) {
+				return c.Jobs().List(&api.QueryOptions{})
+			},
+			wantNomadRequestJson: "",
+
+			wantProxyResponse: make([]*api.JobListStub, 0),
+
+			nomadResponse:         toJson(t, []api.JobListStub{}),
+			nomadResponseEncoding: "gzip",
+			validators: []admissionctrl.JobValidator{
+				testutil.MockValidatorReturningWarnings("some warning"),
+			},
+			mutators: []admissionctrl.JobMutator{},
+		},
 	}
 
 	for _, tc := range tests {
+
 		t.Run(tc.name, func(t *testing.T) {
 			nomadBackendCalled := false
 			tokenCalled := false
@@ -371,7 +453,11 @@ func TestProxy(t *testing.T) {
 				assert.Equal(t, req.URL.Path, tc.path)
 				jsonData, err := io.ReadAll(req.Body)
 				require.NoError(t, err)
-				assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
+				if tc.wantNomadRequestJson == "" {
+					assert.Equal(t, 0, len(jsonData), "Body should be empty")
+				} else {
+					assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
+				}
 
 				if tc.nomadResponseEncoding == "gzip" {
 					rw.Header().Set("Content-Encoding", "gzip")
@@ -406,13 +492,23 @@ func TestProxy(t *testing.T) {
 			}
 
 			resp, _, err := tc.requestSender(nomadClient)
-			if tc.resolveToken {
-				assert.True(t, tokenCalled, "token resolution should be called")
-			}
+			assert.Equalf(t, tc.wantTokenResolveToBeCalled, tokenCalled, "token should %sbe called", func() string {
+				if tc.wantTokenResolveToBeCalled {
+					return ""
+				} else {
+					return "not "
+				}
+			}())
 
-			require.NoError(t, err, "No http call error")
-			assert.Equal(t, tc.wantProxyResponse, resp, "Response matches")
-			assert.True(t, nomadBackendCalled, "Nomad backend was called")
+			if tc.wantError != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tc.wantError, "Error should match")
+				return
+			} else {
+				require.NoError(t, err, "No http call error")
+				assert.Equal(t, tc.wantProxyResponse, resp, "Response matches")
+				assert.True(t, nomadBackendCalled, "Nomad backend was called")
+			}
 		})
 	}
 }

@@ -161,7 +161,8 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		}
 
 		token := r.Header.Get("X-Nomad-Token")
-		if jobHandler.ResolveToken() {
+		isAdmissionActionable := isRegister(r) || isPlan(r) || isValidate(r)
+		if isAdmissionActionable && jobHandler.ResolveToken() {
 			tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
 			if err != nil {
 				logger.ErrorContext(ctx, "Resolving token failed", "error", err)
