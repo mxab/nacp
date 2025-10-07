@@ -1,16 +1,11 @@
 package validator
 
 import (
-	"bytes"
-	"fmt"
 	"log/slog"
 	"testing"
 
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/testutil"
-	"github.com/open-policy-agent/opa/v1/logging"
-	"github.com/open-policy-agent/opa/v1/sdk"
-	sdktest "github.com/open-policy-agent/opa/v1/sdk/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -93,7 +88,7 @@ func TestOpaBundleValidator(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			job := testutil.BaseJob()
 
-			opa := setupOpa(t, tc.policy)
+			opa := testutil.SetupOpa(t, tc.policy)
 			validator, err := NewOpaBundleValidator("testopabundlevalidator", tc.path, slog.New(slog.DiscardHandler), opa)
 
 			require.NoError(t, err, "No error creating validator")
@@ -118,52 +113,8 @@ func TestOpaBundleValidator(t *testing.T) {
 	}
 }
 
-func setupOpa(t *testing.T, policy string) *sdk.OPA {
-	t.Helper()
-	ctx := t.Context()
-
-	// create a mock HTTP bundle server
-	server, err := sdktest.NewServer(sdktest.MockBundle("/bundles/bundle.tar.gz", map[string]string{
-		"example.rego": policy,
-	}))
-	require.NoError(t, err, "No error creating mock server")
-	t.Cleanup(server.Stop)
-
-	// provide the OPA configuration which specifies
-	// fetching policy bundles from the mock server
-	// and logging decisions locally to the console
-	config := []byte(fmt.Sprintf(`{
-		"services": {
-			"test": {
-				"url": %q
-			}
-		},
-		"bundles": {
-			"test": {
-				"resource": "/bundles/bundle.tar.gz"
-			}
-		},
-		"decision_logs": {
-			"console": true
-		}
-	}`, server.URL()))
-
-	// create an instance of the OPA object
-
-	opa, err := sdk.New(ctx, sdk.Options{
-		ID:     "opa-test-1",
-		Config: bytes.NewReader(config),
-		Logger: logging.New(),
-	})
-	require.NoError(t, err, "No error creating OPA instance")
-	t.Cleanup(func() {
-		opa.Stop(ctx)
-	})
-
-	return opa
-}
 func TestBundleValidatorName(t *testing.T) {
-	opa := setupOpa(t, "package mypolicy")
+	opa := testutil.SetupOpa(t, "package mypolicy")
 	validator, err := NewOpaBundleValidator("testopabundlevalidator", "/mypolicy", slog.New(slog.DiscardHandler), opa)
 
 	require.NoError(t, err, "No error creating validator")

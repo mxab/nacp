@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,9 +12,13 @@ import (
 	"testing"
 
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
+	"github.com/open-policy-agent/opa/v1/logging"
+	"github.com/open-policy-agent/opa/v1/sdk"
+	sdktest "github.com/open-policy-agent/opa/v1/sdk/test"
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/log/logtest"
 	metricSdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
@@ -142,4 +147,49 @@ func BaseJob() *api.Job {
 		ID: &id,
 	}
 	return job
+}
+
+func SetupOpa(t *testing.T, policy string) *sdk.OPA {
+	t.Helper()
+	ctx := t.Context()
+
+	// create a mock HTTP bundle server
+	server, err := sdktest.NewServer(sdktest.MockBundle("/bundles/bundle.tar.gz", map[string]string{
+		"example.rego": policy,
+	}))
+	require.NoError(t, err, "No error creating mock server")
+	t.Cleanup(server.Stop)
+
+	// provide the OPA configuration which specifies
+	// fetching policy bundles from the mock server
+	// and logging decisions locally to the console
+	config := []byte(fmt.Sprintf(`{
+		"services": {
+			"test": {
+				"url": %q
+			}
+		},
+		"bundles": {
+			"test": {
+				"resource": "/bundles/bundle.tar.gz"
+			}
+		},
+		"decision_logs": {
+			"console": true
+		}
+	}`, server.URL()))
+
+	// create an instance of the OPA object
+
+	opa, err := sdk.New(ctx, sdk.Options{
+		ID:     "opa-test-1",
+		Config: bytes.NewReader(config),
+		Logger: logging.New(),
+	})
+	require.NoError(t, err, "No error creating OPA instance")
+	t.Cleanup(func() {
+		opa.Stop(ctx)
+	})
+
+	return opa
 }
