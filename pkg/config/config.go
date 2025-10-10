@@ -22,22 +22,27 @@ type OpaRule struct {
 	Filename string                  `hcl:"filename"`
 	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
+type OpaSdkRule struct {
+	Path string `hcl:"path"`
+}
 
 type Validator struct {
-	Type         string   `hcl:"type,label"`
-	Name         string   `hcl:"name,label"`
-	OpaRule      *OpaRule `hcl:"opa_rule,block"`
-	Webhook      *Webhook `hcl:"webhook,block"`
-	ResolveToken bool     `hcl:"resolve_token,optional"`
+	Type         string      `hcl:"type,label"`
+	Name         string      `hcl:"name,label"`
+	OpaRule      *OpaRule    `hcl:"opa_rule,block"`
+	OpaSdkRule   *OpaSdkRule `hcl:"opa_sdk_rule,block"`
+	Webhook      *Webhook    `hcl:"webhook,block"`
+	ResolveToken bool        `hcl:"resolve_token,optional"`
 
 	Notation *NotationVerifierConfig `hcl:"notation,block"`
 }
 type Mutator struct {
-	Type         string   `hcl:"type,label"`
-	Name         string   `hcl:"name,label"`
-	OpaRule      *OpaRule `hcl:"opa_rule,block"`
-	Webhook      *Webhook `hcl:"webhook,block"`
-	ResolveToken bool     `hcl:"resolve_token,optional"`
+	Type         string      `hcl:"type,label"`
+	Name         string      `hcl:"name,label"`
+	OpaRule      *OpaRule    `hcl:"opa_rule,block"`
+	OpaSdkRule   *OpaSdkRule `hcl:"opa_sdk_rule,block"`
+	Webhook      *Webhook    `hcl:"webhook,block"`
+	ResolveToken bool        `hcl:"resolve_token,optional"`
 }
 
 type RequestContext struct {
@@ -111,6 +116,12 @@ type Config struct {
 	Mutators   []Mutator    `hcl:"mutator,block"`
 
 	Telemetry *Telemetry `hcl:"telemetry,block"`
+
+	OpaSdk *OpaSdk `hcl:"opa_sdk,block"`
+}
+type OpaSdk struct {
+	Id         string `hcl:"id,label"`
+	ConfigPath string `hcl:"config_path"`
 }
 
 func DefaultConfig() *Config {

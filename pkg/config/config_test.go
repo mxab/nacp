@@ -248,6 +248,61 @@ func TestLoadConfig(t *testing.T) {
 
 			wantErr: false,
 		},
+		{
+			name: "with opa sdk",
+			args: args{name: "testdata/with_opa_sdk.hcl"},
+			want: &Config{
+				Port: port,
+				Bind: bind,
+
+				Nomad: &NomadServer{
+					Address: nomadAddr,
+				},
+				Validators: []Validator{
+					{
+						Type: "opa_sdk",
+						Name: "some_validator",
+						OpaSdkRule: &OpaSdkRule{
+							Path: "/my/validation/policy",
+						},
+					},
+				},
+				Mutators: []Mutator{
+					{
+						Type: "opa_sdk",
+						Name: "some_mutator",
+						OpaSdkRule: &OpaSdkRule{
+							Path: "/my/mutation/policy",
+						},
+					},
+				},
+				Telemetry: &Telemetry{
+					Logging: &Logging{
+						Level: "info",
+						SlogLogging: &SlogLogging{
+							Text:    Ptr(true),
+							TextOut: Ptr("stdout"),
+							Json:    Ptr(false),
+							JsonOut: Ptr("stdout"),
+						},
+						OtelLogging: &OtelLogging{
+							Enabled: Ptr(false),
+						},
+					},
+					Metrics: &Metrics{
+						Enabled: false,
+					},
+					Tracing: &Tracing{
+						Enabled: false,
+					},
+				},
+				OpaSdk: &OpaSdk{
+
+					Id:         "example",
+					ConfigPath: "/my/path/to/config.json",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
