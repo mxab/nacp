@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM alpine:3.23.2
 
 ENTRYPOINT [ "sh", "-c", \
     "echo 'Hello HashiTalk Secure Friends!' && sleep 3600" \
