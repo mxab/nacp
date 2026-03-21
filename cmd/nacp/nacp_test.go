@@ -30,6 +30,7 @@ import (
 	"github.com/mxab/nacp/pkg/config"
 	"github.com/mxab/nacp/pkg/logutil"
 	"github.com/mxab/nacp/testutil"
+	sdktest "github.com/open-policy-agent/opa/v1/sdk/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -782,6 +783,21 @@ func TestCreateValidators(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "opa sdk validator",
+			validators: config.Validator{
+
+				Type: "opa_sdk",
+				Name: "test",
+				OpaSdkRule: &config.OpaSdkRule{
+					Path: "/my/policy",
+				},
+			},
+			want: func() *validator.OpaBundleValidator {
+				val, _ := validator.NewOpaBundleValidator("test", "/my/policy", nil, nil)
+				return val
+			}(),
+		},
 	}
 
 	for _, tc := range tt {
@@ -799,6 +815,7 @@ func TestCreateValidators(t *testing.T) {
 				assert.Error(t, err)
 				return
 			}
+			require.NoError(t, err)
 
 			assert.IsType(t, tc.want, validators[0])
 
@@ -1178,4 +1195,105 @@ func Test_buildConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBuildOpaSdk(t *testing.T) {
+
+	tt := []struct {
+		name string
+
+		wantErr string
+
+		configFn func(t *testing.T) string
+	}{
+		{
+			name: "valid config",
+
+			configFn: func(t *testing.T) string {
+
+				server, err := sdktest.NewServer(sdktest.MockBundle("/bundles/bundle.tar.gz", map[string]string{
+					"example.rego": `package example
+
+					default allow = false
+
+					`,
+				}))
+				require.NoError(t, err, "No error creating mock server")
+				t.Cleanup(server.Stop)
+
+				// provide the OPA configuration which specifies
+				// fetching policy bundles from the mock server
+				// and logging decisions locally to the console
+				return fmt.Sprintf(`{
+		"services": {
+			"test": {
+				"url": %q
+			}
+		},
+		"bundles": {
+			"test": {
+				"resource": "/bundles/bundle.tar.gz"
+			}
+		},
+		"decision_logs": {
+			"console": true
+		}
+	}`, server.URL())
+			},
+		},
+		{
+			name: "invalid config",
+			configFn: func(t *testing.T) string {
+				return ` ... invalid json ... `
+			},
+			wantErr: "failed to create OPA SDK",
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			dir := t.TempDir()
+
+			configPath := fmt.Sprintf("%s/opa-config.json", dir)
+
+			err := os.WriteFile(configPath, []byte(tc.configFn(t)), 0644)
+			require.NoError(t, err)
+
+			opaConfig := &config.OpaSdk{
+				Id:         "test",
+				ConfigPath: configPath,
+			}
+
+			opa, err := buildOpaSdk(t.Context(), opaConfig)
+
+			if tc.wantErr != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tc.wantErr)
+				return
+			}
+			assert.NoError(t, err)
+			assert.NotNil(t, opa)
+			t.Cleanup(func() {
+				opa.Stop(t.Context())
+			})
+		})
+	}
+}
+func TestBuildOpaSdkMissingFile(t *testing.T) {
+
+	dir := t.TempDir()
+
+	configPath := fmt.Sprintf("%s/opa-config.json", dir)
+	// do not create the file to simulate missing file
+
+	opaConfig := &config.OpaSdk{
+		Id:         "test",
+		ConfigPath: configPath,
+	}
+
+	opa, err := buildOpaSdk(t.Context(), opaConfig)
+
+	assert.Error(t, err)
+	assert.Nil(t, opa)
+
 }

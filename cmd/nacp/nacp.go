@@ -26,6 +26,7 @@ import (
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/logutil"
 	nacpOtel "github.com/mxab/nacp/pkg/otel"
+	"github.com/open-policy-agent/opa/v1/sdk"
 
 	"log/slog"
 
@@ -586,7 +587,21 @@ func run(c *config.Config) (err error) {
 
 	}
 
-	server, err := buildServer(c, rootFactory)
+	var sdk *sdk.OPA
+	if c.OpaSdk != nil {
+		sdk, err = buildOpaSdk(ctx, c.OpaSdk)
+		if err != nil {
+			return fmt.Errorf("failed to build OPA SDK: %w", err)
+		}
+	}
+	defer func() {
+
+		if sdk != nil {
+			sdk.Stop(ctx) //TODO: should i use a different context here?
+		}
+	}()
+
+	server, err := buildServer(c, rootFactory, sdk)
 
 	if err != nil {
 		return fmt.Errorf("failed to build server: %w", err)
@@ -622,7 +637,7 @@ func run(c *config.Config) (err error) {
 
 }
 
-func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory) (*http.Server, error) {
+func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) (*http.Server, error) {
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -650,7 +665,7 @@ func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory) (*http.
 		return nil, fmt.Errorf("failed to create mutators: %w", err)
 	}
 
-	jobValidators, resolveTokenValidators, err := createValidators(c, loggerFactory)
+	jobValidators, resolveTokenValidators, err := createValidators(c, loggerFactory, sdk)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create validators: %w", err)
 	}
@@ -761,7 +776,7 @@ func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]a
 	}
 	return jobMutators, resolveToken, nil
 }
-func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]admissionctrl.JobValidator, bool, error) {
+func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) ([]admissionctrl.JobValidator, bool, error) {
 	var jobValidators []admissionctrl.JobValidator
 	var resolveToken bool
 	for _, v := range c.Validators {
@@ -779,6 +794,13 @@ func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
+		case "opa_sdk":
+
+			bundleValidator, err := validator.NewOpaBundleValidator(v.Name, v.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_validator"), sdk)
+			if err != nil {
+				return nil, resolveToken, err
+			}
+			jobValidators = append(jobValidators, bundleValidator)
 
 		case "webhook":
 			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, loggerFactory.GetLogger("webhook_validator"))
@@ -847,4 +869,21 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 		RootCAs:      caCertPool,
 	}
 	return tlsConfig, err
+}
+func buildOpaSdk(ctx context.Context, opaConfig *config.OpaSdk) (*sdk.OPA, error) {
+
+	f, err := os.Open(opaConfig.ConfigPath)
+
+	if err != nil {
+		return nil, err
+	}
+	opa, err := sdk.New(ctx, sdk.Options{
+		ID:     opaConfig.Id,
+		Config: f,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OPA SDK: %w", err)
+	}
+	return opa, nil
+
 }
