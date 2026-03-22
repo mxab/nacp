@@ -13,11 +13,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/moby/go-archive"
+	"github.com/moby/go-archive/compression"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/archive"
+
 	"github.com/docker/go-connections/nat"
 	"github.com/notaryproject/notation-core-go/signature/cose"
 	"github.com/notaryproject/notation-core-go/testhelper"
@@ -299,7 +302,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 		t.Fatal(err)
 	}
 
-	tar, err := archive.TarWithOptions(tempDir, &archive.TarOptions{})
+	tar, err := archive.Tar(tempDir, compression.None)
 	if err != nil {
 		t.Fatal(err)
 	}

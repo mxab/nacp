@@ -14,5 +14,6 @@
     "go.coverOnSingleTest": true,
     "python.terminal.activateEnvironment": false,
     "workbench.preferredDarkColorTheme": "Default Dark Modern",
-    "workbench.colorTheme": "Default Dark Modern"
+    "workbench.colorTheme": "Default Dark Modern",
+    "snyk.advanced.autoSelectOrganization": true
 }

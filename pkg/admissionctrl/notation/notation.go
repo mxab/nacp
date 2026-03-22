@@ -13,7 +13,7 @@ import (
 	"github.com/notaryproject/notation-go/verifier"
 	"github.com/notaryproject/notation-go/verifier/trustpolicy"
 	"github.com/notaryproject/notation-go/verifier/truststore"
-	credentials "github.com/oras-project/oras-credentials-go"
+	"oras.land/oras-go/v2/registry/remote/credentials"
 
 	"oras.land/oras-go/v2/registry/remote"
 	"oras.land/oras-go/v2/registry/remote/auth"
