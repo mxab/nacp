@@ -13,7 +13,7 @@
     },
     "go.coverOnSingleTest": true,
     "python.terminal.activateEnvironment": false,
-    "workbench.preferredDarkColorTheme": "Default Dark Modern",
-    "workbench.colorTheme": "Default Dark Modern",
+    "workbench.preferredDarkColorTheme": "Dark Modern",
+    "workbench.colorTheme": "Dark Modern",
     "snyk.advanced.autoSelectOrganization": true
 }
