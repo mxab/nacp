@@ -589,17 +589,14 @@ func run(c *config.Config) (err error) {
 
 	var sdk *sdk.OPA
 	if c.OpaSdk != nil {
-		sdk, err = buildOpaSdk(ctx, c.OpaSdk)
+		sdk, err := buildOpaSdk(ctx, c.OpaSdk)
 		if err != nil {
 			return fmt.Errorf("failed to build OPA SDK: %w", err)
 		}
+		defer func() {
+			sdk.Stop(ctx)
+		}()
 	}
-	defer func() {
-
-		if sdk != nil {
-			sdk.Stop(ctx) //TODO: should i use a different context here?
-		}
-	}()
 
 	server, err := buildServer(c, rootFactory, sdk)
 
@@ -877,6 +874,7 @@ func buildOpaSdk(ctx context.Context, opaConfig *config.OpaSdk) (*sdk.OPA, error
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	opa, err := sdk.New(ctx, sdk.Options{
 		ID:     opaConfig.Id,
 		Config: f,
