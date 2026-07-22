@@ -1,0 +1,11 @@
+{
+  "lastSuccessfulUpdate": "2026-07-22T18:32:41Z",
+  "mode": "init",
+  "scope": "repository",
+  "pages": [
+    "quickstart.md",
+    "architecture.md",
+    "policy-integrations.md",
+    "operations-testing.md"
+  ]
+}
