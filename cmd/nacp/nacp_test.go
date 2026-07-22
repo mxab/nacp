@@ -933,7 +933,7 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			mutators, _, err := createMutators(c, discardFactory)
+			mutators, _, err := createMutators(c, discardFactory, nil)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1264,7 +1264,7 @@ func TestBuildOpaSdk(t *testing.T) {
 				ConfigPath: configPath,
 			}
 
-			opa, err := buildOpaSdk(t.Context(), opaConfig)
+			opa, err := buildOpaSdk(t.Context(), slog.Default(), opaConfig)
 
 			if tc.wantErr != "" {
 				assert.Error(t, err)
@@ -1291,7 +1291,7 @@ func TestBuildOpaSdkMissingFile(t *testing.T) {
 		ConfigPath: configPath,
 	}
 
-	opa, err := buildOpaSdk(t.Context(), opaConfig)
+	opa, err := buildOpaSdk(t.Context(), slog.Default(), opaConfig)
 
 	assert.Error(t, err)
 	assert.Nil(t, opa)

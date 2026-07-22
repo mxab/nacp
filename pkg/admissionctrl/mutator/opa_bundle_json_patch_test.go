@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -198,7 +199,7 @@ func TestOpaBundleMutator(t *testing.T) {
 			mutator, err := NewOpaBundleMutator(tc.name, tc.path, slog.New(slog.DiscardHandler), opa)
 
 			require.NoError(t, err, "No error creating mutator")
-			result, mutated, warns, err := mutator.Mutate(t.Context(), tc.inputJob)
+			result, mutated, warns, err := mutator.Mutate(t.Context(), &types.Payload{Job: tc.inputJob})
 
 			assert.Equal(t, tc.expectedJob, result, "Job is correct")
 			assert.Equal(t, tc.expectedMutated, mutated, "Mutated is correct")

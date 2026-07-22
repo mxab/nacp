@@ -1,3 +1,20 @@
 [tools]
-go = "1.26.2"
+go = "1.26.5"
+"go:github.com/go-delve/delve/cmd/dlv" = "latest"
 golangci-lint = "latest"
+nomad = "latest"
+opa = "latest"
+regal = "latest"
+
+
+[tasks.nomad]
+description = "Runs Nomad dev"
+run = "nomad agent -dev -config=example/demo/nomad.hcl"
+
+[tasks.build-dev-nacp]
+description = "Builds NACP Docker image"
+run = "docker build -f dev.Dockerfile -t nacp-local:v1 ."
+
+[tasks.deploy-nacp]
+description = "Deploys NACP to Nomad"
+run = "cd example/demo && nomad job run nacp.nomad.hcl"

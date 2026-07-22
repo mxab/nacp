@@ -1,0 +1,12 @@
+services:
+- name: nginx
+#{{$allocID := env "NOMAD_ALLOC_ID" -}} template directive in comment to keep highlighting, they still work
+#{{range nomadService 3 $allocID "opabundle"}}
+  url: "http://{{.Address}}:{{.Port}}"
+#{{- end}}
+
+
+bundles:
+  demo:
+    service: nginx
+    resource: /bundle.tar.gz

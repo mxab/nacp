@@ -54,6 +54,10 @@ job "nacp" {
         data        = file("../example2/mutators/hello_world_meta.rego")
         destination = "local/mutators/hello_world_meta.rego"
       }
+      template {
+        data        = file("opa.yml")
+        destination = "local/opa.yml"
+      }
     }
 
 
@@ -153,5 +157,66 @@ job "nacp" {
         memory = 1024
       }
     }
+  }
+
+  group "opabundle" {
+    network {
+      port "http" {
+        to = 80
+        static = 18080
+      }
+    }
+    task "opabundle" {
+
+      driver = "docker"
+
+      config {
+        image = "nginx:latest"
+        ports = ["http"]
+
+      }
+      env {
+        NGINX_ENVSUBST_TEMPLATE_DIR = "/local/nginxtemplates"
+      }
+      template {
+        data = file("default.conf.template")
+        destination = "/local/nginxtemplates/default.conf.template"
+      }
+    }
+    task "generatebundle" {
+      driver = "docker"
+      lifecycle {
+           hook = "prestart"
+           sidecar = false
+      }
+
+      config {
+        image = "openpolicyagent/opa"
+        command = "build"
+        args = ["-b", "/local/bundle" , "-o", "/alloc/data/bundle.tar.gz"]
+
+
+      #"--optimize=1" ,"--entrypoint", "authz/allow",
+      }
+      template {
+        destination = "local/bundle/helloworld/helloworld.rego"
+
+        data = file("bundle/helloworld/helloworld.rego")
+
+      }
+      template {
+        destination = "local/bundle/foobar/foobar.rego"
+
+        data = file("bundle/foobar/foobar.rego")
+
+      }
+    }
+
+    service {
+      name = "opabundle"
+      port = "http"
+      provider = "nomad"
+    }
+
   }
 }
