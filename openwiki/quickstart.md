@@ -1,60 +1,68 @@
 ---
 type: Project Guide
 title: NACP quickstart
-description: Entry point for the Nomad Admission Control Proxy: its purpose, supported policy mechanisms, local operation, and documentation map.
-tags: [nomad, admission-control, go, opa]
+description: "Entry point for the Nomad Admission Control Proxy: local use, architecture, policy integrations, operations, tests, and source navigation."
+tags: [nomad, admission-control, opa, go]
 ---
 
 # NACP quickstart
 
-NACP is a Go reverse proxy in front of HashiCorp Nomad. It intercepts selected job submission APIs after Nomad clients have converted HCL jobs to JSON, applies configured mutations and validations, then forwards acceptable requests to Nomad. It exists to centralize policy enforcement without changing Nomad clients or embedding policy rules in every job.
+NACP is a Go reverse proxy in front of HashiCorp Nomad. It intercepts selected job-submission requests after Nomad clients have rendered HCL as JSON, applies configured mutations and validations, and forwards permitted requests to Nomad. Its purpose is to centralize job policy without modifying every Nomad client or embedding operational rules in each job.
 
-The runtime is centered on the [proxy and admission pipeline](architecture.md): it handles job registration, planning, and validation requests while preserving ordinary Nomad traffic as proxy traffic. Policy implementations and their HCL configuration are documented in [policy integrations](policy-integrations.md). Serving, observability, CI, and change guidance live in [operations and testing](operations-testing.md).
+The [proxy and admission pipeline](architecture.md) is the core runtime concept. It dispatches decoded jobs to the policy mechanisms in [policy integrations](policy-integrations.md), and its transport, telemetry, release, and verification practices are documented in [operations and testing](operations-testing.md). Use the [source map](source-map.md) to locate the implementation, tests, fixtures, and examples behind those concepts.
 
-## What it can enforce
+## Start locally
 
-- **Mutate jobs** before validation using embedded OPA JSON Patch, OPA SDK/bundle JSON Patch, or a JSON Patch webhook.
-- **Validate jobs** using embedded OPA, OPA SDK/bundle decisions, a webhook, or Notation image-signature verification.
-- Carry request context—client IP and, when requested by a controller, resolved Nomad ACL-token information—inside the policy payload.
-- Return policy warnings alongside Nomad responses; mutations and validation errors have endpoint-specific behavior described in the [request lifecycle](architecture.md#request-lifecycle-and-outcomes).
-
-## Run locally
-
-Build and test with the Go toolchain declared in `go.mod` (the current module declares Go 1.26.5):
+The module declares Go **1.26.5** in `go.mod`. Build and test before running the executable:
 
 ```bash
+test -z "$(gofmt -l .)"
 go build ./...
 go test ./...
-nacp -config config.hcl
+./nacp -config config.hcl
 ```
 
-The code defaults to `0.0.0.0:6464` and upstream Nomad at `http://localhost:4646`. Point a Nomad CLI at the proxy:
+If `nacp` has not been built at the repository root, use `go run ./cmd/nacp -config config.hcl` instead. Without a config file, runtime defaults bind NACP to `0.0.0.0:6464` and proxy Nomad at `http://localhost:4646` (`pkg/config/config.go`). Point the Nomad CLI at NACP for a job operation:
 
 ```bash
 NOMAD_ADDR=http://localhost:6464 nomad job run job.hcl
 ```
 
-Use one of the HCL configurations under `example/` as a starting point rather than assuming every README snippet matches current configuration. For a simple embedded-OPA setup, see `example/example1/` or `example/example2/`; `example/demo/nacp.conf` combines OPA, webhook, SDK/bundle, and telemetry features.
+Start from a runnable example rather than an older README configuration snippet:
 
-## Source landmarks
+- `example/example1/` — embedded OPA cost-center validation.
+- `example/example2/` — embedded OPA JSON-Patch metadata mutation.
+- `example/demo/` — Nomad deployment with embedded OPA, remote webhooks, OPA SDK/bundle decisions, and telemetry.
+- `example/notation/` — signed-container-image validation.
 
-| Area | Start here | Why it matters |
+The repository’s Go-managed developer tools and convenience tasks are in `mise.toml`; its `nomad`, `build-dev-nacp`, and `deploy-nacp` tasks support the demo environment.
+
+## What NACP can enforce
+
+- **Mutate** a Nomad job using local OPA JSON Patch, OPA SDK/bundle JSON Patch, or a JSON-Patch webhook.
+- **Validate** a job using local OPA, OPA SDK/bundle decisions, a webhook, or Notation container-image verification.
+- Supply policy input as `{job, context}`. Context can include client IP and, when a controller enables `resolve_token`, Nomad ACL-token details.
+- Merge policy warnings into Nomad responses. Admission errors block registration and planning locally; the Nomad validation endpoint instead receives policy validation errors in its rewritten response. Exact endpoint semantics are in [architecture](architecture.md#request-lifecycle-and-outcomes).
+
+## Engineer orientation
+
+| If you need to… | Start at | Then verify |
 | --- | --- | --- |
-| Executable and HTTP boundary | `cmd/nacp/nacp.go` | Builds controllers, creates the reverse proxy, manages TLS, and rewrites supported requests/responses. |
-| Admission orchestration | `pkg/admissionctrl/controller.go` | Defines controller interfaces and mutation-before-validation ordering. |
-| Configuration contract | `pkg/config/config.go` | Defines HCL blocks, defaults, and the request-context schema. |
-| Policy implementations | `pkg/admissionctrl/{opa,mutator,validator,notation,remoteutil}/` | Contains OPA, SDK/bundle, webhook, JSON Patch, and signature-verification behavior. |
-| Observability | `pkg/otel/otel.go`, `pkg/logutil/logutil.go`, `pkg/o11y/` | Sets up OTLP exports, slog handlers, and generated controller metrics. |
-| Tests and examples | `cmd/nacp/*_test.go`, `pkg/**/*_test.go`, `example/` | Establishes expected proxy, policy, and integration behavior. |
+| Change an intercepted route or Nomad request/response rewriting | `cmd/nacp/nacp.go` and [architecture](architecture.md) | `cmd/nacp/nacp_test.go`, including gzip cases |
+| Change admission ordering or controller contracts | `pkg/admissionctrl/controller.go` | `pkg/admissionctrl/controller_test.go` |
+| Add/change policy configuration or output contracts | `pkg/config/config.go` and [policy integrations](policy-integrations.md) | config and focused adapter tests |
+| Operate TLS, telemetry, CI, or release delivery | [operations and testing](operations-testing.md) | `.github/workflows/`, `.goreleaser.yaml` |
+| Find a fixture or a working policy example | [source map](source-map.md) | `testdata/` and `example/` |
 
-## Change orientation
+## Repository progression
 
-- Changes to intercepted endpoints or Nomad request/response serialization begin in `cmd/nacp/nacp.go` and need proxy tests, including gzip-response cases where applicable.
-- Changes to policy ordering, warning aggregation, or controller interfaces begin in `pkg/admissionctrl/controller.go`; preserve the invariant that mutators execute before validators.
-- Changes to HCL shape must update `pkg/config/config.go`, its tests, and the relevant runnable example. The current README has configuration drift noted in [operations and testing](operations-testing.md#documentation-and-maintenance-notes).
-- CI runs formatting, `go build -v ./...`, and full package tests with coverage; use the same checks before changing production paths.
+Recent history shows a useful evolution path: major packages moved under `pkg/`; request context and token resolution enriched policy input; OpenTelemetry and structured logging were added; then OPA SDK, bundle validation, and bundle JSON-Patch support arrived. The current branch’s `feat(bundle): working poc` commit makes bundle behavior especially important to verify against `example/demo/` and its focused adapter tests instead of assuming a mature operational contract.
+
+## Documentation caution
+
+Prefer current source and runnable examples over legacy prose. In particular, `pkg/config/config.go` expects top-level `bind`, `port`, and `tls`; the README still contains an older `server {}` wrapper. The [operations page](operations-testing.md#maintenance-notes) lists other drift and production-readiness cautions.
 
 ## Backlog
 
-- **Configuration reference** — `pkg/config/config.go`; deferred because a canonical, exhaustive HCL reference would require auditing each controller constructor and every example. This first pass points to the source schema and documents the supported integration families.
-- **Release/distribution workflow** — `.goreleaser.yaml`, `Dockerfile`, `.github/workflows/release.yml`; deferred to retain a focused initial wiki centered on the admission runtime.
+- **Exhaustive HCL reference** — source anchor: `pkg/config/config.go`; deferred because controller sub-block requirements are enforced mainly during startup construction and need a dedicated schema audit.
+- **OPA bundle production lifecycle** — source anchor: `pkg/admissionctrl/{validator,mutator}/opa_bundle_*.go`, `example/demo/opa.yml`; deferred because the latest bundle feature is explicitly a working POC and does not document refresh, availability, or rollout expectations.
