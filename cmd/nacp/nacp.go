@@ -589,10 +589,11 @@ func run(c *config.Config) (err error) {
 
 	var sdk *sdk.OPA
 	if c.OpaSdk != nil {
-		sdk, err := buildOpaSdk(ctx, c.OpaSdk)
+		o, err := buildOpaSdk(ctx, appLogger, c.OpaSdk)
 		if err != nil {
 			return fmt.Errorf("failed to build OPA SDK: %w", err)
 		}
+		sdk = o
 		defer func() {
 			sdk.Stop(ctx)
 		}()
@@ -657,7 +658,7 @@ func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sd
 		proxyTransport.TLSClientConfig = nomadTlsConfig
 	}
 
-	jobMutators, resolveTokenMutators, err := createMutators(c, loggerFactory)
+	jobMutators, resolveTokenMutators, err := createMutators(c, loggerFactory, sdk)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create mutators: %w", err)
 	}
@@ -707,6 +708,8 @@ func buildConfig(configPath string) (*config.Config, error) {
 
 	var c *config.Config
 
+	dir, _ := os.Getwd()
+
 	if _, err := os.Stat(configPath); err == nil && configPath != "" {
 		c, err = config.LoadConfig(configPath)
 		if err != nil {
@@ -714,7 +717,7 @@ func buildConfig(configPath string) (*config.Config, error) {
 		}
 		slog.Info("Loaded config", "config", configPath)
 	} else {
-		slog.Info("No config file found, using default config")
+		slog.Info("No config file found, using default config", "config", configPath, "working_dir", dir)
 		c = config.DefaultConfig()
 	}
 
@@ -740,7 +743,7 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]admissionctrl.JobMutator, bool, error) {
+func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) ([]admissionctrl.JobMutator, bool, error) {
 	var jobMutators []admissionctrl.JobMutator
 	var resolveToken bool
 	for _, m := range c.Mutators {
@@ -766,6 +769,12 @@ func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory) ([]a
 			}
 			jobMutators = append(jobMutators, mutator)
 
+		case "opa_bundle_json_patch":
+			mutator, err := mutator.NewOpaBundleMutator(m.Name, m.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_mutator"), sdk)
+			if err != nil {
+				return nil, resolveToken, err
+			}
+			jobMutators = append(jobMutators, mutator)
 		default:
 			return nil, resolveToken, fmt.Errorf("unknown mutator type %s", m.Type)
 		}
@@ -867,21 +876,35 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	}
 	return tlsConfig, err
 }
-func buildOpaSdk(ctx context.Context, opaConfig *config.OpaSdk) (*sdk.OPA, error) {
+func buildOpaSdk(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, error) {
 
+	logger.Info("Starting OPA SDK", "config_path", opaConfig.ConfigPath, "id", opaConfig.Id)
 	f, err := os.Open(opaConfig.ConfigPath)
 
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
+	ready := make(chan struct{})
+	context, timeout := context.WithTimeout(ctx, 30*time.Second)
+	defer timeout()
+
 	opa, err := sdk.New(ctx, sdk.Options{
 		ID:     opaConfig.Id,
 		Config: f,
+		Ready:  ready,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create OPA SDK: %w", err)
 	}
-	return opa, nil
+	logger.Info("Waiting for OPA SDK to become ready", "id", opaConfig.Id)
+	select {
+	case <-ready:
+		logger.Info("OPA SDK is ready", "id", opaConfig.Id)
+		return opa, nil
+	case <-context.Done():
+		logger.Error("OPA SDK did not become ready in time", "id", opaConfig.Id)
+		return nil, fmt.Errorf("OPA SDK did not become ready in time: %w", context.Err())
+	}
 
 }

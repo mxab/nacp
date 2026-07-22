@@ -8,7 +8,9 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
+	"github.com/mxab/nacp/pkg/admissionctrl"
 	"github.com/mxab/nacp/pkg/admissionctrl/mutator/jsonpatcher"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/open-policy-agent/opa/v1/sdk"
 )
 
@@ -19,13 +21,15 @@ type OpaBundleMutator struct {
 	opa    *sdk.OPA
 }
 
-func (m *OpaBundleMutator) Mutate(context context.Context, job *api.Job) (result *api.Job, mutated bool, warns []error, err error) {
+var _ admissionctrl.JobMutator = (*OpaBundleMutator)(nil)
+
+func (m *OpaBundleMutator) Mutate(context context.Context, payload *types.Payload) (result *api.Job, mutated bool, warns []error, err error) {
 	mutated = false
 	warns = []error{}
 	err = nil
 
 	decision, err := m.opa.Decision(context, sdk.DecisionOptions{
-		Input: job,
+		Input: payload,
 		Path:  m.path,
 	})
 	if err != nil {
@@ -73,7 +77,7 @@ func (m *OpaBundleMutator) Mutate(context context.Context, job *api.Job) (result
 		}
 		if patch, found := rmap["patch"]; found {
 			if ops, ok := patch.([]interface{}); ok {
-				result, mutated, err = jsonpatcher.PatchJob(job, ops)
+				result, mutated, err = jsonpatcher.PatchJob(payload.Job, ops)
 				if err != nil {
 					err = fmt.Errorf("policy yielded patch failed: %w", err)
 					return
@@ -84,7 +88,7 @@ func (m *OpaBundleMutator) Mutate(context context.Context, job *api.Job) (result
 			}
 		} else {
 			// No patch, return original job
-			result = job
+			result = payload.Job
 		}
 	}
 
