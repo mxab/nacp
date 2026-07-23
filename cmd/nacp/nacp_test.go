@@ -784,10 +784,10 @@ func TestCreateValidators(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "opa sdk validator",
+			name: "opa bundle validator",
 			validators: config.Validator{
 
-				Type: "opa_sdk",
+				Type: "opa_bundle",
 				Name: "test",
 				OpaSdkRule: &config.OpaSdkRule{
 					Path: "/my/policy",

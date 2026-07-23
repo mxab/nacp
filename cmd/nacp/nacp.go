@@ -800,7 +800,7 @@ func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory, sd
 				return nil, resolveToken, err
 			}
 			jobValidators = append(jobValidators, opaValidator)
-		case "opa_sdk":
+		case "opa_bundle":
 
 			bundleValidator, err := validator.NewOpaBundleValidator(v.Name, v.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_validator"), sdk)
 			if err != nil {
