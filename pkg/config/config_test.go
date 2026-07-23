@@ -260,7 +260,7 @@ func TestLoadConfig(t *testing.T) {
 				},
 				Validators: []Validator{
 					{
-						Type: "opa_sdk",
+						Type: "opa_bundle",
 						Name: "some_validator",
 						OpaSdkRule: &OpaSdkRule{
 							Path: "/my/validation/policy",
@@ -269,7 +269,7 @@ func TestLoadConfig(t *testing.T) {
 				},
 				Mutators: []Mutator{
 					{
-						Type: "opa_sdk",
+						Type: "opa_bundle_json_patch",
 						Name: "some_mutator",
 						OpaSdkRule: &OpaSdkRule{
 							Path: "/my/mutation/policy",
