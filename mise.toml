@@ -1,4 +1,5 @@
 [tools]
+actionlint = "latest"
 go = "1.26.5"
 "go:github.com/go-delve/delve/cmd/dlv" = "latest"
 golangci-lint = "latest"
