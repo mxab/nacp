@@ -587,19 +587,13 @@ func run(c *config.Config) (err error) {
 
 	}
 
-	var sdk *sdk.OPA
-	if c.OpaSdk != nil {
-		o, err := buildOpaSdk(ctx, appLogger, c.OpaSdk)
-		if err != nil {
-			return fmt.Errorf("failed to build OPA SDK: %w", err)
-		}
-		sdk = o
-		defer func() {
-			sdk.Stop(ctx)
-		}()
+	opaSDK, stopOPA, err := setupOpaSDK(ctx, appLogger, c.OpaSdk)
+	if err != nil {
+		return err
 	}
+	defer stopOPA()
 
-	server, err := buildServer(c, rootFactory, sdk)
+	server, err := buildServer(c, rootFactory, opaSDK)
 
 	if err != nil {
 		return fmt.Errorf("failed to build server: %w", err)
@@ -743,92 +737,78 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) ([]admissionctrl.JobMutator, bool, error) {
-	var jobMutators []admissionctrl.JobMutator
+func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) ([]admissionctrl.JobMutator, bool, error) {
+	jobMutators := make([]admissionctrl.JobMutator, 0, len(c.Mutators))
 	var resolveToken bool
-	for _, m := range c.Mutators {
-		if m.ResolveToken {
-			resolveToken = true
+	for _, mutatorConfig := range c.Mutators {
+		resolveToken = resolveToken || mutatorConfig.ResolveToken
+		jobMutator, err := createMutator(mutatorConfig, loggerFactory, opaSDK)
+		if err != nil {
+			return nil, resolveToken, err
 		}
-		switch m.Type {
-		case "opa_json_patch":
-			notationVerifier, err := buildVerifierIfEnabled(m.OpaRule.Notation, loggerFactory.GetLogger("notation_verifier"))
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			mutator, err := mutator.NewOpaJsonPatchMutator(m.Name, m.OpaRule.Filename, m.OpaRule.Query, loggerFactory.GetLogger("opa_mutator"), notationVerifier)
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobMutators = append(jobMutators, mutator)
-
-		case "json_patch_webhook":
-			mutator, err := mutator.NewJsonPatchWebhookMutator(m.Name, m.Webhook.Endpoint, m.Webhook.Method, loggerFactory.GetLogger("json_patch_webhook_mutator"))
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobMutators = append(jobMutators, mutator)
-
-		case "opa_bundle_json_patch":
-			mutator, err := mutator.NewOpaBundleMutator(m.Name, m.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_mutator"), sdk)
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobMutators = append(jobMutators, mutator)
-		default:
-			return nil, resolveToken, fmt.Errorf("unknown mutator type %s", m.Type)
-		}
-
+		jobMutators = append(jobMutators, jobMutator)
 	}
 	return jobMutators, resolveToken, nil
 }
-func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) ([]admissionctrl.JobValidator, bool, error) {
-	var jobValidators []admissionctrl.JobValidator
+
+func createMutator(mutatorConfig config.Mutator, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) (admissionctrl.JobMutator, error) {
+	switch mutatorConfig.Type {
+	case "opa_json_patch":
+		notationVerifier, err := buildVerifierIfEnabled(mutatorConfig.OpaRule.Notation, loggerFactory.GetLogger("notation_verifier"))
+		if err != nil {
+			return nil, err
+		}
+		return mutator.NewOpaJsonPatchMutator(mutatorConfig.Name, mutatorConfig.OpaRule.Filename, mutatorConfig.OpaRule.Query, loggerFactory.GetLogger("opa_mutator"), notationVerifier)
+	case "json_patch_webhook":
+		return mutator.NewJsonPatchWebhookMutator(mutatorConfig.Name, mutatorConfig.Webhook.Endpoint, mutatorConfig.Webhook.Method, loggerFactory.GetLogger("json_patch_webhook_mutator"))
+	case "opa_bundle_json_patch":
+		if mutatorConfig.OpaSdkRule == nil {
+			return nil, fmt.Errorf("mutator %q requires an opa_sdk_rule block", mutatorConfig.Name)
+		}
+		return mutator.NewOpaBundleMutator(mutatorConfig.Name, mutatorConfig.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_mutator"), opaSDK)
+	default:
+		return nil, fmt.Errorf("unknown mutator type %s", mutatorConfig.Type)
+	}
+}
+
+func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) ([]admissionctrl.JobValidator, bool, error) {
+	jobValidators := make([]admissionctrl.JobValidator, 0, len(c.Validators))
 	var resolveToken bool
-	for _, v := range c.Validators {
-		if v.ResolveToken {
-			resolveToken = true
+	for _, validatorConfig := range c.Validators {
+		resolveToken = resolveToken || validatorConfig.ResolveToken
+		jobValidator, err := createValidator(validatorConfig, loggerFactory, opaSDK)
+		if err != nil {
+			return nil, resolveToken, err
 		}
-		switch v.Type {
-		case "opa":
-			notationVerifier, err := buildVerifierIfEnabled(v.Notation, loggerFactory.GetLogger("notation_verifier"))
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			opaValidator, err := validator.NewOpaValidator(v.Name, v.OpaRule.Filename, v.OpaRule.Query, loggerFactory.GetLogger("opa_validator"), notationVerifier)
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobValidators = append(jobValidators, opaValidator)
-		case "opa_bundle":
-
-			bundleValidator, err := validator.NewOpaBundleValidator(v.Name, v.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_validator"), sdk)
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobValidators = append(jobValidators, bundleValidator)
-
-		case "webhook":
-			validator, err := validator.NewWebhookValidator(v.Name, v.Webhook.Endpoint, v.Webhook.Method, loggerFactory.GetLogger("webhook_validator"))
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			jobValidators = append(jobValidators, validator)
-		case "notation":
-			notationVerifier, err := buildVerifier(v.Notation, loggerFactory.GetLogger("notation_verifier"))
-			if err != nil {
-				return nil, resolveToken, err
-			}
-			validator := validator.NewNotationValidator(loggerFactory.GetLogger("notation_validator"), v.Name, notationVerifier)
-
-			jobValidators = append(jobValidators, validator)
-
-		default:
-			return nil, resolveToken, fmt.Errorf("unknown validator type %s", v.Type)
-		}
-
+		jobValidators = append(jobValidators, jobValidator)
 	}
 	return jobValidators, resolveToken, nil
+}
+
+func createValidator(validatorConfig config.Validator, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) (admissionctrl.JobValidator, error) {
+	switch validatorConfig.Type {
+	case "opa":
+		notationVerifier, err := buildVerifierIfEnabled(validatorConfig.Notation, loggerFactory.GetLogger("notation_verifier"))
+		if err != nil {
+			return nil, err
+		}
+		return validator.NewOpaValidator(validatorConfig.Name, validatorConfig.OpaRule.Filename, validatorConfig.OpaRule.Query, loggerFactory.GetLogger("opa_validator"), notationVerifier)
+	case "opa_bundle":
+		if validatorConfig.OpaSdkRule == nil {
+			return nil, fmt.Errorf("validator %q requires an opa_sdk_rule block", validatorConfig.Name)
+		}
+		return validator.NewOpaBundleValidator(validatorConfig.Name, validatorConfig.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_validator"), opaSDK)
+	case "webhook":
+		return validator.NewWebhookValidator(validatorConfig.Name, validatorConfig.Webhook.Endpoint, validatorConfig.Webhook.Method, loggerFactory.GetLogger("webhook_validator"))
+	case "notation":
+		notationVerifier, err := buildVerifier(validatorConfig.Notation, loggerFactory.GetLogger("notation_verifier"))
+		if err != nil {
+			return nil, err
+		}
+		return validator.NewNotationValidator(loggerFactory.GetLogger("notation_validator"), validatorConfig.Name, notationVerifier), nil
+	default:
+		return nil, fmt.Errorf("unknown validator type %s", validatorConfig.Type)
+	}
 }
 func buildVerifierIfEnabled(notationVerifierConfig *config.NotationVerifierConfig, logger *slog.Logger) (notation.ImageVerifier, error) {
 	if notationVerifierConfig == nil {
@@ -876,20 +856,36 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 	}
 	return tlsConfig, err
 }
-func buildOpaSdk(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, error) {
+func setupOpaSDK(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, func(), error) {
+	if opaConfig == nil {
+		return nil, func() {}, nil
+	}
 
+	opaSDK, err := buildOpaSdk(ctx, logger, opaConfig)
+	if err != nil {
+		return nil, func() {}, fmt.Errorf("failed to build OPA SDK: %w", err)
+	}
+
+	return opaSDK, func() { stopOpaSDK(opaSDK) }, nil
+}
+
+func buildOpaSdk(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, error) {
+	return buildOpaSdkWithTimeout(ctx, logger, opaConfig, 30*time.Second)
+}
+
+func buildOpaSdkWithTimeout(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk, readyTimeout time.Duration) (*sdk.OPA, error) {
 	logger.Info("Starting OPA SDK", "config_path", opaConfig.ConfigPath, "id", opaConfig.Id)
 	f, err := os.Open(opaConfig.ConfigPath)
-
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	ready := make(chan struct{})
-	context, timeout := context.WithTimeout(ctx, 30*time.Second)
-	defer timeout()
+	defer closeOpaConfig(f, logger)
 
-	opa, err := sdk.New(ctx, sdk.Options{
+	ready := make(chan struct{})
+	readyCtx, cancel := context.WithTimeout(ctx, readyTimeout)
+	defer cancel()
+
+	opaSDK, err := sdk.New(ctx, sdk.Options{
 		ID:     opaConfig.Id,
 		Config: f,
 		Ready:  ready,
@@ -897,14 +893,27 @@ func buildOpaSdk(ctx context.Context, logger *slog.Logger, opaConfig *config.Opa
 	if err != nil {
 		return nil, fmt.Errorf("failed to create OPA SDK: %w", err)
 	}
+
 	logger.Info("Waiting for OPA SDK to become ready", "id", opaConfig.Id)
 	select {
 	case <-ready:
 		logger.Info("OPA SDK is ready", "id", opaConfig.Id)
-		return opa, nil
-	case <-context.Done():
+		return opaSDK, nil
+	case <-readyCtx.Done():
+		stopOpaSDK(opaSDK)
 		logger.Error("OPA SDK did not become ready in time", "id", opaConfig.Id)
-		return nil, fmt.Errorf("OPA SDK did not become ready in time: %w", context.Err())
+		return nil, fmt.Errorf("OPA SDK did not become ready in time: %w", readyCtx.Err())
 	}
+}
 
+func stopOpaSDK(opaSDK *sdk.OPA) {
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	opaSDK.Stop(shutdownCtx)
+}
+
+func closeOpaConfig(file *os.File, logger *slog.Logger) {
+	if err := file.Close(); err != nil {
+		logger.Warn("Closing OPA SDK configuration failed", "error", err)
+	}
 }

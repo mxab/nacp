@@ -21,12 +21,18 @@ type OpaBundleValidator struct {
 
 var _ admissionctrl.JobValidator = (*OpaBundleValidator)(nil) // Verify that *T implements I.
 
-func NewOpaBundleValidator(name string, path string, logger *slog.Logger, sdk *sdk.OPA) (*OpaBundleValidator, error) {
+func NewOpaBundleValidator(name string, path string, logger *slog.Logger, opaSDK *sdk.OPA) (*OpaBundleValidator, error) {
+	if opaSDK == nil {
+		return nil, errors.New("OPA SDK is required")
+	}
+	if path == "" {
+		return nil, errors.New("OPA decision path is required")
+	}
 	return &OpaBundleValidator{
 		name:   name,
 		path:   path,
 		logger: logger,
-		opa:    sdk,
+		opa:    opaSDK,
 	}, nil
 }
 

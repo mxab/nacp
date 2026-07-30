@@ -118,6 +118,17 @@ func TestBundleValidatorName(t *testing.T) {
 	validator, err := NewOpaBundleValidator("testopabundlevalidator", "/mypolicy", slog.New(slog.DiscardHandler), opa)
 
 	require.NoError(t, err, "No error creating validator")
-
 	assert.Equal(t, "testopabundlevalidator", validator.Name(), "Validator name")
+}
+
+func TestNewOpaBundleValidatorValidation(t *testing.T) {
+	opa := testutil.SetupOpa(t, "package mypolicy")
+
+	validator, err := NewOpaBundleValidator("test", "/mypolicy", slog.Default(), nil)
+	assert.ErrorContains(t, err, "OPA SDK is required")
+	assert.Nil(t, validator)
+
+	validator, err = NewOpaBundleValidator("test", "", slog.Default(), opa)
+	assert.ErrorContains(t, err, "OPA decision path is required")
+	assert.Nil(t, validator)
 }
