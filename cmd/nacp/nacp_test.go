@@ -840,16 +840,35 @@ func TestCreateValidators(t *testing.T) {
 
 			assert.IsType(t, tc.want, validators[0])
 			assert.Equal(t, tc.validators.Name, validators[0].Name())
-
-			if tc.needsOPA {
-				warnings, validationErr := validators[0].Validate(t.Context(), &types.Payload{Job: testutil.BaseJob()})
-				require.NoError(t, validationErr)
-				assert.Empty(t, warnings)
-			}
 		})
 
 	}
 }
+
+func TestOpaBundleValidatorConfig(t *testing.T) {
+	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
+	opaSDK := testutil.SetupOpa(t, "package configuredpath")
+	c := &config.Config{
+		Validators: []config.Validator{
+			{
+				Type: "opa_bundle",
+				Name: "test",
+				OpaSdkRule: &config.OpaSdkRule{
+					Path: "/configuredpath",
+				},
+			},
+		},
+	}
+
+	validators, _, err := createValidators(c, discardFactory, opaSDK)
+	require.NoError(t, err)
+	require.Len(t, validators, 1)
+
+	warnings, err := validators[0].Validate(t.Context(), &types.Payload{Job: testutil.BaseJob()})
+	require.NoError(t, err)
+	assert.Empty(t, warnings)
+}
+
 func TestNotationValidatorConfig(t *testing.T) {
 	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
 
