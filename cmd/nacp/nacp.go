@@ -591,7 +591,9 @@ func run(c *config.Config) (err error) {
 	if err != nil {
 		return err
 	}
-	defer stopOPA()
+	if stopOPA != nil {
+		defer stopOPA()
+	}
 
 	server, err := buildServer(c, rootFactory, opaSDK)
 
@@ -858,12 +860,12 @@ func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
 }
 func setupOpaSDK(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, func(), error) {
 	if opaConfig == nil {
-		return nil, func() {}, nil
+		return nil, nil, nil
 	}
 
 	opaSDK, err := buildOpaSdk(ctx, logger, opaConfig)
 	if err != nil {
-		return nil, func() {}, fmt.Errorf("failed to build OPA SDK: %w", err)
+		return nil, nil, fmt.Errorf("failed to build OPA SDK: %w", err)
 	}
 
 	return opaSDK, func() { stopOpaSDK(opaSDK) }, nil

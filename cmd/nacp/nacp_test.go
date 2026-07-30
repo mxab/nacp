@@ -13,7 +13,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"reflect"
 	"strings"
 	"syscall"
 	"testing"
@@ -26,6 +25,7 @@ import (
 	"github.com/hashicorp/nomad/lib/file"
 	"github.com/mxab/nacp/pkg/admissionctrl"
 	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
+	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/admissionctrl/validator"
 	"github.com/mxab/nacp/pkg/config"
 	"github.com/mxab/nacp/pkg/logutil"
@@ -113,7 +113,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobPlanResponse{
-				// TODO: rework error concatination
+				// Upstream and admission warnings remain separate entries.
 				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
 			},
 
@@ -138,7 +138,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: planRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobPlanResponse{
-				// TODO: rework error concatination
+				// Upstream and admission warnings remain separate entries.
 				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
 			},
 
@@ -185,7 +185,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobRegisterResponse{
-				// TODO: rework error concatination
+				// Upstream and admission warnings remain separate entries.
 				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
 			},
 
@@ -209,7 +209,7 @@ func TestProxy(t *testing.T) {
 			wantNomadRequestJson: registerRequestJson(t, testutil.ReadJob(t, "job.json")),
 
 			wantProxyResponse: &api.JobRegisterResponse{
-				// TODO: rework error concatination
+				// Upstream and admission warnings remain separate entries.
 				Warnings: "2 warnings:\n\n* 1 error occurred:\n\t* some warning\n* some warning",
 			},
 
@@ -791,7 +791,7 @@ func TestCreateValidators(t *testing.T) {
 				Type: "opa_bundle",
 				Name: "test",
 				OpaSdkRule: &config.OpaSdkRule{
-					Path: "/my/policy",
+					Path: "/mypolicy",
 				},
 			},
 			want:     &validator.OpaBundleValidator{},
@@ -839,7 +839,13 @@ func TestCreateValidators(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.IsType(t, tc.want, validators[0])
+			assert.Equal(t, tc.validators.Name, validators[0].Name())
 
+			if tc.needsOPA {
+				warnings, validationErr := validators[0].Validate(t.Context(), &types.Payload{Job: testutil.BaseJob()})
+				require.NoError(t, validationErr)
+				assert.Empty(t, warnings)
+			}
 		})
 
 	}
@@ -1052,7 +1058,7 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 	writeTLSStuff(t, caCertFileName, ca)
 	writeTLSStuff(t, caPkFileName, caPk)
 
-	cluster_region := "global"
+	clusterRegion := "global"
 
 	var DNSNames []string
 	var IPAddresses []net.IP
@@ -1062,20 +1068,20 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 	server := true
 	client := false
 	if server {
-		name = fmt.Sprintf("server.%s.%s", cluster_region, domain)
+		name = fmt.Sprintf("server.%s.%s", clusterRegion, domain)
 		DNSNames = append(DNSNames, name)
 		DNSNames = append(DNSNames, "localhost")
 
 		IPAddresses = append(IPAddresses, net.ParseIP("127.0.0.1"))
 		extKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
-		prefix = fmt.Sprintf("%s-server-%s", cluster_region, domain)
+		prefix = fmt.Sprintf("%s-server-%s", clusterRegion, domain)
 
 	} else if client {
-		name = fmt.Sprintf("client.%s.%s", cluster_region, domain)
+		name = fmt.Sprintf("client.%s.%s", clusterRegion, domain)
 		DNSNames = append(DNSNames, []string{name, "localhost"}...)
 		IPAddresses = append(IPAddresses, net.ParseIP("127.0.0.1"))
 		extKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth}
-		prefix = fmt.Sprintf("%s-client-%s", cluster_region, domain)
+		prefix = fmt.Sprintf("%s-client-%s", clusterRegion, domain)
 	}
 
 	certFileName = fmt.Sprintf("%s/%s.pem", dir, prefix)
@@ -1187,68 +1193,46 @@ func freePort(t *testing.T) int {
 	return randomFreePort
 }
 
-func Test_buildConfig(t *testing.T) {
-	type args struct {
-		configPath string
-	}
+func TestBuildConfig(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    args
-		want    func() *config.Config
-		wantErr bool
+		name       string
+		configPath string
+		want       func() *config.Config
+		wantErr    bool
 	}{
 		{
-			name: "default config",
-			args: args{
-				configPath: "",
-			},
-			want:    config.DefaultConfig,
-			wantErr: false,
+			name:       "default config",
+			configPath: "",
+			want:       config.DefaultConfig,
 		},
 		{
-			name: "custom config",
-			args: args{
-				configPath: "../../testdata/testconfig.hcl",
-			},
+			name:       "custom config",
+			configPath: "../../testdata/testconfig.hcl",
 			want: func() *config.Config {
 				c := config.DefaultConfig()
 				c.Nomad.Address = "http://localhost:4321"
 				c.Port = 1234
 				return c
 			},
-			wantErr: false,
 		},
 		{
-			name: "invalid config",
-			args: args{
-				configPath: "../../testdata/brokenconfig.hcl",
-			},
-			want:    nil,
-			wantErr: true,
+			name:       "invalid config",
+			configPath: "../../testdata/brokenconfig.hcl",
+			wantErr:    true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := buildConfig(tt.args.configPath)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("buildConfig() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if tt.want == nil {
-				if got != nil {
-					t.Errorf("buildConfig() = %v, want nil", got)
-				}
-				return
-			}
-			if got == nil {
-				t.Errorf("buildConfig() = nil, want %v", tt.want())
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := buildConfig(tc.configPath)
+			if tc.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, got)
 				return
 			}
 
-			expectedConfig := tt.want()
-			if !reflect.DeepEqual(got, expectedConfig) {
-				t.Errorf("buildConfig() = %v, want %v", got, expectedConfig)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want(), got)
 		})
 	}
 }
@@ -1355,7 +1339,7 @@ func TestSetupOpaSDK(t *testing.T) {
 		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), nil)
 		require.NoError(t, err)
 		assert.Nil(t, opaSDK)
-		cleanup()
+		assert.Nil(t, cleanup)
 	})
 
 	t.Run("valid config", func(t *testing.T) {
@@ -1365,6 +1349,7 @@ func TestSetupOpaSDK(t *testing.T) {
 		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), &config.OpaSdk{Id: "test", ConfigPath: configPath})
 		require.NoError(t, err)
 		require.NotNil(t, opaSDK)
+		require.NotNil(t, cleanup)
 		cleanup()
 	})
 
@@ -1375,7 +1360,7 @@ func TestSetupOpaSDK(t *testing.T) {
 		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), &config.OpaSdk{Id: "test", ConfigPath: configPath})
 		assert.ErrorContains(t, err, "failed to build OPA SDK")
 		assert.Nil(t, opaSDK)
-		cleanup()
+		assert.Nil(t, cleanup)
 	})
 }
 
