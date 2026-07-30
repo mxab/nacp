@@ -22,7 +22,7 @@ jobs:
           node-version: "22"
 
       - name: Install OpenWiki
-        run: npm install --global --ignore-scripts openwiki@0.2.3
+        run: npm install --global openwiki@0.2.4
 
       - name: Run OpenWiki
         run: openwiki code --update --print
