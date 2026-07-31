@@ -22,14 +22,15 @@ import (
 
 func TestWebhookValidator(t *testing.T) {
 	tt := []struct {
-		name          string
-		endpointPath  string
-		method        string
-		context       *config.RequestContext
-		response      string
-		wantErr       error
-		wantWarnings  []error
-		wantedHeaders map[string]string
+		name           string
+		endpointPath   string
+		method         string
+		context        *config.RequestContext
+		response       string
+		responseStatus int
+		wantErr        error
+		wantWarnings   []error
+		wantedHeaders  map[string]string
 	}{
 		{
 			name:         "empty response",
@@ -57,6 +58,14 @@ func TestWebhookValidator(t *testing.T) {
 			response:     `{"errors": ["error1", "error2"], "warnings": []}`,
 			wantErr:      multierror.Append(fmt.Errorf("error1"), fmt.Errorf("error2")),
 			wantWarnings: nil,
+		},
+		{
+			name:           "non-success HTTP response",
+			endpointPath:   "/validate",
+			method:         "POST",
+			response:       `{}`,
+			responseStatus: http.StatusBadGateway,
+			wantErr:        fmt.Errorf("webhook returned unexpected HTTP status 502 Bad Gateway"),
 		},
 		{
 			name:         "warnings",
@@ -118,7 +127,13 @@ func TestWebhookValidator(t *testing.T) {
 				for key, value := range tc.wantedHeaders {
 					assert.Equal(t, value, r.Header.Get(key), "Header %s does not match", key)
 				}
-				w.WriteHeader(http.StatusOK)
+				assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+				assert.Equal(t, "application/json", r.Header.Get("Accept"))
+				status := tc.responseStatus
+				if status == 0 {
+					status = http.StatusOK
+				}
+				w.WriteHeader(status)
 				w.Write([]byte(tc.response))
 			}))
 			defer server.Close()

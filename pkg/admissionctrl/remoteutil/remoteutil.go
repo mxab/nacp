@@ -2,8 +2,13 @@ package remoteutil
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptrace"
+	"net/url"
+	"time"
 
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
@@ -37,8 +42,44 @@ func InstrumentedTransport(transport http.RoundTripper) *otelhttp.Transport {
 	)
 }
 
+const (
+	DefaultRequestTimeout = 30 * time.Second
+	MaxResponseBodyBytes  = 10 << 20
+)
+
+var defaultInstrumentedTransport = InstrumentedTransport(http.DefaultTransport)
+
 func NewInstrumentedClient() *http.Client {
 	return &http.Client{
-		Transport: InstrumentedTransport(http.DefaultTransport.(*http.Transport)),
+		Transport: defaultInstrumentedTransport,
+		Timeout:   DefaultRequestTimeout,
 	}
+}
+
+func ParseEndpoint(endpoint string) (*url.URL, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	if (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return nil, fmt.Errorf("webhook endpoint must be an absolute HTTP(S) URL: %q", endpoint)
+	}
+	return u, nil
+}
+
+func DecodeJSONResponse(resp *http.Response, target interface{}) error {
+	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponseBodyBytes+1))
+	if err != nil {
+		return fmt.Errorf("failed to read webhook response: %w", err)
+	}
+	if len(body) > MaxResponseBodyBytes {
+		return fmt.Errorf("webhook response exceeds %d bytes", MaxResponseBodyBytes)
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("webhook returned unexpected HTTP status %s", resp.Status)
+	}
+	if err := json.Unmarshal(body, target); err != nil {
+		return fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+	return nil
 }

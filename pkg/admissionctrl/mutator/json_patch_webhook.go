@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -13,6 +13,7 @@ import (
 	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
 )
 
@@ -29,7 +30,7 @@ type jsonPatchWebhookResponse struct {
 }
 
 func NewJsonPatchWebhookMutator(name string, endpoint string, method string, logger *slog.Logger) (*JsonPatchWebhookMutator, error) {
-	u, err := url.Parse(endpoint)
+	u, err := remoteutil.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -52,25 +53,35 @@ func (j *JsonPatchWebhookMutator) Mutate(ctx context.Context, payload *types.Pay
 	}
 
 	remoteutil.ApplyContextHeaders(req, payload)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	httpClient := remoteutil.NewInstrumentedClient()
 	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, false, nil, err
 	}
+	defer res.Body.Close()
 
 	patchResponse := &jsonPatchWebhookResponse{}
-	err = json.NewDecoder(res.Body).Decode(&patchResponse)
-	if err != nil {
+	if err := remoteutil.DecodeJSONResponse(res, patchResponse); err != nil {
 		return nil, false, nil, err
 	}
 
 	var warnings []error
 	if len(patchResponse.Warnings) > 0 {
-		j.logger.Debug("Got errors from rule", "rule", j.name, "warnings", patchResponse.Warnings, "job", payload.Job.ID)
+		j.logger.Debug("Got warnings from rule", "rule", j.name, "warnings", patchResponse.Warnings, "job", payload.Job.ID)
 		for _, warning := range patchResponse.Warnings {
-			warnings = append(warnings, fmt.Errorf("%s", warning))
+			warnings = append(warnings, errors.New(warning))
 		}
+	}
+
+	if len(patchResponse.Errors) > 0 {
+		var policyErr error
+		for _, message := range patchResponse.Errors {
+			policyErr = multierror.Append(policyErr, errors.New(message))
+		}
+		return nil, false, warnings, policyErr
 	}
 
 	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchResponse.Patch)

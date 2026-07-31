@@ -21,6 +21,8 @@ jobs:
         with:
           node-version: "22"
 
+      # OpenWiki depends on better-sqlite3, whose native module is built by an
+      # install script. Keep OpenWiki pinned and allow scripts for this trusted package.
       - name: Install OpenWiki
         run: npm install --global openwiki@0.2.4
 

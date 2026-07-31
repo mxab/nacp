@@ -36,9 +36,8 @@ func NewOpaBundleValidator(name string, path string, logger *slog.Logger, opaSDK
 	}, nil
 }
 
-func (v *OpaBundleValidator) Validate(ctx context.Context, payload *types.Payload) (warnings []error, err error) {
-
-	result, err := v.opa.Decision(ctx, sdk.DecisionOptions{
+func (v *OpaBundleValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
+	decision, err := v.opa.Decision(ctx, sdk.DecisionOptions{
 		Input: payload,
 		Path:  v.path,
 	})
@@ -46,43 +45,49 @@ func (v *OpaBundleValidator) Validate(ctx context.Context, payload *types.Payloa
 		return nil, fmt.Errorf("failed to perform policy decision: %w", err)
 	}
 
-	v.logger.DebugContext(ctx, "OPA decision", slog.Any("result", result))
+	v.logger.DebugContext(ctx, "OPA decision", slog.Any("result", decision))
 
-	if rmap, ok := result.Result.(map[string]interface{}); ok {
-		if errs, found := rmap["errors"]; found {
-			if errlist, ok := errs.([]interface{}); ok {
-
-				for _, e := range errlist {
-					if emsg, ok := e.(string); ok {
-						err = multierror.Append(err, errors.New(emsg))
-					} else {
-						err = multierror.Append(err, fmt.Errorf("policy yielded an invalid error value: %v", e))
-					}
-				}
-				if err != nil {
-					return
-				}
-			} else if errs != nil {
-				err = fmt.Errorf("policy yielded an invalid errors value: %v", errs)
-				return
-			}
-		}
-		if warns, found := rmap["warnings"]; found {
-			if warnlist, ok := warns.([]interface{}); ok {
-				for _, w := range warnlist {
-					if wmsg, ok := w.(string); ok {
-						warnings = append(warnings, errors.New(wmsg))
-					} else {
-						warnings = append(warnings, fmt.Errorf("policy yielded an invalid warning value: %v", w))
-					}
-				}
-			} else if warns != nil {
-				warnings = append(warnings, fmt.Errorf("policy yielded an invalid warnings value: %v", warns))
-			}
-		}
+	result, ok := decision.Result.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("policy yielded an invalid decision value: %v", decision.Result)
 	}
 
-	return
+	warnings, err := parseBundleMessages(result["warnings"], "warning")
+	if err != nil {
+		return nil, err
+	}
+
+	policyErrors, err := parseBundleMessages(result["errors"], "error")
+	if err != nil {
+		return warnings, err
+	}
+
+	var validationErr error
+	for _, policyErr := range policyErrors {
+		validationErr = multierror.Append(validationErr, policyErr)
+	}
+	return warnings, validationErr
+}
+
+func parseBundleMessages(raw interface{}, kind string) ([]error, error) {
+	if raw == nil {
+		return nil, nil
+	}
+
+	entries, ok := raw.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("policy yielded an invalid %ss value: %v", kind, raw)
+	}
+
+	messages := make([]error, 0, len(entries))
+	for _, entry := range entries {
+		message, ok := entry.(string)
+		if !ok {
+			return nil, fmt.Errorf("policy yielded an invalid %s value: %v", kind, entry)
+		}
+		messages = append(messages, errors.New(message))
+	}
+	return messages, nil
 }
 
 func (v *OpaBundleValidator) Name() string {

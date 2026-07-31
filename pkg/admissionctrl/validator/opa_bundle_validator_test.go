@@ -43,9 +43,18 @@ func TestOpaBundleValidator(t *testing.T) {
 		{
 			name: "warning",
 			policy: `package mypolicy
-			warnings = ["a warning message"]`,
+				warnings = ["a warning message"]`,
 			path:        "/mypolicy",
 			expectWarns: []string{"a warning message"},
+		},
+		{
+			name: "warnings are preserved with errors",
+			policy: `package mypolicy
+				errors = ["an error message"]
+				warnings = ["a warning message"]`,
+			path:           "/mypolicy",
+			expectErrParts: []string{"an error message"},
+			expectWarns:    []string{"a warning message"},
 		},
 		{
 			name: "handle invalid errors value",
@@ -62,18 +71,25 @@ func TestOpaBundleValidator(t *testing.T) {
 			expectErrParts: []string{"policy yielded an invalid error value"},
 		},
 		{
-			name: "handle invalid warnings value",
+			name: "handle invalid warnings collection",
 			policy: `package mypolicy
-			warnings = 5`,
-			path:        "/mypolicy",
-			expectWarns: []string{"policy yielded an invalid warnings value"},
+				warnings = 5`,
+			path:           "/mypolicy",
+			expectErrParts: []string{"policy yielded an invalid warnings value"},
 		},
 		{
-			name: "handle invalid warnings value",
+			name: "handle invalid warning entry",
 			policy: `package mypolicy
-			warnings = [5]`,
-			path:        "/mypolicy",
-			expectWarns: []string{"policy yielded an invalid warning value"},
+				warnings = [5]`,
+			path:           "/mypolicy",
+			expectErrParts: []string{"policy yielded an invalid warning value"},
+		},
+		{
+			name: "reject non-object decision",
+			policy: `package mypolicy
+				allow = true`,
+			path:           "/mypolicy/allow",
+			expectErrParts: []string{"policy yielded an invalid decision value"},
 		},
 		{
 			name: "test invalid policy path",

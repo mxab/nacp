@@ -36,6 +36,18 @@ func (m *AddMetaMutator) Mutate(ctx context.Context, payload *types.Payload) (*a
 func (m *AddMetaMutator) Name() string {
 	return m.Field
 }
+
+type validatorFunc struct {
+	name     string
+	validate func(*types.Payload) ([]error, error)
+}
+
+func (v validatorFunc) Name() string { return v.name }
+
+func (v validatorFunc) Validate(_ context.Context, payload *types.Payload) ([]error, error) {
+	return v.validate(payload)
+}
+
 func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	type fields struct {
 		mutators  func() []JobMutator
@@ -58,7 +70,7 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	defaultValidator := func() *testutil.MockValidator {
 
 		validator := new(testutil.MockValidator)
-		validator.On("Validate", mock.Anything, payload).Return([]error{}, nil)
+		validator.On("Validate", mock.Anything, mock.Anything).Return([]error{}, nil)
 		return validator
 	}
 	tests := []struct {
@@ -236,9 +248,42 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 					}
 				}
 			}
+
 			if tt.wantedCalledValidator {
 				validator.AssertExpectations(t)
 			}
 		})
 	}
+}
+
+func TestJobHandler_ValidatorsSeeMutatedJobWithoutMutatingResult(t *testing.T) {
+	original := testutil.BaseJob()
+	validator := validatorFunc{
+		name: "inspect-mutated-job",
+		validate: func(payload *types.Payload) ([]error, error) {
+			assert.Equal(t, "applied", payload.Job.Meta["mutator"])
+			payload.Job.Meta["validator"] = "must-not-leak"
+			return nil, nil
+		},
+	}
+
+	handler := NewJobHandler(
+		[]JobMutator{&AddMetaMutator{Field: "mutator"}},
+		[]JobValidator{validator},
+		slog.New(slog.DiscardHandler),
+		false,
+	)
+
+	result, _, err := handler.ApplyAdmissionControllers(t.Context(), &types.Payload{Job: original})
+	assert.NoError(t, err)
+	assert.Equal(t, "applied", result.Meta["mutator"])
+	assert.NotContains(t, result.Meta, "validator")
+	assert.Nil(t, original.Meta)
+}
+
+func TestJobHandler_RejectsMissingJob(t *testing.T) {
+	handler := NewJobHandler(nil, nil, slog.New(slog.DiscardHandler), false)
+
+	_, _, err := handler.ApplyAdmissionControllers(t.Context(), &types.Payload{})
+	assert.ErrorContains(t, err, "must contain a job")
 }

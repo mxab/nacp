@@ -10,7 +10,9 @@ The otlp exporter is configured by the common otel environment variables.
 ```hcl
 telemetry {
     logging {
-        type = "otel"
+        otel {
+            enabled = true
+        }
     }
     metrics {
         enabled = true

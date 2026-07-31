@@ -144,7 +144,7 @@ func TestOpaValidatorContext(t *testing.T) {
 			payload: &types.Payload{
 				Job: &api.Job{},
 				Context: &config.RequestContext{
-					TokenInfo: &api.ACLToken{
+					TokenInfo: &config.ACLTokenContext{
 						Policies: []string{"nomad_reject", "other_policy"},
 					},
 				},
@@ -158,7 +158,7 @@ func TestOpaValidatorContext(t *testing.T) {
 			payload: &types.Payload{
 				Job: &api.Job{},
 				Context: &config.RequestContext{
-					TokenInfo: &api.ACLToken{
+					TokenInfo: &config.ACLTokenContext{
 						Policies: []string{"nomad_warn", "other_policy"},
 					},
 				},
@@ -172,7 +172,7 @@ func TestOpaValidatorContext(t *testing.T) {
 			payload: &types.Payload{
 				Job: &api.Job{},
 				Context: &config.RequestContext{
-					TokenInfo: &api.ACLToken{
+					TokenInfo: &config.ACLTokenContext{
 						Policies: []string{"normal_policy"},
 					},
 				},

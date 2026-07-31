@@ -38,31 +38,32 @@ func (w *WebhookValidator) Validate(ctx context.Context, payload *types.Payload)
 	}
 
 	remoteutil.ApplyContextHeaders(req, payload)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	resp, err := remoteutil.NewInstrumentedClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	valdationResult := &validationWebhookResponse{}
-	err = json.NewDecoder(resp.Body).Decode(valdationResult)
-
-	if err != nil {
+	validationResult := &validationWebhookResponse{}
+	if err := remoteutil.DecodeJSONResponse(resp, validationResult); err != nil {
 		return nil, err
 	}
 
-	if len(valdationResult.Errors) > 0 {
-		w.logger.Error("validation errors", "errors", valdationResult.Errors, "rule", w.name, "job", payload.Job.ID)
+	if len(validationResult.Errors) > 0 {
+		w.logger.Error("validation errors", "errors", validationResult.Errors, "rule", w.name, "job", payload.Job.ID)
 		oneError := &multierror.Error{}
-		for _, e := range valdationResult.Errors {
+		for _, e := range validationResult.Errors {
 			oneError = multierror.Append(oneError, fmt.Errorf("%v", e))
 		}
 		return nil, oneError
 	}
 
 	var warnings []error
-	if len(valdationResult.Warnings) > 0 {
+	if len(validationResult.Warnings) > 0 {
 
-		for _, w := range valdationResult.Warnings {
+		for _, w := range validationResult.Warnings {
 			warnings = append(warnings, fmt.Errorf("%v", w))
 		}
 		return warnings, nil
@@ -74,7 +75,7 @@ func (w *WebhookValidator) Name() string {
 	return w.name
 }
 func NewWebhookValidator(name string, endpoint string, method string, logger *slog.Logger) (*WebhookValidator, error) {
-	u, err := url.Parse(endpoint)
+	u, err := remoteutil.ParseEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}

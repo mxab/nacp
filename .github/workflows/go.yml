@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,17 +22,21 @@ jobs:
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "^1.26.5"
-      - name: "Check format"
-        run: "test -z $(gofmt -l .)"
+      - name: Check format
+        run: 'test -z "$(gofmt -l .)"'
+      - name: Vet
+        run: go vet ./...
       - name: Build
         run: go build -v ./...
       - name: Test
         run: |
-          go test  -coverprofile=cov.all.out -v ./...
+          go test -tags=integration -coverprofile=cov.all.out -v ./...
           grep -v 'o11y/metric.go' cov.all.out > cov.out
           go tool cover -func=cov.out
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        with:
+          args: -Dsonar.qualitygate.wait=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

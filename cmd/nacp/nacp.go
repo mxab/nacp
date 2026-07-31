@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/mxab/nacp/pkg/admissionctrl/remoteutil"
@@ -50,14 +51,19 @@ var (
 
 type contextKeyWarnings struct{}
 type contextKeyValidationError struct{}
+type contextKeyRequestContext struct{}
 
 var (
 	ctxWarnings        = contextKeyWarnings{}
 	ctxValidationError = contextKeyValidationError{}
-	jobPathRegex       = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*$`)
-	jobPlanPathRegex   = regexp.MustCompile(`^/v1/job/[a-zA-Z]+[a-z-Z0-9\-]*/plan$`)
+	ctxRequestContext  = contextKeyRequestContext{}
+	jobPathRegex       = regexp.MustCompile(`^/v1/job/[^/]+$`)
+	jobPlanPathRegex   = regexp.MustCompile(`^/v1/job/[^/]+/plan$`)
 
-	nomadTimeout = 310 * time.Second
+	nomadTimeout         = 310 * time.Second
+	tokenResolveTimeout  = 30 * time.Second
+	shutdownTimeout      = 30 * time.Second
+	maxAdmissionBodySize = int64(32 << 20)
 )
 
 // New function to get client IP
@@ -65,11 +71,14 @@ func getClientIP(r *http.Request) string {
 	// Check X-Forwarded-For header first
 	forwarded := r.Header.Get("X-Forwarded-For")
 	if forwarded != "" {
-		return strings.Split(forwarded, ",")[0]
+		return strings.TrimSpace(strings.Split(forwarded, ",")[0])
 	}
 
 	// Fall back to RemoteAddr
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
 	return ip
 }
 
@@ -80,9 +89,10 @@ func resolveTokenAccessor(ctx context.Context, transport http.RoundTripper, noma
 
 	client := &http.Client{
 		Transport: transport,
+		Timeout:   tokenResolveTimeout,
 	}
 	if transport == nil {
-		client = http.DefaultClient
+		client.Transport = http.DefaultTransport
 	}
 
 	selfURL := *nomadAddress
@@ -158,27 +168,32 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 
 		ctx := r.Context()
 		reqCtx := &config.RequestContext{
-			ClientIP: getClientIP(r),
+			ClientIP:     getClientIP(r),
+			ResolveToken: jobHandler.ResolveToken(),
 		}
 
 		token := r.Header.Get("X-Nomad-Token")
 		isAdmissionActionable := isRegister(r) || isPlan(r) || isValidate(r)
+		if isAdmissionActionable {
+			r.Body = http.MaxBytesReader(w, r.Body, maxAdmissionBodySize)
+		}
 		if isAdmissionActionable && jobHandler.ResolveToken() {
 			tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
 			if err != nil {
 				logger.ErrorContext(ctx, "Resolving token failed", "error", err)
 				writeError(w, err)
+				return
 			}
 			if tokenInfo != nil {
 				reqCtx.AccessorID = tokenInfo.AccessorID
-				reqCtx.TokenInfo = tokenInfo
+				reqCtx.TokenInfo = config.SanitizeACLToken(tokenInfo)
 			}
 			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
 		} else {
 			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
 		}
 
-		ctx = context.WithValue(ctx, "request_context", reqCtx)
+		ctx = context.WithValue(ctx, ctxRequestContext, reqCtx)
 		r = r.WithContext(ctx)
 
 		var err error
@@ -208,7 +223,7 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 func handRegisterResponse(resp *http.Response, logger *slog.Logger) error {
 
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
-	if !ok && len(warnings) == 0 {
+	if !ok || len(warnings) == 0 || !isSuccessfulResponse(resp) {
 		return nil
 	}
 
@@ -226,37 +241,46 @@ func handRegisterResponse(resp *http.Response, logger *slog.Logger) error {
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
-	responeData, err := json.Marshal(response)
-
+	responseData, err := json.Marshal(response)
 	if err != nil {
 		return err
 	}
 
 	if isGzip {
-		rewriteResponseGzip(resp, responeData)
-	} else {
-		rewriteResponse(resp, responeData)
+		return rewriteResponseGzip(resp, responseData)
 	}
-
+	rewriteResponse(resp, responseData)
 	return nil
 }
 
-func checkIfGzipAndTransformReader(resp *http.Response, reader io.ReadCloser) (bool, io.ReadCloser, error) {
-	enc := resp.Header.Get("Content-Encoding")
-	isGzip := enc == "gzip"
-	if isGzip {
-		gzipReader, err := gzip.NewReader(resp.Body)
-		if err != nil {
-			return false, nil, err
-		}
+type gzipResponseReader struct {
+	*gzip.Reader
+	source io.Closer
+}
 
-		reader = gzipReader
+func (r *gzipResponseReader) Close() error {
+	return errors.Join(r.Reader.Close(), r.source.Close())
+}
+
+func checkIfGzipAndTransformReader(resp *http.Response, reader io.ReadCloser) (bool, io.ReadCloser, error) {
+	isGzip := resp.Header.Get("Content-Encoding") == "gzip"
+	if !isGzip {
+		return false, reader, nil
 	}
-	return isGzip, reader, nil
+	gzipReader, err := gzip.NewReader(reader)
+	if err != nil {
+		reader.Close()
+		return false, nil, err
+	}
+	return true, &gzipResponseReader{Reader: gzipReader, source: reader}, nil
+}
+
+func isSuccessfulResponse(resp *http.Response) bool {
+	return resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices
 }
 func handleJobPlanResponse(resp *http.Response, logger *slog.Logger) error {
 	warnings, ok := resp.Request.Context().Value(ctxWarnings).([]error)
-	if !ok && len(warnings) == 0 {
+	if !ok || len(warnings) == 0 || !isSuccessfulResponse(resp) {
 		return nil
 	}
 
@@ -273,17 +297,15 @@ func handleJobPlanResponse(resp *http.Response, logger *slog.Logger) error {
 
 	response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 
-	responeData, err := json.Marshal(response)
-
+	responseData, err := json.Marshal(response)
 	if err != nil {
 		return err
 	}
 
 	if isGzip {
-		rewriteResponseGzip(resp, responeData)
-	} else {
-		rewriteResponse(resp, responeData)
+		return rewriteResponseGzip(resp, responseData)
 	}
+	rewriteResponse(resp, responseData)
 	return nil
 }
 func handleJobValdidateResponse(resp *http.Response, logger *slog.Logger) error {
@@ -291,7 +313,7 @@ func handleJobValdidateResponse(resp *http.Response, logger *slog.Logger) error 
 	ctx := resp.Request.Context()
 	validationErr, okErr := ctx.Value(ctxValidationError).(error)
 	warnings, okWarnings := resp.Request.Context().Value(ctxWarnings).([]error)
-	if !okErr && !okWarnings {
+	if (!okErr && !okWarnings) || !isSuccessfulResponse(resp) {
 		return nil
 	}
 
@@ -314,9 +336,9 @@ func handleJobValdidateResponse(resp *http.Response, logger *slog.Logger) error 
 				validationErrors = append(validationErrors, err.Error())
 			}
 			validationError = merr.Error()
-		} else { // This should never happen, but just in case
+		} else {
 			validationErrors = append(validationErrors, validationErr.Error())
-			validationError = err.Error()
+			validationError = validationErr.Error()
 		}
 
 		response.ValidationErrors = validationErrors
@@ -327,18 +349,15 @@ func handleJobValdidateResponse(resp *http.Response, logger *slog.Logger) error 
 		response.Warnings = buildFullWarningMsg(response.Warnings, warnings)
 	}
 
-	responeData, err := json.Marshal(response)
-
+	responseData, err := json.Marshal(response)
 	if err != nil {
 		return fmt.Errorf("error marshalling job: %w", err)
 	}
 
 	if isGzip {
-		rewriteResponseGzip(resp, responeData)
-	} else {
-		rewriteResponse(resp, responeData)
+		return rewriteResponseGzip(resp, responseData)
 	}
-
+	rewriteResponse(resp, responseData)
 	return nil
 }
 
@@ -359,17 +378,20 @@ func rewriteResponse(resp *http.Response, newResponeData []byte) {
 	resp.ContentLength = int64(len(newResponeData))
 	resp.Body = io.NopCloser(bytes.NewBuffer(newResponeData))
 }
-func rewriteResponseGzip(resp *http.Response, newResponeData []byte) {
-
+func rewriteResponseGzip(resp *http.Response, newResponseData []byte) error {
 	var compressed bytes.Buffer
 	gz := gzip.NewWriter(&compressed)
-	gz.Write(newResponeData)
-	gz.Close()
+	if _, err := gz.Write(newResponseData); err != nil {
+		return err
+	}
+	if err := gz.Close(); err != nil {
+		return err
+	}
 
 	resp.Header.Set("Content-Length", strconv.Itoa(compressed.Len()))
 	resp.ContentLength = int64(compressed.Len())
-
 	resp.Body = io.NopCloser(&compressed)
+	return nil
 }
 func rewriteRequest(r *http.Request, data []byte) {
 
@@ -391,7 +413,7 @@ func handleRegister(r *http.Request, appLogger *slog.Logger, jobHandler *admissi
 		Job: orginalJob,
 	}
 
-	if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
+	if reqCtx, ok := ctx.Value(ctxRequestContext).(*config.RequestContext); ok {
 		payload.Context = reqCtx
 	}
 
@@ -428,7 +450,7 @@ func handlePlan(r *http.Request, appLogger *slog.Logger, jobHandler *admissionct
 		Job: orginalJob,
 	}
 
-	if reqCtx, ok := r.Context().Value("request_context").(*config.RequestContext); ok {
+	if reqCtx, ok := r.Context().Value(ctxRequestContext).(*config.RequestContext); ok {
 		payload.Context = reqCtx
 	}
 
@@ -469,7 +491,7 @@ func handleValidate(r *http.Request, applogger *slog.Logger, jobHandler *admissi
 		Job: job,
 	}
 
-	if reqCtx, ok := ctx.Value("request_context").(*config.RequestContext); ok {
+	if reqCtx, ok := ctx.Value(ctxRequestContext).(*config.RequestContext); ok {
 		payload.Context = reqCtx
 	}
 
@@ -564,7 +586,7 @@ func main() {
 
 func run(c *config.Config) (err error) {
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	rootFactory, leveler := logutil.NewLoggerFactoryFromConfig(c.Telemetry.Logging)
@@ -616,22 +638,31 @@ func run(c *config.Config) (err error) {
 	}()
 	select {
 	case err = <-srvErr:
-		// Error when starting HTTP server.
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
 		appLogger.Error("NACP stopped", "error", err)
-		return
+		return err
 	case <-ctx.Done():
 		// Wait for first CTRL+C.
 		// Stop receiving signal notifications as soon as possible.
 		stop()
 	}
 	appLogger.Info("Received shutdown signal, shutting down NACP")
-	server.Shutdown(context.Background())
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("failed to shut down server: %w", err)
+	}
 	appLogger.Info("NACP stopped")
 	return nil
 
 }
 
 func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sdk.OPA) (*http.Server, error) {
+	if err := c.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
+	}
 	backend, err := url.Parse(c.Nomad.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse nomad address: %w", err)
@@ -682,41 +713,44 @@ func buildServer(c *config.Config, loggerFactory *logutil.LoggerFactory, sdk *sd
 	bind := fmt.Sprintf("%s:%d", c.Bind, c.Port)
 	var tlsConfig *tls.Config
 
-	if c.Tls != nil && c.Tls.CaFile != "" {
-		tlsConfig, err = createTlsConfig(c.Tls.CaFile, c.Tls.NoClientCert)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create tls config: %w", err)
-
+	if c.Tls != nil {
+		tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		if c.Tls.CaFile != "" {
+			tlsConfig, err = createTlsConfig(c.Tls.CaFile, c.Tls.NoClientCert)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create tls config: %w", err)
+			}
 		}
 	}
 
 	server := &http.Server{
-		Addr:         bind,
-		TLSConfig:    tlsConfig,
-		Handler:      handlerFunc,
-		ReadTimeout:  nomadTimeout,
-		WriteTimeout: nomadTimeout,
+		Addr:              bind,
+		TLSConfig:         tlsConfig,
+		Handler:           handlerFunc,
+		ReadHeaderTimeout: 15 * time.Second,
+		ReadTimeout:       nomadTimeout,
+		WriteTimeout:      nomadTimeout,
+		IdleTimeout:       120 * time.Second,
 	}
 	return server, nil
 }
 
 func buildConfig(configPath string) (*config.Config, error) {
-
-	var c *config.Config
-
-	dir, _ := os.Getwd()
-
-	if _, err := os.Stat(configPath); err == nil && configPath != "" {
-		c, err = config.LoadConfig(configPath)
+	if configPath != "" {
+		c, err := config.LoadConfig(configPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config: %w", err)
 		}
 		slog.Info("Loaded config", "config", configPath)
-	} else {
-		slog.Info("No config file found, using default config", "config", configPath, "working_dir", dir)
-		c = config.DefaultConfig()
+		return c, nil
 	}
 
+	dir, _ := os.Getwd()
+	slog.Info("No config file configured, using default config", "working_dir", dir)
+	c := config.DefaultConfig()
+	if err := c.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid default config: %w", err)
+	}
 	return c, nil
 }
 
@@ -726,12 +760,15 @@ func createTlsConfig(caFile string, noClientCert bool) (*tls.Config, error) {
 		return nil, err
 	}
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
+	if !caCertPool.AppendCertsFromPEM(caCert) {
+		return nil, fmt.Errorf("CA file %q does not contain a valid certificate", caFile)
+	}
 	clientAuth := tls.RequireAndVerifyClientCert
 	if noClientCert {
 		clientAuth = tls.NoClientCert
 	}
 	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
 		ClientCAs:  caCertPool,
 		ClientAuth: clientAuth,
 	}
@@ -756,12 +793,18 @@ func createMutators(c *config.Config, loggerFactory *logutil.LoggerFactory, opaS
 func createMutator(mutatorConfig config.Mutator, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) (admissionctrl.JobMutator, error) {
 	switch mutatorConfig.Type {
 	case "opa_json_patch":
+		if mutatorConfig.OpaRule == nil {
+			return nil, fmt.Errorf("mutator %q requires an opa_rule block", mutatorConfig.Name)
+		}
 		notationVerifier, err := buildVerifierIfEnabled(mutatorConfig.OpaRule.Notation, loggerFactory.GetLogger("notation_verifier"))
 		if err != nil {
 			return nil, err
 		}
 		return mutator.NewOpaJsonPatchMutator(mutatorConfig.Name, mutatorConfig.OpaRule.Filename, mutatorConfig.OpaRule.Query, loggerFactory.GetLogger("opa_mutator"), notationVerifier)
 	case "json_patch_webhook":
+		if mutatorConfig.Webhook == nil {
+			return nil, fmt.Errorf("mutator %q requires a webhook block", mutatorConfig.Name)
+		}
 		return mutator.NewJsonPatchWebhookMutator(mutatorConfig.Name, mutatorConfig.Webhook.Endpoint, mutatorConfig.Webhook.Method, loggerFactory.GetLogger("json_patch_webhook_mutator"))
 	case "opa_bundle_json_patch":
 		if mutatorConfig.OpaSdkRule == nil {
@@ -790,6 +833,9 @@ func createValidators(c *config.Config, loggerFactory *logutil.LoggerFactory, op
 func createValidator(validatorConfig config.Validator, loggerFactory *logutil.LoggerFactory, opaSDK *sdk.OPA) (admissionctrl.JobValidator, error) {
 	switch validatorConfig.Type {
 	case "opa":
+		if validatorConfig.OpaRule == nil {
+			return nil, fmt.Errorf("validator %q requires an opa_rule block", validatorConfig.Name)
+		}
 		notationVerifier, err := buildVerifierIfEnabled(validatorConfig.Notation, loggerFactory.GetLogger("notation_verifier"))
 		if err != nil {
 			return nil, err
@@ -801,6 +847,9 @@ func createValidator(validatorConfig config.Validator, loggerFactory *logutil.Lo
 		}
 		return validator.NewOpaBundleValidator(validatorConfig.Name, validatorConfig.OpaSdkRule.Path, loggerFactory.GetLogger("opa_bundle_validator"), opaSDK)
 	case "webhook":
+		if validatorConfig.Webhook == nil {
+			return nil, fmt.Errorf("validator %q requires a webhook block", validatorConfig.Name)
+		}
 		return validator.NewWebhookValidator(validatorConfig.Name, validatorConfig.Webhook.Endpoint, validatorConfig.Webhook.Method, loggerFactory.GetLogger("webhook_validator"))
 	case "notation":
 		notationVerifier, err := buildVerifier(validatorConfig.Notation, loggerFactory.GetLogger("notation_verifier"))
@@ -833,30 +882,32 @@ func buildVerifier(notationVerifierConfig *config.NotationVerifierConfig, logger
 }
 
 func buildTlsConfig(config config.NomadServerTLS) (*tls.Config, error) {
-	// Create a custom transport to allow for self-signed certs
-	// and to allow for a custom timeout
-
-	//load key pair
-	cert, err := tls.LoadX509KeyPair(config.CertFile, config.KeyFile)
-	if err != nil {
-		return nil, err
-	}
-
-	// create CA pool
-	caCert, err := os.ReadFile(config.CaFile)
-	if err != nil {
-		return nil, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
 	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: config.InsecureSkipVerify,
-
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
 	}
-	return tlsConfig, err
+
+	if config.CertFile != "" {
+		cert, err := tls.LoadX509KeyPair(config.CertFile, config.KeyFile)
+		if err != nil {
+			return nil, err
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	if config.CaFile != "" {
+		caCert, err := os.ReadFile(config.CaFile)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, fmt.Errorf("CA file %q does not contain a valid certificate", config.CaFile)
+		}
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	return tlsConfig, nil
 }
 func setupOpaSDK(ctx context.Context, logger *slog.Logger, opaConfig *config.OpaSdk) (*sdk.OPA, func(), error) {
 	if opaConfig == nil {

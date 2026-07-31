@@ -26,11 +26,12 @@ func TestJsonPatchMutator(t *testing.T) {
 		endpointPath string
 		method       string
 
-		response    []byte
-		wantErr     error
-		wantWarns   []error
-		wantJob     *api.Job
-		wantMutated bool
+		response       []byte
+		responseStatus int
+		wantErr        error
+		wantWarns      []error
+		wantJob        *api.Job
+		wantMutated    bool
 
 		wantedHeaders map[string]string
 	}{
@@ -82,6 +83,26 @@ func TestJsonPatchMutator(t *testing.T) {
 			wantWarns:   nil,
 			wantJob:     nil,
 			wantMutated: false,
+		},
+		{
+			name:         "policy errors reject the mutation",
+			endpointPath: "/mutate",
+			method:       "POST",
+			response:     []byte(`{"errors":["denied"]}`),
+			job:          testutil.BaseJob(),
+			wantErr:      fmt.Errorf("denied"),
+			wantJob:      nil,
+			wantMutated:  false,
+		},
+		{
+			name:           "non-success HTTP response",
+			endpointPath:   "/mutate",
+			method:         "POST",
+			responseStatus: http.StatusServiceUnavailable,
+			response:       []byte(`{"errors":["unavailable"]}`),
+			job:            testutil.BaseJob(),
+			wantErr:        fmt.Errorf("unexpected HTTP status 503 Service Unavailable"),
+			wantJob:        nil,
 		},
 		{
 			name:         "with warnings",
@@ -153,8 +174,14 @@ func TestJsonPatchMutator(t *testing.T) {
 					assert.Equal(t, value, r.Header.Get(key))
 				}
 
+				assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+				assert.Equal(t, "application/json", r.Header.Get("Accept"))
 				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
+				status := tc.responseStatus
+				if status == 0 {
+					status = http.StatusOK
+				}
+				w.WriteHeader(status)
 				w.Write(tc.response)
 
 			}))

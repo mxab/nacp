@@ -2,7 +2,11 @@ package config
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"slices"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsimple"
@@ -46,10 +50,41 @@ type Mutator struct {
 }
 
 type RequestContext struct {
-	ClientIP     string        `json:"clientIP"`
-	AccessorID   string        `json:"accessorID"`
-	ResolveToken bool          `json:"resolveToken"`
-	TokenInfo    *api.ACLToken `json:"tokenInfo,omitempty"`
+	ClientIP     string           `json:"clientIP"`
+	AccessorID   string           `json:"accessorID"`
+	ResolveToken bool             `json:"resolveToken"`
+	TokenInfo    *ACLTokenContext `json:"tokenInfo,omitempty"`
+}
+
+type ACLTokenContext struct {
+	AccessorID     string
+	Name           string
+	Type           string
+	Policies       []string
+	Roles          []*api.ACLTokenRoleLink
+	Global         bool
+	CreateTime     time.Time
+	ExpirationTime *time.Time `json:",omitempty"`
+	CreateIndex    uint64
+	ModifyIndex    uint64
+}
+
+func SanitizeACLToken(token *api.ACLToken) *ACLTokenContext {
+	if token == nil {
+		return nil
+	}
+	return &ACLTokenContext{
+		AccessorID:     token.AccessorID,
+		Name:           token.Name,
+		Type:           token.Type,
+		Policies:       slices.Clone(token.Policies),
+		Roles:          slices.Clone(token.Roles),
+		Global:         token.Global,
+		CreateTime:     token.CreateTime,
+		ExpirationTime: token.ExpirationTime,
+		CreateIndex:    token.CreateIndex,
+		ModifyIndex:    token.ModifyIndex,
+	}
 }
 
 type NomadServerTLS struct {
@@ -168,11 +203,15 @@ func LoadConfig(name string) (*Config, error) {
 		return nil, err
 	}
 
-	// set default on all Notation Verifiers, is there a better way to do this?
-	for _, v := range c.Validators {
-		if v.Notation != nil && v.Notation.MaxSigAttempts == 0 {
-			v.Notation.MaxSigAttempts = 50
-
+	for i := range c.Validators {
+		setNotationDefaults(c.Validators[i].Notation)
+		if c.Validators[i].OpaRule != nil {
+			setNotationDefaults(c.Validators[i].OpaRule.Notation)
+		}
+	}
+	for i := range c.Mutators {
+		if c.Mutators[i].OpaRule != nil {
+			setNotationDefaults(c.Mutators[i].OpaRule.Notation)
 		}
 	}
 
@@ -184,5 +223,161 @@ func LoadConfig(name string) (*Config, error) {
 	if !slices.Contains(validOuts, *c.Telemetry.Logging.SlogLogging.JsonOut) {
 		return nil, fmt.Errorf("invalid slog json output: %s", *c.Telemetry.Logging.SlogLogging.JsonOut)
 	}
+	if err := c.Validate(); err != nil {
+		return nil, err
+	}
 	return c, nil
+}
+
+func setNotationDefaults(notation *NotationVerifierConfig) {
+	if notation != nil && notation.MaxSigAttempts == 0 {
+		notation.MaxSigAttempts = 50
+	}
+}
+
+func (c *Config) Validate() error {
+	if c == nil {
+		return fmt.Errorf("config is nil")
+	}
+	if c.Port < 1 || c.Port > 65535 {
+		return fmt.Errorf("port must be between 1 and 65535")
+	}
+	if strings.TrimSpace(c.Bind) == "" {
+		return fmt.Errorf("bind address is required")
+	}
+	if c.Nomad == nil {
+		return fmt.Errorf("nomad block is required")
+	}
+	if err := validateHTTPURL("nomad address", c.Nomad.Address); err != nil {
+		return err
+	}
+	if c.Tls != nil && (c.Tls.CertFile == "" || c.Tls.KeyFile == "") {
+		return fmt.Errorf("listener TLS requires cert_file and key_file")
+	}
+	if c.Nomad.TLS != nil && ((c.Nomad.TLS.CertFile == "") != (c.Nomad.TLS.KeyFile == "")) {
+		return fmt.Errorf("nomad TLS cert_file and key_file must be configured together")
+	}
+	if c.OpaSdk != nil && (strings.TrimSpace(c.OpaSdk.Id) == "" || strings.TrimSpace(c.OpaSdk.ConfigPath) == "") {
+		return fmt.Errorf("opa_sdk requires a non-empty id and config_path")
+	}
+
+	seen := make(map[string]struct{}, len(c.Mutators)+len(c.Validators))
+	for _, mutator := range c.Mutators {
+		if err := validateMutator(mutator, c.OpaSdk != nil); err != nil {
+			return err
+		}
+		key := "mutator:" + mutator.Name
+		if _, found := seen[key]; found {
+			return fmt.Errorf("duplicate mutator name %q", mutator.Name)
+		}
+		seen[key] = struct{}{}
+	}
+	for _, validator := range c.Validators {
+		if err := validateValidator(validator, c.OpaSdk != nil); err != nil {
+			return err
+		}
+		key := "validator:" + validator.Name
+		if _, found := seen[key]; found {
+			return fmt.Errorf("duplicate validator name %q", validator.Name)
+		}
+		seen[key] = struct{}{}
+	}
+	return nil
+}
+
+func validateMutator(mutator Mutator, hasOpaSDK bool) error {
+	if strings.TrimSpace(mutator.Name) == "" {
+		return fmt.Errorf("mutator name is required")
+	}
+	switch mutator.Type {
+	case "opa_json_patch":
+		return validateOpaRule("mutator", mutator.Name, mutator.OpaRule)
+	case "json_patch_webhook":
+		return validateWebhook("mutator", mutator.Name, mutator.Webhook)
+	case "opa_bundle_json_patch":
+		return validateOpaSDKRule("mutator", mutator.Name, mutator.OpaSdkRule, hasOpaSDK)
+	default:
+		return fmt.Errorf("unknown mutator type %q", mutator.Type)
+	}
+}
+
+func validateValidator(validator Validator, hasOpaSDK bool) error {
+	if strings.TrimSpace(validator.Name) == "" {
+		return fmt.Errorf("validator name is required")
+	}
+	switch validator.Type {
+	case "opa":
+		if err := validateOpaRule("validator", validator.Name, validator.OpaRule); err != nil {
+			return err
+		}
+		if validator.Notation != nil {
+			return validateNotation("validator", validator.Name, validator.Notation)
+		}
+		return nil
+	case "opa_bundle":
+		return validateOpaSDKRule("validator", validator.Name, validator.OpaSdkRule, hasOpaSDK)
+	case "webhook":
+		return validateWebhook("validator", validator.Name, validator.Webhook)
+	case "notation":
+		return validateNotation("validator", validator.Name, validator.Notation)
+	default:
+		return fmt.Errorf("unknown validator type %q", validator.Type)
+	}
+}
+
+func validateOpaRule(kind, name string, rule *OpaRule) error {
+	if rule == nil || strings.TrimSpace(rule.Filename) == "" || strings.TrimSpace(rule.Query) == "" {
+		return fmt.Errorf("%s %q requires an opa_rule block with filename and query", kind, name)
+	}
+	if rule.Notation != nil {
+		return validateNotation(kind, name, rule.Notation)
+	}
+	return nil
+}
+
+func validateOpaSDKRule(kind, name string, rule *OpaSdkRule, hasOpaSDK bool) error {
+	if !hasOpaSDK {
+		return fmt.Errorf("%s %q requires an opa_sdk block", kind, name)
+	}
+	if rule == nil || strings.TrimSpace(rule.Path) == "" {
+		return fmt.Errorf("%s %q requires an opa_sdk_rule block with path", kind, name)
+	}
+	return nil
+}
+
+func validateWebhook(kind, name string, webhook *Webhook) error {
+	if webhook == nil {
+		return fmt.Errorf("%s %q requires a webhook block", kind, name)
+	}
+	if err := validateHTTPURL("webhook endpoint", webhook.Endpoint); err != nil {
+		return fmt.Errorf("%s %q: %w", kind, name, err)
+	}
+	if strings.TrimSpace(webhook.Method) == "" {
+		return fmt.Errorf("%s %q requires a webhook method", kind, name)
+	}
+	if _, err := http.NewRequest(webhook.Method, webhook.Endpoint, nil); err != nil {
+		return fmt.Errorf("%s %q has an invalid webhook method: %w", kind, name, err)
+	}
+	return nil
+}
+
+func validateNotation(kind, name string, notation *NotationVerifierConfig) error {
+	if notation == nil || notation.TrustPolicyFile == "" || notation.TrustStoreDir == "" {
+		return fmt.Errorf("%s %q requires notation trust_policy_file and trust_store_dir", kind, name)
+	}
+	if notation.MaxSigAttempts < 1 {
+		return fmt.Errorf("%s %q max_sig_attempts must be positive", kind, name)
+	}
+	return nil
+}
+
+func validateHTTPURL(name, value string) error {
+	u, err := url.Parse(value)
+	if err != nil {
+		return fmt.Errorf("invalid %s: %w", name, err)
+	}
+	if (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return fmt.Errorf("%s must be an absolute HTTP(S) URL", name)
+	}
+	return nil
 }
