@@ -1,9 +1,8 @@
-FROM ubuntu:latest
-# liz rice knows best
-# https://medium.com/@lizrice/non-privileged-containers-based-on-the-scratch-image-a80105d6d341
-RUN useradd -u 10001 scratchuser
+FROM alpine:3.22.1 AS certificates
+RUN apk add --no-cache ca-certificates
+
 FROM scratch
 COPY nacp /nacp
-COPY --from=0 /etc/passwd /etc/passwd
-USER scratchuser
+COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+USER 10001:10001
 ENTRYPOINT ["/nacp"]

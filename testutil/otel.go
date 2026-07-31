@@ -3,6 +3,8 @@ package testutil
 import (
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -11,24 +13,41 @@ import (
 )
 
 type LogConsumer struct {
-	Logs []tc.Log
-
-	Stderrs []string
-	Stdouts []string
+	mu      sync.RWMutex
+	logs    []tc.Log
+	stderrs []string
+	stdouts []string
 }
 
 func (lc *LogConsumer) Accept(log tc.Log) {
-
-	//fmt.Println(string(log.Content))
+	lc.mu.Lock()
+	defer lc.mu.Unlock()
 
 	if log.LogType == tc.StdoutLog {
-		lc.Stdouts = append(lc.Stdouts, string(log.Content))
+		lc.stdouts = append(lc.stdouts, string(log.Content))
 	} else if log.LogType == tc.StderrLog {
-		lc.Stderrs = append(lc.Stderrs, string(log.Content))
+		lc.stderrs = append(lc.stderrs, string(log.Content))
 	} else {
 		fmt.Printf("unknown log type: %s\n", log.LogType)
 	}
-	lc.Logs = append(lc.Logs, log)
+	lc.logs = append(lc.logs, log)
+}
+
+func (lc *LogConsumer) Contains(message string) bool {
+	lc.mu.RLock()
+	defer lc.mu.RUnlock()
+
+	for _, log := range lc.stderrs {
+		if strings.Contains(log, message) {
+			return true
+		}
+	}
+	for _, log := range lc.stdouts {
+		if strings.Contains(log, message) {
+			return true
+		}
+	}
+	return false
 }
 
 func LaunchCollector(t *testing.T) (tc.Container, *LogConsumer) {

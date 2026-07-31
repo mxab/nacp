@@ -97,11 +97,6 @@ func (iv *notationImageVerifier) VerifyImage(ctx context.Context, imageReference
 	remoteRepo.PlainHTTP = iv.repoPlainHTTP
 
 	remoteRepo.Client = iv.client
-
-	if err != nil {
-		iv.logger.Debug("Remote repository creation failed", "err", err, "reference", imageReference)
-		return err
-	}
 	repo := registry.NewRepository(remoteRepo)
 
 	// verifyOptions is an example of notation.VerifyOptions.

@@ -36,16 +36,17 @@ func (w *WebhookMutator) Mutate(ctx context.Context, payload *types.Payload) (ou
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
 	req.ContentLength = int64(len(data))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	client := remoteutil.NewInstrumentedClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, false, nil, err
 	}
+	defer resp.Body.Close()
 
 	newJob := &api.Job{}
-	err = json.NewDecoder(resp.Body).Decode(newJob)
-	if err != nil {
+	if err := remoteutil.DecodeJSONResponse(resp, newJob); err != nil {
 		return nil, false, nil, err
 	}
 	mutated = !reflect.DeepEqual(newJob, payload.Job)

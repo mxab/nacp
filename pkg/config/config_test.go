@@ -1,10 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -316,6 +319,66 @@ func TestLoadConfig(t *testing.T) {
 
 		})
 	}
+}
+
+func TestConfigValidation(t *testing.T) {
+	tests := []struct {
+		name    string
+		mutate  func(*Config)
+		wantErr string
+	}{
+		{
+			name: "invalid port",
+			mutate: func(c *Config) {
+				c.Port = 0
+			},
+			wantErr: "port must be between",
+		},
+		{
+			name: "missing webhook block",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "webhook", Name: "remote"}}
+			},
+			wantErr: "requires a webhook block",
+		},
+		{
+			name: "bundle controller without SDK",
+			mutate: func(c *Config) {
+				c.Mutators = []Mutator{{Type: "opa_bundle_json_patch", Name: "bundle", OpaSdkRule: &OpaSdkRule{Path: "/patch"}}}
+			},
+			wantErr: "requires an opa_sdk block",
+		},
+		{
+			name: "relative webhook URL",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "webhook", Name: "remote", Webhook: &Webhook{Endpoint: "/validate", Method: "POST"}}}
+			},
+			wantErr: "absolute HTTP(S) URL",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			c := DefaultConfig()
+			tc.mutate(c)
+			assert.ErrorContains(t, c.Validate(), tc.wantErr)
+		})
+	}
+}
+
+func TestSanitizeACLTokenExcludesSecretID(t *testing.T) {
+	token := &api.ACLToken{
+		AccessorID: "accessor",
+		SecretID:   "must-not-leak",
+		Policies:   []string{"read"},
+	}
+
+	sanitized := SanitizeACLToken(token)
+	data, err := json.Marshal(sanitized)
+	require.NoError(t, err)
+	assert.Equal(t, "accessor", sanitized.AccessorID)
+	assert.Equal(t, []string{"read"}, sanitized.Policies)
+	assert.False(t, strings.Contains(string(data), token.SecretID))
 }
 
 func TestLoadConfigDefaults(t *testing.T) {

@@ -1,22 +1,22 @@
 # Examples
 
-See [setup](#infra-setup) to setup the require infrastructure.
+See [setup](#infrastructure-setup) to configure the required infrastructure.
 
 ## Validation
 
 ### Cost Center
 
-This example demonstrates a validator that checks wether a job contains meta data information a cost center code and if the code starts with `cccode-`
+This example demonstrates a validator that checks whether a job contains cost-center metadata and whether the code starts with `cccode-`.
 
-[cost center mutator](example1/validators/costcenter_meta.rego).
+[Cost-center validator](example1/validators/costcenter_meta.rego).
 
 
 ```bash
-nacp -config example1.conf.hcl
+(cd example1 && ../../nacp -config example1.conf.hcl)
 ```
 
 ```bash
-NOMAD_ADDR=http://localhost:6464 nomad run example1.nomad
+NOMAD_ADDR=http://localhost:6464 nomad job run example1/example1.nomad
 ```
 
 
@@ -25,7 +25,7 @@ https://user-images.githubusercontent.com/1607547/227664253-d65cd5d4-12e4-4b99-9
 
 ### Image Validation via Notation
 
-See redme in `notation/` folder.
+See the README in the [`notation/`](notation/) folder.
 
 ## Mutator
 
@@ -36,11 +36,11 @@ This example demonstrates a simple mutator that adds a `hello` key to the job me
 [simple hello world mutator](example2/mutators/hello_world_meta.rego)
 
 ```bash
-nacp -config example2.conf.hcl
+(cd example2 && ../../nacp -config example2.conf.hcl)
 ```
 
 ```bash
-NOMAD_ADDR=http://localhost:6464 nomad run example2.nomad
+NOMAD_ADDR=http://localhost:6464 nomad job run example2/example2.nomad
 ```
 
 
@@ -51,20 +51,20 @@ https://user-images.githubusercontent.com/1607547/227664271-cc1b82a2-d5ec-4afe-9
 
 ### Postgres Env Template Injection
 
-In this example the mutator checks weather a task of a job contains a `postgres` metadata field. If so, the mutator injects a template block and a vault policy into the task that renders the postgres connection details.
+In this example the mutator checks whether a job task contains a `postgres` metadata field. If so, it injects a template block and Vault policy that render the PostgreSQL connection details.
 
 If the `postgres` metadata equals `native` it creates a template that renders the environment variables `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD` and `PGDATABASE`.
 
 If the `postgres` metadata equals `springboot` it creates a template that renders the environment variables `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
 
-[postgres env template mutator](example3/mutators/pg.rego)
+[PostgreSQL environment-template mutator](example3/mutators/pg.rego)
 
 ```bash
-nacp -config example3.conf.hcl
+(cd example3 && ../../nacp -config example3.conf.hcl)
 ```
 
 ```bash
-NOMAD_ADDR=http://localhost:6464 nomad run example3.nomad
+NOMAD_ADDR=http://localhost:6464 nomad job run example3/example3.nomad
 ```
 
 https://user-images.githubusercontent.com/1607547/227664282-e2ee22fc-946f-4b0f-9bfc-d275300dcec5.mov
@@ -72,12 +72,12 @@ https://user-images.githubusercontent.com/1607547/227664282-e2ee22fc-946f-4b0f-9
 
 ### OAuth2 Proxy Injection
 
-This example deploys a that contains a simple [webapp](example4/webapp.js).
+This example deploys a job containing a simple [web application](example4/webapp.js).
 
-If the metadata field of a task group contains `secure` with the name of the `service` ( e.g. `webapp` ) that needs to be secured, the mutator injects a the [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) into the task group and rewrites the service name so incoming request will point to the proxy.
+If a task group's `secure` metadata names a service such as `webapp`, the mutator injects [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) and rewrites the service so incoming requests pass through the proxy.
 
 ```bash
-nacp -config example3.conf.hcl
+(cd example4 && ../../nacp -config example4.conf.hcl)
 ```
 
 ```bash
@@ -85,10 +85,10 @@ terraform init && terraform apply -auto-approve
 ```
 
 ```bash
-NOMAD_ADDR=http://localhost:6464 nomad run example4.nomad
+NOMAD_ADDR=http://localhost:6464 nomad job run example4/example4.nomad
 ```
 
-[oauth2-proxy mutator](example4/mutators/secure.rego)
+[OAuth2-proxy mutator](example4/mutators/secure.rego)
 
 
 

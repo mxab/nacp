@@ -432,6 +432,7 @@ func TestProxy(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			nomadBackendCalled := false
+			nomadAdmissionCalled := false
 			tokenCalled := false
 			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				nomadBackendCalled = true
@@ -451,6 +452,7 @@ func TestProxy(t *testing.T) {
 					return
 				}
 
+				nomadAdmissionCalled = true
 				assert.Equal(t, req.Method, tc.method)
 				assert.Equal(t, req.URL.Path, tc.path)
 				jsonData, err := io.ReadAll(req.Body)
@@ -505,6 +507,7 @@ func TestProxy(t *testing.T) {
 			if tc.wantError != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tc.wantError, "Error should match")
+				assert.False(t, nomadAdmissionCalled, "Nomad admission endpoint must not be called after token resolution fails")
 				return
 			} else {
 				require.NoError(t, err, "No http call error")
@@ -1239,6 +1242,11 @@ func TestBuildConfig(t *testing.T) {
 			configPath: "../../testdata/brokenconfig.hcl",
 			wantErr:    true,
 		},
+		{
+			name:       "missing explicit config",
+			configPath: "../../testdata/does-not-exist.hcl",
+			wantErr:    true,
+		},
 	}
 
 	for _, tc := range tests {
@@ -1254,6 +1262,13 @@ func TestBuildConfig(t *testing.T) {
 			assert.Equal(t, tc.want(), got)
 		})
 	}
+}
+
+func TestAdmissionRouteMatching(t *testing.T) {
+	assert.True(t, isUpdate(httptest.NewRequest(http.MethodPut, "/v1/job/123_example.v2", nil)))
+	assert.True(t, isPlan(httptest.NewRequest(http.MethodPost, "/v1/job/123_example.v2/plan", nil)))
+	assert.False(t, isUpdate(httptest.NewRequest(http.MethodPut, "/v1/job/example/allocations", nil)))
+	assert.False(t, isPlan(httptest.NewRequest(http.MethodGet, "/v1/job/example/plan", nil)))
 }
 
 func TestBuildOpaSdk(t *testing.T) {

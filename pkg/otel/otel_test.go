@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -57,23 +56,7 @@ func TestOtlpSetup(t *testing.T) {
 	require.NoError(err, "failed to shutdown OTel SDK")
 
 	time.Sleep(5 * time.Second)
-	foundLogs := false
-
-	for _, log := range logConsumer.Stderrs {
-
-		if strings.Contains(log, "some test log foo=bar error=test error") {
-			foundLogs = true
-			break
-		}
-	}
-	for _, log := range logConsumer.Stdouts {
-
-		if strings.Contains(log, "some test log foo=bar error=test error") {
-			foundLogs = true
-			break
-		}
-	}
-	assert.True(foundLogs, "expected log not found")
+	assert.True(logConsumer.Contains("some test log foo=bar error=test error"), "expected log not found")
 }
 func TestOtlpSetupWith(t *testing.T) {
 
