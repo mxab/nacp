@@ -5,6 +5,7 @@ go = "1.26.5"
 golangci-lint = "latest"
 nomad = "latest"
 opa = "latest"
+pre-commit = "latest"
 regal = "latest"
 
 
