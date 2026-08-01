@@ -256,12 +256,24 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 	}
 }
 
-func TestJobHandler_ValidatorsSeeMutatedJobWithoutMutatingResult(t *testing.T) {
+// TestJobHandler_ValidatorsReceiveIsolatedCopyOfMutatedJob pins down the job
+// isolation contract of the admission pipeline: validators inspect the job that
+// will actually reach Nomad, and nothing a validator does to its payload can
+// change that job.
+//
+// Regression test. ApplyAdmissionControllers used to hand validators the caller's
+// original payload while returning the mutator chain's output, so validators
+// judged a job that was never the one forwarded upstream.
+func TestJobHandler_ValidatorsReceiveIsolatedCopyOfMutatedJob(t *testing.T) {
 	original := testutil.BaseJob()
+
+	// Writes to Meta["validator"] to prove the validator's payload is a copy:
+	// the write has to be invisible to both the forwarded job and the caller's.
 	validator := validatorFunc{
 		name: "inspect-mutated-job",
 		validate: func(payload *types.Payload) ([]error, error) {
-			assert.Equal(t, "applied", payload.Job.Meta["mutator"])
+			assert.Equal(t, "applied", payload.Job.Meta["mutator"],
+				"validator should see the job produced by the mutator chain")
 			payload.Job.Meta["validator"] = "must-not-leak"
 			return nil, nil
 		},
@@ -276,9 +288,10 @@ func TestJobHandler_ValidatorsSeeMutatedJobWithoutMutatingResult(t *testing.T) {
 
 	result, _, err := handler.ApplyAdmissionControllers(t.Context(), &types.Payload{Job: original})
 	assert.NoError(t, err)
-	assert.Equal(t, "applied", result.Meta["mutator"])
-	assert.NotContains(t, result.Meta, "validator")
-	assert.Nil(t, original.Meta)
+
+	assert.Equal(t, "applied", result.Meta["mutator"], "mutations must survive into the forwarded job")
+	assert.NotContains(t, result.Meta, "validator", "validator writes must not reach the forwarded job")
+	assert.Nil(t, original.Meta, "the caller's job must not be mutated in place")
 }
 
 func TestJobHandler_RejectsMissingJob(t *testing.T) {
