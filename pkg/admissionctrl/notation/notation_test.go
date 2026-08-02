@@ -19,11 +19,11 @@ import (
 	"github.com/moby/go-archive/compression"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/notaryproject/notation-core-go/signature/cose"
 	"github.com/notaryproject/notation-core-go/testhelper"
 	"github.com/notaryproject/notation-go"
@@ -196,7 +196,7 @@ func policy() *trustpolicy.Document {
 	return &policy
 }
 
-func launchRegistry(t *testing.T, creds *creds) (func(), nat.Port, string) {
+func launchRegistry(t *testing.T, creds *creds) (func(), network.Port, string) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -216,10 +216,9 @@ func launchRegistry(t *testing.T, creds *creds) (func(), nat.Port, string) {
 		Env:        env,
 		// I have no clue why, but otherwise docker is not able to connect and push to the registry
 		HostConfigModifier: func(hc *container.HostConfig) {
-			hc.PortBindings = map[nat.Port][]nat.PortBinding{
-				"5000/tcp": {
+			hc.PortBindings = network.PortMap{
+				network.MustParsePort("5000/tcp"): {
 					{
-						HostIP:   "",
 						HostPort: "0",
 					},
 				},
