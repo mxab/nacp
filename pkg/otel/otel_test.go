@@ -56,7 +56,9 @@ func TestOtlpSetup(t *testing.T) {
 	require.NoError(err, "failed to shutdown OTel SDK")
 
 	time.Sleep(5 * time.Second)
-	assert.True(logConsumer.Contains("some test log foo=bar error=test error"), "expected log not found")
+	// otelslog maps an error-valued attribute onto the record's error, which is
+	// exported using the exception.* semantic conventions.
+	assert.True(logConsumer.Contains("some test log foo=bar exception.message=test error"), "expected log not found")
 }
 func TestOtlpSetupWith(t *testing.T) {
 
@@ -74,7 +76,8 @@ func TestOtlpSetupWith(t *testing.T) {
 	mProvider := otel.GetMeterProvider()
 	assert.NotNil(mProvider)
 
-	logger.Info("some test log", "foo", "bar", "error", fmt.Errorf("test error"))
+	testErr := fmt.Errorf("test error")
+	logger.Info("some test log", "foo", "bar", "error", testErr)
 
 	require.NoError(err, "failed to shutdown OTel SDK")
 
@@ -93,9 +96,11 @@ func TestOtlpSetupWith(t *testing.T) {
 				Severity:     log.SeverityInfo,
 				SeverityText: log.SeverityInfo.String(),
 				Body:         log.StringValue("some test log"),
+				// otelslog records an error-valued attribute on the record's
+				// Error field instead of as a regular attribute.
+				Error: testErr,
 				Attributes: []log.KeyValue{
 					log.String("foo", "bar"),
-					log.String("error", "test error"),
 				},
 			},
 		},
