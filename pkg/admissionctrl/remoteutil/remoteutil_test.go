@@ -8,6 +8,8 @@ import (
 
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/config"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -95,9 +97,7 @@ func TestApplyContextHeders(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ApplyContextHeaders(tt.args.req, tt.args.payload)
 			for header, expectedValue := range tt.wantedHeaders {
-				if tt.args.req.Header.Get(header) != expectedValue {
-					t.Errorf("Expected header %s to be %s, got %s", header, expectedValue, tt.args.req.Header.Get(header))
-				}
+				assert.Equal(t, expectedValue, tt.args.req.Header.Get(header), "header %s", header)
 			}
 		})
 	}
@@ -140,23 +140,12 @@ func TestParseEndpoint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u, err := ParseEndpoint(tt.endpoint)
 			if tt.wantErr != "" {
-				if err == nil {
-					t.Fatalf("Expected an error containing %q, got none", tt.wantErr)
-				}
-				if !strings.Contains(err.Error(), tt.wantErr) {
-					t.Errorf("Expected error containing %q, got %q", tt.wantErr, err.Error())
-				}
-				if u != nil {
-					t.Errorf("Expected a nil url on error, got %v", u)
-				}
+				assert.ErrorContains(t, err, tt.wantErr)
+				assert.Nil(t, u)
 				return
 			}
-			if err != nil {
-				t.Fatalf("Expected no error, got %v", err)
-			}
-			if u.Host != tt.wantHost {
-				t.Errorf("Expected host %s, got %s", tt.wantHost, u.Host)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantHost, u.Host)
 		})
 	}
 }
@@ -211,20 +200,11 @@ func TestDecodeJSONResponse(t *testing.T) {
 			var got target
 			err := DecodeJSONResponse(resp, &got)
 			if tt.wantErr != "" {
-				if err == nil {
-					t.Fatalf("Expected an error containing %q, got none", tt.wantErr)
-				}
-				if !strings.Contains(err.Error(), tt.wantErr) {
-					t.Errorf("Expected error containing %q, got %q", tt.wantErr, err.Error())
-				}
+				assert.ErrorContains(t, err, tt.wantErr)
 				return
 			}
-			if err != nil {
-				t.Fatalf("Expected no error, got %v", err)
-			}
-			if got.Name != tt.wantName {
-				t.Errorf("Expected name %s, got %s", tt.wantName, got.Name)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantName, got.Name)
 		})
 	}
 }
@@ -236,12 +216,7 @@ func TestDecodeJSONResponseReadError(t *testing.T) {
 		Body:       io.NopCloser(errReader{}),
 	}
 	err := DecodeJSONResponse(resp, &struct{}{})
-	if err == nil {
-		t.Fatal("Expected an error, got none")
-	}
-	if !strings.Contains(err.Error(), "failed to read webhook response") {
-		t.Errorf("Expected a read failure, got %q", err.Error())
-	}
+	assert.ErrorContains(t, err, "failed to read webhook response")
 }
 
 // errReader fails on the first read so the body-read error path is exercised.
@@ -253,11 +228,6 @@ func (errReader) Read([]byte) (int, error) {
 
 func TestNewInstrumentedClient(t *testing.T) {
 	client := NewInstrumentedClient()
-	if client == nil {
-		t.Fatal("Expected NewInstrumentedClient to return a non-nil client")
-	}
-
-	if _, ok := client.Transport.(*otelhttp.Transport); !ok {
-		t.Fatal("Expected the client's transport to be of type InstrumentedTransport")
-	}
+	require.NotNil(t, client)
+	assert.IsType(t, &otelhttp.Transport{}, client.Transport)
 }
