@@ -355,6 +355,150 @@ func TestConfigValidation(t *testing.T) {
 			},
 			wantErr: "absolute HTTP(S) URL",
 		},
+		{
+			name: "blank bind address",
+			mutate: func(c *Config) {
+				c.Bind = "  "
+			},
+			wantErr: "bind address is required",
+		},
+		{
+			name: "missing nomad block",
+			mutate: func(c *Config) {
+				c.Nomad = nil
+			},
+			wantErr: "nomad block is required",
+		},
+		{
+			name: "relative nomad address",
+			mutate: func(c *Config) {
+				c.Nomad.Address = "localhost:4646"
+			},
+			wantErr: "nomad address must be an absolute HTTP(S) URL",
+		},
+		{
+			name: "listener TLS without key file",
+			mutate: func(c *Config) {
+				c.Tls = &ProxyTLS{CertFile: "cert.pem"}
+			},
+			wantErr: "listener TLS requires cert_file and key_file",
+		},
+		{
+			name: "nomad TLS with only a cert file",
+			mutate: func(c *Config) {
+				c.Nomad.TLS = &NomadServerTLS{CertFile: "cert.pem"}
+			},
+			wantErr: "nomad TLS cert_file and key_file must be configured together",
+		},
+		{
+			name: "opa_sdk without config path",
+			mutate: func(c *Config) {
+				c.OpaSdk = &OpaSdk{Id: "bundles"}
+			},
+			wantErr: "opa_sdk requires a non-empty id and config_path",
+		},
+		{
+			name: "unknown mutator type",
+			mutate: func(c *Config) {
+				c.Mutators = []Mutator{{Type: "wat", Name: "unknown"}}
+			},
+			wantErr: `unknown mutator type "wat"`,
+		},
+		{
+			name: "unknown validator type",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "wat", Name: "unknown"}}
+			},
+			wantErr: `unknown validator type "wat"`,
+		},
+		{
+			name: "mutator without a name",
+			mutate: func(c *Config) {
+				c.Mutators = []Mutator{{Type: "opa_json_patch", Name: " "}}
+			},
+			wantErr: "mutator name is required",
+		},
+		{
+			name: "validator without a name",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "opa", Name: ""}}
+			},
+			wantErr: "validator name is required",
+		},
+		{
+			name: "duplicate mutator name",
+			mutate: func(c *Config) {
+				mutator := Mutator{Type: "opa_json_patch", Name: "dupe", OpaRule: &OpaRule{Filename: "rule.rego", Query: "patch"}}
+				c.Mutators = []Mutator{mutator, mutator}
+			},
+			wantErr: `duplicate mutator name "dupe"`,
+		},
+		{
+			name: "duplicate validator name",
+			mutate: func(c *Config) {
+				validator := Validator{Type: "opa", Name: "dupe", OpaRule: &OpaRule{Filename: "rule.rego", Query: "errors"}}
+				c.Validators = []Validator{validator, validator}
+			},
+			wantErr: `duplicate validator name "dupe"`,
+		},
+		{
+			name: "opa rule without a query",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "opa", Name: "policy", OpaRule: &OpaRule{Filename: "rule.rego"}}}
+			},
+			wantErr: "requires an opa_rule block with filename and query",
+		},
+		{
+			name: "opa_bundle rule without a path",
+			mutate: func(c *Config) {
+				c.OpaSdk = &OpaSdk{Id: "bundles", ConfigPath: "opa.yml"}
+				c.Validators = []Validator{{Type: "opa_bundle", Name: "bundle"}}
+			},
+			wantErr: "requires an opa_sdk_rule block with path",
+		},
+		{
+			name: "webhook without a method",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "webhook", Name: "remote", Webhook: &Webhook{Endpoint: "http://localhost:8080/validate"}}}
+			},
+			wantErr: "requires a webhook method",
+		},
+		{
+			name: "webhook with an invalid method",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "webhook", Name: "remote", Webhook: &Webhook{Endpoint: "http://localhost:8080/validate", Method: "BAD METHOD"}}}
+			},
+			wantErr: "has an invalid webhook method",
+		},
+		{
+			name: "notation without a trust store dir",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "notation", Name: "signed", Notation: &NotationVerifierConfig{TrustPolicyFile: "policy.json", MaxSigAttempts: 1}}}
+			},
+			wantErr: "requires notation trust_policy_file and trust_store_dir",
+		},
+		{
+			name: "notation with non positive max_sig_attempts",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "notation", Name: "signed", Notation: &NotationVerifierConfig{
+					TrustPolicyFile: "policy.json",
+					TrustStoreDir:   "truststore",
+					MaxSigAttempts:  0,
+				}}}
+			},
+			wantErr: "max_sig_attempts must be positive",
+		},
+		{
+			name: "notation attached to an opa rule",
+			mutate: func(c *Config) {
+				c.Validators = []Validator{{Type: "opa", Name: "policy", OpaRule: &OpaRule{
+					Filename: "rule.rego",
+					Query:    "errors",
+					Notation: &NotationVerifierConfig{TrustPolicyFile: "policy.json"},
+				}}}
+			},
+			wantErr: "requires notation trust_policy_file and trust_store_dir",
+		},
 	}
 
 	for _, tc := range tests {
@@ -364,6 +508,15 @@ func TestConfigValidation(t *testing.T) {
 			assert.ErrorContains(t, c.Validate(), tc.wantErr)
 		})
 	}
+
+	t.Run("default config is valid", func(t *testing.T) {
+		assert.NoError(t, DefaultConfig().Validate())
+	})
+
+	t.Run("nil config", func(t *testing.T) {
+		var c *Config
+		assert.ErrorContains(t, c.Validate(), "config is nil")
+	})
 }
 
 func TestSanitizeACLTokenExcludesSecretID(t *testing.T) {
