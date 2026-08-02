@@ -239,31 +239,51 @@ func (c *Config) Validate() error {
 	if c == nil {
 		return fmt.Errorf("config is nil")
 	}
+	if err := validateListener(c); err != nil {
+		return err
+	}
+	if err := validateNomadConfig(c); err != nil {
+		return err
+	}
+	if c.OpaSdk != nil && (strings.TrimSpace(c.OpaSdk.Id) == "" || strings.TrimSpace(c.OpaSdk.ConfigPath) == "") {
+		return fmt.Errorf("opa_sdk requires a non-empty id and config_path")
+	}
+	return validateControllers(c)
+}
+
+func validateListener(c *Config) error {
 	if c.Port < 1 || c.Port > 65535 {
 		return fmt.Errorf("port must be between 1 and 65535")
 	}
 	if strings.TrimSpace(c.Bind) == "" {
 		return fmt.Errorf("bind address is required")
 	}
+	if c.Tls != nil && (c.Tls.CertFile == "" || c.Tls.KeyFile == "") {
+		return fmt.Errorf("listener TLS requires cert_file and key_file")
+	}
+	return nil
+}
+
+func validateNomadConfig(c *Config) error {
 	if c.Nomad == nil {
 		return fmt.Errorf("nomad block is required")
 	}
 	if err := validateHTTPURL("nomad address", c.Nomad.Address); err != nil {
 		return err
 	}
-	if c.Tls != nil && (c.Tls.CertFile == "" || c.Tls.KeyFile == "") {
-		return fmt.Errorf("listener TLS requires cert_file and key_file")
-	}
 	if c.Nomad.TLS != nil && ((c.Nomad.TLS.CertFile == "") != (c.Nomad.TLS.KeyFile == "")) {
 		return fmt.Errorf("nomad TLS cert_file and key_file must be configured together")
 	}
-	if c.OpaSdk != nil && (strings.TrimSpace(c.OpaSdk.Id) == "" || strings.TrimSpace(c.OpaSdk.ConfigPath) == "") {
-		return fmt.Errorf("opa_sdk requires a non-empty id and config_path")
-	}
+	return nil
+}
 
+// validateControllers checks every mutator and validator and rejects duplicate
+// names within each kind.
+func validateControllers(c *Config) error {
+	hasOpaSDK := c.OpaSdk != nil
 	seen := make(map[string]struct{}, len(c.Mutators)+len(c.Validators))
 	for _, mutator := range c.Mutators {
-		if err := validateMutator(mutator, c.OpaSdk != nil); err != nil {
+		if err := validateMutator(mutator, hasOpaSDK); err != nil {
 			return err
 		}
 		key := "mutator:" + mutator.Name
@@ -273,7 +293,7 @@ func (c *Config) Validate() error {
 		seen[key] = struct{}{}
 	}
 	for _, validator := range c.Validators {
-		if err := validateValidator(validator, c.OpaSdk != nil); err != nil {
+		if err := validateValidator(validator, hasOpaSDK); err != nil {
 			return err
 		}
 		key := "validator:" + validator.Name

@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/nomad/api"
 )
 
+// attrNomadJobID is the span attribute key carrying the ID of the job under admission.
+const attrNomadJobID = "nomad.job.id"
+
 type Metrics struct {
 	validatorWarningCount o11y.NacpValidatorWarningCount
 	validatorErrorCount   o11y.NacpValidatorErrorCount
@@ -105,7 +108,7 @@ func (j *JobHandler) ApplyAdmissionControllers(ctx context.Context, payload *typ
 	ctx, span := j.tracer.Start(ctx, "admission.apply")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("nomad.job.id", jobID(payload.Job)))
+	span.SetAttributes(attribute.String(attrNomadJobID, jobID(payload.Job)))
 
 	out, warnings, err = j.AdmissionMutators(ctx, payload)
 	if err != nil {
@@ -138,7 +141,7 @@ func (j *JobHandler) AdmissionMutators(ctx context.Context, payload *types.Paylo
 
 			jobId := jobID(job)
 			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("mutate: %s", mutator.Name()), trace.WithAttributes(
-				attribute.String("nomad.job.id", jobId),
+				attribute.String(attrNomadJobID, jobId),
 				attribute.String("mutator.name", mutator.Name()),
 			))
 
@@ -204,7 +207,7 @@ func (j *JobHandler) AdmissionValidators(ctx context.Context, payload *types.Pay
 			}
 			jobId := jobID(job)
 			ctx, span := j.tracer.Start(ctx, fmt.Sprintf("validate: %s", validator.Name()), trace.WithAttributes(
-				attribute.String("nomad.job.id", jobId),
+				attribute.String(attrNomadJobID, jobId),
 				attribute.String("validator.name", validator.Name()),
 			))
 			defer span.End()
