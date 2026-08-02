@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,14 +18,6 @@ import (
 	"go.opentelemetry.io/otel/log/logtest"
 )
 
-func TestHclog(t *testing.T) {
-	logger := hclog.New(&hclog.LoggerOptions{
-		Name:   "nacp",
-		Level:  hclog.LevelFromString("DEBUG"),
-		Output: os.Stdout,
-	})
-	logger.Debug("debug log entry", "key", nil)
-}
 func TestSlog(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	logger.Info("test log entry", "key", "value")

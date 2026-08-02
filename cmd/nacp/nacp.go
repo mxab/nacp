@@ -33,12 +33,12 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/helper"
 	"github.com/mxab/nacp/pkg/admissionctrl"
 	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
 	"github.com/mxab/nacp/pkg/admissionctrl/notation"
 	"github.com/mxab/nacp/pkg/admissionctrl/validator"
 	"github.com/mxab/nacp/pkg/config"
+	"github.com/mxab/nacp/pkg/helper"
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/verifier/truststore"
 

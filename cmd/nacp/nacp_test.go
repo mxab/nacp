@@ -20,14 +20,12 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/helper/tlsutil"
-	"github.com/hashicorp/nomad/lib/file"
 	"github.com/mxab/nacp/pkg/admissionctrl"
 	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/admissionctrl/validator"
 	"github.com/mxab/nacp/pkg/config"
+	"github.com/mxab/nacp/pkg/helper"
 	"github.com/mxab/nacp/pkg/logutil"
 	"github.com/mxab/nacp/testutil"
 	"github.com/open-policy-agent/opa/v1/sdk"
@@ -1071,7 +1069,7 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 	constraints := []string{domain, "localhost"}
 	commonName := ""
 
-	ca, caPk, err := tlsutil.GenerateCA(tlsutil.CAOpts{Name: commonName, Days: days, PermittedDNSDomains: constraints})
+	ca, caPk, err := generateCA(caOpts{Name: commonName, Days: days, PermittedDNSDomains: constraints})
 
 	if err != nil {
 		t.Fatal(err)
@@ -1109,12 +1107,12 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 	certFileName = fmt.Sprintf("%s/%s.pem", dir, prefix)
 	pkFileName = fmt.Sprintf("%s/%s-key.pem", dir, prefix)
 
-	signer, err := tlsutil.ParseSigner(string(caPk))
+	signer, err := parseSigner(string(caPk))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pub, priv, err := tlsutil.GenerateCert(tlsutil.CertOpts{
+	pub, priv, err := generateCert(certOpts{
 		Signer: signer, CA: ca, Name: name, Days: days,
 		DNSNames: DNSNames, IPAddresses: IPAddresses, ExtKeyUsage: extKeyUsage,
 	})
@@ -1122,7 +1120,7 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 		t.Fatal(err)
 	}
 
-	if err = tlsutil.Verify(ca, pub, name); err != nil {
+	if err = verifyCert(ca, pub, name); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1134,7 +1132,7 @@ func generateTLSData(t *testing.T) (caCertFileName, caPkFileName, certFileName, 
 }
 func writeTLSStuff(t *testing.T, name, data string) {
 	t.Helper()
-	if err := file.WriteAtomicWithPerms(name, []byte(data), 0755, 0600); err != nil {
+	if err := os.WriteFile(name, []byte(data), 0600); err != nil {
 		t.Fatal(err)
 	}
 }
