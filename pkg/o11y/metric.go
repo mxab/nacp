@@ -188,3 +188,47 @@ func (m NacpMutatorMutationCount) Add(
 		attribute.String("mutator.name", mutatorName),
 	))
 }
+
+// An instrument for recording `nacp.opa.decision.duration`
+type NacpOpaDecisionDuration struct {
+	inst metric.Float64Histogram
+}
+
+// Construct a new instrument for measuring `nacp.opa.decision.duration`
+func NewNacpOpaDecisionDuration(m metric.Meter) (NacpOpaDecisionDuration, error) {
+	i, err := m.Float64Histogram(
+		"nacp.opa.decision.duration",
+		metric.WithDescription("Duration of a policy decision taken against an OPA bundle."),
+		metric.WithUnit("s"),
+	)
+	if err != nil {
+		return NacpOpaDecisionDuration{}, err
+	}
+	return NacpOpaDecisionDuration{i}, nil
+}
+
+// Records a new measurement.
+func (m NacpOpaDecisionDuration) Record(
+	ctx context.Context,
+	value float64,
+
+	// The id of the opa_bundle block whose OPA instance took the decision.
+	opaBundleSource string,
+
+	// Whether the decision allowed the job, denied it, or could not be evaluated.
+	opaDecisionOutcome string,
+
+	// The bundle decision path that was evaluated.
+	opaDecisionPath string,
+
+) {
+
+	m.inst.Record(ctx, value, metric.WithAttributes(
+
+		attribute.String("opa.bundle.source", opaBundleSource),
+
+		attribute.String("opa.decision.outcome", opaDecisionOutcome),
+
+		attribute.String("opa.decision.path", opaDecisionPath),
+	))
+}

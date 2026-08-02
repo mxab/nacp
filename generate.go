@@ -1,3 +1,3 @@
 package nacp
 
-//go:generate weaver registry generate --registry ./o11y go --future ./o11y
+//go:generate weaver registry generate --registry ./pkg/o11y go --future ./pkg/o11y

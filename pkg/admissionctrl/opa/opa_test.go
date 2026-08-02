@@ -1,4 +1,4 @@
-package opa
+package opa_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/mxab/nacp/pkg/admissionctrl/notation"
+	. "github.com/mxab/nacp/pkg/admissionctrl/opa"
 	"github.com/mxab/nacp/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,20 +34,24 @@ func TestOpa(t *testing.T) {
 	assert.Nil(t, err, "No error executing query")
 	assert.NotNil(t, result, "Result is not nil")
 
-	warnings := result.GetWarnings()
-	assert.Equal(t, []interface{}{"This is a warning message"}, warnings, "Warnings are correct")
-
-	errors := result.GetErrors()
-	assert.Equal(t, []interface{}{"This is a error message"}, errors, "Errors are correct")
-
-	patch := result.GetPatch()
+	decision := result.Decision()
+	assert.Equal(t, []string{"This is a warning message"}, errorMessages(decision.Warnings), "Warnings are correct")
+	assert.Equal(t, []string{"This is a error message"}, errorMessages(decision.Errors), "Errors are correct")
 	assert.Equal(t, []interface{}{
 		map[string]interface{}{
 			"op":    "add",
 			"path":  "/Meta",
 			"value": map[string]interface{}{"foo": "bar"},
 		},
-	}, patch, "Patch is correct")
+	}, decision.Patch, "Patch is correct")
+}
+
+func errorMessages(errs []error) []string {
+	out := make([]string, 0, len(errs))
+	for _, err := range errs {
+		out = append(out, err.Error())
+	}
+	return out
 }
 func TestFailOnEmptyResultSet(t *testing.T) {
 	ctx := context.Background()
@@ -84,12 +89,11 @@ func TestReturnsEmptyIfNotExisting(t *testing.T) {
 	assert.Nil(t, err, "No error executing query")
 	assert.NotNil(t, result, "Result is not nil")
 
-	warnings := result.GetWarnings()
-	assert.Equal(t, []interface{}{}, warnings, "Warnings are correct")
-	errors := result.GetErrors()
-	assert.Equal(t, []interface{}{}, errors, "Errors are correct")
-	patch := result.GetPatch()
-	assert.Equal(t, []interface{}{}, patch, "Patch is correct")
+	decision := result.Decision()
+	assert.Empty(t, decision.Warnings, "Warnings are correct")
+	assert.Empty(t, decision.Errors, "Errors are correct")
+	assert.Equal(t, []interface{}{}, decision.Patch, "Patch is correct")
+	assert.False(t, decision.HasPatch, "No patch was produced")
 
 }
 
@@ -113,19 +117,19 @@ func TestNotationImageValidation(t *testing.T) {
 		name           string
 		image          string
 		verifier       notation.ImageVerifier
-		expectedErrors []interface{}
+		expectedErrors []string
 	}{
 		{
 			name:           "valid image",
 			image:          "validimage:latest",
 			verifier:       new(DummyVerifier),
-			expectedErrors: []interface{}{},
+			expectedErrors: []string{},
 		},
 		{
 			name:     "invalid image",
 			image:    "invalidimage:latest",
 			verifier: new(DummyVerifier),
-			expectedErrors: []interface{}{
+			expectedErrors: []string{
 				"Image is not in valid",
 			},
 		},
@@ -163,8 +167,7 @@ func TestNotationImageValidation(t *testing.T) {
 			require.NoError(t, err, "No error executing query")
 			require.NotNil(t, result, "Result is not nil")
 
-			errors := result.GetErrors()
-			assert.Equal(t, tc.expectedErrors, errors, "Errors are correct")
+			assert.Equal(t, tc.expectedErrors, errorMessages(result.Decision().Errors), "Errors are correct")
 		})
 	}
 }

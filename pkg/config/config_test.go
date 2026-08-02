@@ -249,8 +249,8 @@ func TestLoadConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "with opa sdk",
-			args: args{name: "testdata/with_opa_sdk.hcl"},
+			name: "with opa bundles",
+			args: args{name: "testdata/with_opa_bundle.hcl"},
 			want: &Config{
 				Port: port,
 				Bind: bind,
@@ -262,8 +262,9 @@ func TestLoadConfig(t *testing.T) {
 					{
 						Type: "opa_bundle",
 						Name: "some_validator",
-						OpaSdkRule: &OpaSdkRule{
-							Path: "/my/validation/policy",
+						BundleRule: &BundleRule{
+							Source: "platform",
+							Path:   "/my/validation/policy",
 						},
 					},
 				},
@@ -271,8 +272,9 @@ func TestLoadConfig(t *testing.T) {
 					{
 						Type: "opa_bundle_json_patch",
 						Name: "some_mutator",
-						OpaSdkRule: &OpaSdkRule{
-							Path: "/my/mutation/policy",
+						BundleRule: &BundleRule{
+							Source: "team_a",
+							Path:   "/my/mutation/policy",
 						},
 					},
 				},
@@ -296,10 +298,18 @@ func TestLoadConfig(t *testing.T) {
 						Enabled: false,
 					},
 				},
-				OpaSdk: &OpaSdk{
-
-					Id:         "example",
-					ConfigPath: "/my/path/to/config.json",
+				OpaBundles: []OpaBundle{
+					{
+						Id:             "platform",
+						ConfigPath:     "/my/path/to/config.json",
+						RequireSigning: true,
+					},
+					{
+						Id:              "team_a",
+						ConfigPath:      "/my/path/to/team-a.json",
+						ReadyTimeout:    Ptr("45s"),
+						DecisionTimeout: Ptr("2s"),
+					},
 				},
 			},
 		},

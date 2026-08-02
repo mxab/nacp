@@ -11,18 +11,18 @@ The HCL schema in `pkg/config/config.go` selects controller implementations at s
 
 ## Configuration model
 
-Top-level configuration fields are `bind`, `port`, `tls`, `nomad`, repeated `validator` and `mutator` blocks, `telemetry`, and optional `opa_sdk`. Defaults are `0.0.0.0:6464`, upstream Nomad `http://localhost:4646`, info-level text logs to stdout, and disabled OTel exports.
+Top-level configuration fields are `bind`, `port`, `tls`, `nomad`, repeated `validator`, `mutator` and `opa_bundle` blocks, and `telemetry`. Defaults are `0.0.0.0:6464`, upstream Nomad `http://localhost:4646`, info-level text logs to stdout, and disabled OTel exports.
 
 A controller is a labeled HCL block with a type and name. Startup wires these types:
 
 | Role | Type | Supporting block | Implementation area |
 | --- | --- | --- | --- |
 | Validator | `opa` | `opa_rule` | `pkg/admissionctrl/validator/opa_validator.go` |
-| Validator | `opa_sdk` | `opa_sdk_rule` | `pkg/admissionctrl/validator/opa_bundle_validator.go` |
+| Validator | `opa_bundle` | `bundle_rule` | `pkg/admissionctrl/validator/opa_bundle_validator.go` |
 | Validator | `webhook` | `webhook` | `pkg/admissionctrl/validator/webhook_validator.go` |
 | Validator | `notation` | `notation` | `pkg/admissionctrl/validator/notation_validator.go` |
 | Mutator | `opa_json_patch` | `opa_rule` | `pkg/admissionctrl/mutator/opa_json_patch.go` |
-| Mutator | `opa_bundle_json_patch` | `opa_sdk_rule` | `pkg/admissionctrl/mutator/opa_bundle_json_patch.go` |
+| Mutator | `opa_bundle_json_patch` | `bundle_rule` | `pkg/admissionctrl/mutator/opa_bundle_json_patch.go` |
 | Mutator | `json_patch_webhook` | `webhook` | `pkg/admissionctrl/mutator/json_patch_webhook.go` |
 
 `pkg/config/config_test.go` and its `testdata/` fixtures protect decoding/default behavior. `example/demo/nacp.conf` is the repository’s only combined configuration example; it exercises all but Notation.
@@ -65,13 +65,17 @@ The embedded JSON-Patch mutator expects JSON Patch operations and applies them t
 
 An `opa_rule` may include a `notation` block. When configured, embedded OPA registers `notation_verify_image(string) -> bool`, connecting Rego decisions to the trust material described in [Notation](#notation-image-verification).
 
-## OPA SDK and bundles
+## OPA bundles
 
-`opa_sdk "<id>" { config_path = ... }` creates an OPA SDK instance during NACP startup. The executable waits up to 30 seconds for the SDK to become ready before serving. `opa_sdk_rule { path = ... }` selects the decision path used by either an `opa_sdk` validator or `opa_bundle_json_patch` mutator.
+`opa_bundle "<id>" { config_path = ... }` creates one OPA SDK instance per block, each with its own OPA configuration and therefore its own bundle services, signing keys and refresh schedule. Blocks are repeatable, so a platform-wide bundle can coexist with per-team ones. Optional settings are `ready_timeout` (default 30s, how long startup waits for the first activation), `decision_timeout` (default 5s, `"0s"` to inherit only the request deadline) and `require_signing`.
 
-Both adapters pass the same payload to `sdk.OPA.Decision`. Validators consume `errors` and `warnings`; bundle mutators also consume a JSON Patch `patch`. `example/demo/nacp.conf`, `example/demo/opa.yml`, and the bundle Rego directories are the grounded reference for current decision paths and results.
+`bundle_rule { source = ..., path = ... }` selects the decision an `opa_bundle` validator or `opa_bundle_json_patch` mutator evaluates. `source` names the `opa_bundle` id and may be omitted when exactly one bundle is configured. `pkg/config/config.go` validates all of this at load time — a rule naming an unknown source, or omitting `source` when several bundles exist, is a configuration error rather than a startup failure.
 
-Bundle work was added after the embedded adapters and the latest implementation commit is explicitly a “working poc.” Treat bundle availability, refresh, and rollout behavior as an operational question to validate in your deployment; it is not a documented guarantee of this codebase. The pipeline still enforces the same ordering and error rules in [architecture](architecture.md#request-lifecycle-and-outcomes).
+Both adapters go through `bundle.Instance.Decide` (`pkg/admissionctrl/opa/bundle/decide.go`), which applies the decision timeout, sets `StrictBuiltinErrors`, and parses the result with `opa.ParseDecision(..., opa.Strict)`. Strict parsing is the safety property: a decision that is not an object with list-of-string `errors`/`warnings` (and, for mutators, a JSON Patch `patch`) fails the admission instead of reading as "no findings". The embedded adapters share the same parser in `opa.Lenient` mode, which preserves their released tolerance.
+
+Operationally, `GET /-/health` reports each bundle's active revision and last successful activation and returns 503 until every bundle has activated; failed refreshes log at warn level while the last activated policy stays in force; decisions carry `opa.decision.id` and per-bundle revisions into logs and spans; `nacp.opa.decision.duration` records evaluation time; and `SIGHUP` reloads each `config_path`, leaving the previous configuration active if the new one fails.
+
+`example/demo/nacp.conf`, `example/demo/opa.yml`, and the bundle Rego directories are the grounded reference for current decision paths and results.
 
 ## Webhooks
 

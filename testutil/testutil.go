@@ -1,19 +1,21 @@
 package testutil
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
+	"sort"
 	"testing"
 
+	"github.com/mxab/nacp/pkg/admissionctrl/opa/bundle"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
-	"github.com/open-policy-agent/opa/v1/logging"
-	"github.com/open-policy-agent/opa/v1/sdk"
+	"github.com/mxab/nacp/pkg/config"
+	"github.com/mxab/nacp/pkg/logutil"
 	sdktest "github.com/open-policy-agent/opa/v1/sdk/test"
 
 	"github.com/hashicorp/nomad/api"
@@ -149,47 +151,80 @@ func BaseJob() *api.Job {
 	return job
 }
 
-func SetupOpa(t *testing.T, policy string) *sdk.OPA {
+// SetupOpa starts a bundle server hosting policy and returns a bundle Instance
+// built through the same path production uses, so tests cover the real startup
+// (readiness channel, slog logger, status listener) rather than a lookalike.
+func SetupOpa(t *testing.T, policy string) *bundle.Instance {
 	t.Helper()
-	ctx := t.Context()
+	return SetupOpaBundles(t, map[string]string{"test": policy})[0]
+}
 
-	// create a mock HTTP bundle server
+// SetupOpaBundles starts one bundle server and one Instance per named policy.
+func SetupOpaBundles(t *testing.T, policies map[string]string) []*bundle.Instance {
+	t.Helper()
+
+	registry := SetupOpaRegistry(t, policies)
+
+	names := make([]string, 0, len(policies))
+	for name := range policies {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	instances := make([]*bundle.Instance, 0, len(names))
+	for _, name := range names {
+		instance, err := registry.Get(name)
+		require.NoError(t, err, "Bundle %q is registered", name)
+		instances = append(instances, instance)
+	}
+	return instances
+}
+
+// SetupOpaRegistry builds a bundle Registry holding one Instance per named
+// policy, each backed by its own mock bundle server.
+func SetupOpaRegistry(t *testing.T, policies map[string]string) *bundle.Registry {
+	t.Helper()
+
+	names := make([]string, 0, len(policies))
+	for name := range policies {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	configs := make([]config.OpaBundle, 0, len(names))
+	for _, name := range names {
+		configs = append(configs, config.OpaBundle{
+			Id:         name,
+			ConfigPath: writeOpaConfig(t, name, policies[name]),
+		})
+	}
+
+	loggerFactory, _ := logutil.NewLoggerFactory(io.Discard, io.Discard, false)
+	registry, stop, err := bundle.Setup(t.Context(), loggerFactory, configs)
+	require.NoError(t, err, "No error setting up OPA bundles")
+	t.Cleanup(stop)
+
+	return registry
+}
+
+// writeOpaConfig starts a mock bundle server for policy and writes an OPA
+// configuration pointing at it, returning the config path.
+func writeOpaConfig(t *testing.T, name, policy string) string {
+	t.Helper()
+
 	server, err := sdktest.NewServer(sdktest.MockBundle("/bundles/bundle.tar.gz", map[string]string{
 		"example.rego": policy,
 	}))
 	require.NoError(t, err, "No error creating mock server")
 	t.Cleanup(server.Stop)
 
-	// provide the OPA configuration which specifies
-	// fetching policy bundles from the mock server
-	// and logging decisions locally to the console
-	config := []byte(fmt.Sprintf(`{
-		"services": {
-			"test": {
-				"url": %q
-			}
-		},
-		"bundles": {
-			"test": {
-				"resource": "/bundles/bundle.tar.gz"
-			}
-		},
-		"decision_logs": {
-			"console": true
-		}
-	}`, server.URL()))
+	opaConfig := fmt.Sprintf(`{
+		"services": {%q: {"url": %q}},
+		"bundles": {%q: {"service": %q, "resource": "/bundles/bundle.tar.gz"}},
+		"decision_logs": {"console": true}
+	}`, name, server.URL(), name, name)
 
-	// create an instance of the OPA object
-
-	opa, err := sdk.New(ctx, sdk.Options{
-		ID:     "opa-test-1",
-		Config: bytes.NewReader(config),
-		Logger: logging.New(),
-	})
-	require.NoError(t, err, "No error creating OPA instance")
-	t.Cleanup(func() {
-		opa.Stop(ctx)
-	})
-
-	return opa
+	configPath := filepath.Join(t.TempDir(), name+".json")
+	require.NoError(t, os.WriteFile(configPath, []byte(opaConfig), 0o600), "No error writing OPA config")
+	return configPath
 }

@@ -32,22 +32,20 @@ func (v *OpaValidator) Validate(ctx context.Context, payload *types.Payload) ([]
 		return nil, err
 	}
 
-	// aggregate warnings
-	warnings := results.GetWarnings()
+	decision := results.Decision()
 
-	if len(warnings) > 0 {
-		v.logger.Debug("Got warnings from rule", "rule", v.Name(), "warnings", warnings, "job", payload.Job.ID)
-		for _, warn := range warnings {
+	// aggregate warnings
+	if len(decision.Warnings) > 0 {
+		v.logger.Debug("Got warnings from rule", "rule", v.Name(), "warnings", decision.Warnings, "job", payload.Job.ID)
+		for _, warn := range decision.Warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, v.Name()))
 		}
 	}
 
-	errors := results.GetErrors()
-
-	if len(errors) > 0 { // no errors is ok
-		v.logger.Debug("Got errors from rule", "rule", v.Name(), "errors", errors, "job", payload.Job.ID)
+	if len(decision.Errors) > 0 { // no errors is ok
+		v.logger.Debug("Got errors from rule", "rule", v.Name(), "errors", decision.Errors, "job", payload.Job.ID)
 		errsForRule := &multierror.Error{}
-		for _, err := range errors {
+		for _, err := range decision.Errors {
 			errsForRule = multierror.Append(errsForRule, fmt.Errorf("%s (%s)", err, v.Name()))
 		}
 		allErrs = multierror.Append(allErrs, errsForRule)

@@ -194,6 +194,89 @@ validator "webhook" "some_webhook_validator" {
 }
 ```
 
+## OPA Bundles
+
+The `opa` and `opa_json_patch` controllers above read a single Rego file from disk, so changing a policy means redeploying NACP. OPA *bundles* instead let NACP pull policy from a bundle server at runtime, on OPA's own refresh schedule, so rules can be shipped independently of the proxy.
+
+Declare one `opa_bundle` block per bundle source. `config_path` points at a regular [OPA configuration file](https://www.openpolicyagent.org/docs/latest/configuration/) — NACP passes it to the OPA SDK verbatim, so services, bundles, signing, decision logs and status settings all work as documented upstream.
+
+```hcl
+opa_bundle "platform" {
+  config_path = "/local/opa-platform.yml"
+
+  # Optional. How long startup waits for the first bundle activation. Default 30s.
+  ready_timeout = "30s"
+  # Optional. Bounds a single policy evaluation. Default 5s; "0s" to disable.
+  decision_timeout = "5s"
+  # Optional. Refuse to start unless every bundle verifies signatures. Default false.
+  require_signing = true
+}
+
+validator "opa_bundle" "costcenter" {
+  bundle_rule {
+    source = "platform"     # the opa_bundle id; optional when only one is configured
+    path   = "/costcenter"  # the decision to evaluate
+  }
+}
+
+mutator "opa_bundle_json_patch" "add_meta" {
+  bundle_rule {
+    source = "platform"
+    path   = "/add_meta"
+  }
+}
+```
+
+Several `opa_bundle` blocks may be declared, each with its own services and signing keys — for example a platform-wide bundle alongside per-team ones. Each `bundle_rule` then names the `source` it evaluates against.
+
+### Decision contract
+
+A bundle decision path must evaluate to an **object**. Validators read `errors` and `warnings`; JSON-Patch mutators additionally read `patch`:
+
+```rego
+package costcenter
+
+errors contains msg if {
+	not input.job.Meta.costcenter
+	msg := "Every job must have a costcenter metadata label"
+}
+
+warnings contains msg if {
+	input.job.Priority > 75
+	msg := "High priority jobs are reviewed manually"
+}
+```
+
+Anything else fails the admission rather than being treated as "no findings" — a path pointing at a scalar (`data.costcenter.allow`), a missing decision, or an `errors` value that is not a list of strings all produce an admission error. This is deliberate: policy that is fetched over the network must fail closed when it does not say what NACP expects.
+
+Rego builtin errors are also fatal (`strict-builtin-errors`), so a failing `http.send` or `json.unmarshal` surfaces instead of silently making the rule undefined.
+
+### Signing
+
+Bundle policy runs with full authority over every job passing through the proxy, so whoever can answer the bundle URL can rewrite admission control. Configure [bundle signing](https://www.openpolicyagent.org/docs/latest/management-bundles/#signing) in the OPA configuration and set `require_signing = true` to make NACP refuse to start without it:
+
+```yaml
+keys:
+  global_key:
+    algorithm: RS256
+    key: ${BUNDLE_PUBLIC_KEY}
+
+bundles:
+  platform:
+    service: bundle_server
+    resource: /bundle.tar.gz
+    signing:
+      keyid: global_key
+```
+
+### Operating bundles
+
+- `GET /-/health` reports each bundle's active revision and last successful activation, returning 503 until every configured bundle has activated. Nomad's API lives under `/v1/`, so this endpoint does not shadow a proxied route.
+- Failed refreshes are logged at warn level. NACP keeps enforcing the last activated bundle, so this log line is the signal that policy has gone stale.
+- Every decision is logged and traced with its OPA decision ID and the active revision of each bundle, so an admission outcome can be traced back to an exact policy version.
+- The `nacp.opa.decision.duration` metric records evaluation time by bundle source, decision path and outcome.
+- `SIGHUP` re-reads each `config_path` and reconfigures the running instances. A configuration that fails to load leaves the previous one active.
+
 ## More Examples
 
 Checkout the [examples](./example) folder for more examples.

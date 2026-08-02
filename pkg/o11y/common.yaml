@@ -16,3 +16,22 @@ groups:
           The name of the mutator.
         stability: stable
         examples: ["inject_otel"]
+      - id: opa.bundle.source
+        type: string
+        brief: >
+          The id of the opa_bundle block whose OPA instance took the decision.
+        stability: stable
+        examples: ["platform"]
+      - id: opa.decision.path
+        type: string
+        brief: >
+          The bundle decision path that was evaluated.
+        stability: stable
+        examples: ["/helloworld"]
+      - id: opa.decision.outcome
+        type: string
+        brief: >
+          Whether the decision allowed the job, denied it, or could not be
+          evaluated.
+        stability: stable
+        examples: ["allow", "deny", "error"]

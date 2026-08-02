@@ -25,13 +25,12 @@ import (
 	"github.com/hashicorp/nomad/lib/file"
 	"github.com/mxab/nacp/pkg/admissionctrl"
 	"github.com/mxab/nacp/pkg/admissionctrl/mutator"
+	"github.com/mxab/nacp/pkg/admissionctrl/opa/bundle"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
 	"github.com/mxab/nacp/pkg/admissionctrl/validator"
 	"github.com/mxab/nacp/pkg/config"
 	"github.com/mxab/nacp/pkg/logutil"
 	"github.com/mxab/nacp/testutil"
-	"github.com/open-policy-agent/opa/v1/sdk"
-	sdktest "github.com/open-policy-agent/opa/v1/sdk/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -790,7 +789,7 @@ func TestCreateValidators(t *testing.T) {
 			validators: config.Validator{
 				Type: "opa_bundle",
 				Name: "test",
-				OpaSdkRule: &config.OpaSdkRule{
+				BundleRule: &config.BundleRule{
 					Path: "/mypolicy",
 				},
 			},
@@ -798,11 +797,11 @@ func TestCreateValidators(t *testing.T) {
 			needsOPA: true,
 		},
 		{
-			name: "opa bundle validator without SDK",
+			name: "opa bundle validator without a configured bundle",
 			validators: config.Validator{
 				Type:       "opa_bundle",
 				Name:       "test",
-				OpaSdkRule: &config.OpaSdkRule{Path: "/my/policy"},
+				BundleRule: &config.BundleRule{Path: "/my/policy"},
 			},
 			wantErr: true,
 		},
@@ -826,11 +825,11 @@ func TestCreateValidators(t *testing.T) {
 				Validators: []config.Validator{tc.validators},
 			}
 
-			var opaSDK *sdk.OPA
+			var bundles *bundle.Registry
 			if tc.needsOPA {
-				opaSDK = testutil.SetupOpa(t, "package mypolicy")
+				bundles = testutil.SetupOpaRegistry(t, map[string]string{"test": "package mypolicy"})
 			}
-			validators, _, err := createValidators(c, discardFactory, opaSDK)
+			validators, _, err := createValidators(c, discardFactory, bundles)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -847,20 +846,20 @@ func TestCreateValidators(t *testing.T) {
 
 func TestOpaBundleValidatorConfig(t *testing.T) {
 	discardFactory, _ := logutil.NewLoggerFactory(nil, nil, false)
-	opaSDK := testutil.SetupOpa(t, "package configuredpath")
+	bundles := testutil.SetupOpaRegistry(t, map[string]string{"test": "package configuredpath"})
 	c := &config.Config{
 		Validators: []config.Validator{
 			{
 				Type: "opa_bundle",
 				Name: "test",
-				OpaSdkRule: &config.OpaSdkRule{
+				BundleRule: &config.BundleRule{
 					Path: "/configuredpath",
 				},
 			},
 		},
 	}
 
-	validators, _, err := createValidators(c, discardFactory, opaSDK)
+	validators, _, err := createValidators(c, discardFactory, bundles)
 	require.NoError(t, err)
 	require.Len(t, validators, 1)
 
@@ -961,7 +960,7 @@ func TestCreateMutatators(t *testing.T) {
 			mutators: config.Mutator{
 				Type: "opa_bundle_json_patch",
 				Name: "test",
-				OpaSdkRule: &config.OpaSdkRule{
+				BundleRule: &config.BundleRule{
 					Path: "/my/policy",
 				},
 			},
@@ -973,7 +972,7 @@ func TestCreateMutatators(t *testing.T) {
 			mutators: config.Mutator{
 				Type:       "opa_bundle_json_patch",
 				Name:       "test",
-				OpaSdkRule: &config.OpaSdkRule{Path: "/my/policy"},
+				BundleRule: &config.BundleRule{Path: "/my/policy"},
 			},
 			wantErr: true,
 		},
@@ -1010,11 +1009,11 @@ func TestCreateMutatators(t *testing.T) {
 				Mutators: []config.Mutator{tc.mutators},
 			}
 
-			var opaSDK *sdk.OPA
+			var bundles *bundle.Registry
 			if tc.needsOPA {
-				opaSDK = testutil.SetupOpa(t, "package mypolicy")
+				bundles = testutil.SetupOpaRegistry(t, map[string]string{"test": "package mypolicy"})
 			}
-			mutators, _, err := createMutators(c, discardFactory, opaSDK)
+			mutators, _, err := createMutators(c, discardFactory, bundles)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1254,150 +1253,4 @@ func TestBuildConfig(t *testing.T) {
 			assert.Equal(t, tc.want(), got)
 		})
 	}
-}
-
-func TestBuildOpaSdk(t *testing.T) {
-
-	tt := []struct {
-		name string
-
-		wantErr string
-
-		configFn func(t *testing.T) string
-	}{
-		{
-			name: "valid config",
-
-			configFn: func(t *testing.T) string {
-
-				server, err := sdktest.NewServer(sdktest.MockBundle("/bundles/bundle.tar.gz", map[string]string{
-					"example.rego": `package example
-
-					default allow = false
-
-					`,
-				}))
-				require.NoError(t, err, "No error creating mock server")
-				t.Cleanup(server.Stop)
-
-				// provide the OPA configuration which specifies
-				// fetching policy bundles from the mock server
-				// and logging decisions locally to the console
-				return fmt.Sprintf(`{
-		"services": {
-			"test": {
-				"url": %q
-			}
-		},
-		"bundles": {
-			"test": {
-				"resource": "/bundles/bundle.tar.gz"
-			}
-		},
-		"decision_logs": {
-			"console": true
-		}
-	}`, server.URL())
-			},
-		},
-		{
-			name: "invalid config",
-			configFn: func(t *testing.T) string {
-				return ` ... invalid json ... `
-			},
-			wantErr: "failed to create OPA SDK",
-		},
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-
-			dir := t.TempDir()
-
-			configPath := fmt.Sprintf("%s/opa-config.json", dir)
-
-			err := os.WriteFile(configPath, []byte(tc.configFn(t)), 0644)
-			require.NoError(t, err)
-
-			opaConfig := &config.OpaSdk{
-				Id:         "test",
-				ConfigPath: configPath,
-			}
-
-			opa, err := buildOpaSdk(t.Context(), slog.Default(), opaConfig)
-
-			if tc.wantErr != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.wantErr)
-				return
-			}
-			assert.NoError(t, err)
-			assert.NotNil(t, opa)
-			t.Cleanup(func() {
-				opa.Stop(t.Context())
-			})
-		})
-	}
-}
-func TestBuildOpaSdkMissingFile(t *testing.T) {
-	dir := t.TempDir()
-	configPath := fmt.Sprintf("%s/opa-config.json", dir)
-
-	opaConfig := &config.OpaSdk{
-		Id:         "test",
-		ConfigPath: configPath,
-	}
-
-	opa, err := buildOpaSdk(t.Context(), slog.Default(), opaConfig)
-
-	assert.Error(t, err)
-	assert.Nil(t, opa)
-}
-
-func TestSetupOpaSDK(t *testing.T) {
-	t.Run("disabled", func(t *testing.T) {
-		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), nil)
-		require.NoError(t, err)
-		assert.Nil(t, opaSDK)
-		assert.Nil(t, cleanup)
-	})
-
-	t.Run("valid config", func(t *testing.T) {
-		configPath := fmt.Sprintf("%s/opa-config.json", t.TempDir())
-		require.NoError(t, os.WriteFile(configPath, []byte(`{}`), 0644))
-
-		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), &config.OpaSdk{Id: "test", ConfigPath: configPath})
-		require.NoError(t, err)
-		require.NotNil(t, opaSDK)
-		require.NotNil(t, cleanup)
-		cleanup()
-	})
-
-	t.Run("invalid config", func(t *testing.T) {
-		configPath := fmt.Sprintf("%s/opa-config.json", t.TempDir())
-		require.NoError(t, os.WriteFile(configPath, []byte(`not valid JSON`), 0644))
-
-		opaSDK, cleanup, err := setupOpaSDK(t.Context(), slog.Default(), &config.OpaSdk{Id: "test", ConfigPath: configPath})
-		assert.ErrorContains(t, err, "failed to build OPA SDK")
-		assert.Nil(t, opaSDK)
-		assert.Nil(t, cleanup)
-	})
-}
-
-func TestBuildOpaSdkReadinessTimeout(t *testing.T) {
-	configPath := fmt.Sprintf("%s/opa-config.json", t.TempDir())
-	configData := `{
-		"services": {"test": {"url": "http://127.0.0.1:1"}},
-		"bundles": {"test": {"service": "test", "resource": "/bundle.tar.gz"}}
-	}`
-	require.NoError(t, os.WriteFile(configPath, []byte(configData), 0644))
-
-	opaSDK, err := buildOpaSdkWithTimeout(
-		t.Context(),
-		slog.New(slog.DiscardHandler),
-		&config.OpaSdk{Id: "test", ConfigPath: configPath},
-		time.Millisecond,
-	)
-
-	assert.ErrorContains(t, err, "OPA SDK did not become ready in time")
-	assert.Nil(t, opaSDK)
 }

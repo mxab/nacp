@@ -27,27 +27,24 @@ func (j *OpaJsonPatchMutator) Mutate(ctx context.Context, payload *types.Payload
 		return nil, false, nil, err
 	}
 
-	errors := results.GetErrors()
+	decision := results.Decision()
 
-	if len(errors) > 0 {
-		j.logger.Debug("Got errors from rule", "rule", j.Name(), "errors", errors, "job", payload.Job.ID)
+	if len(decision.Errors) > 0 {
+		j.logger.Debug("Got errors from rule", "rule", j.Name(), "errors", decision.Errors, "job", payload.Job.ID)
 		allErrors := multierror.Append(nil)
-		for _, warn := range errors {
+		for _, warn := range decision.Errors {
 			allErrors = multierror.Append(allErrors, fmt.Errorf("%s (%s)", warn, j.Name()))
 		}
 		return nil, false, nil, allErrors
 	}
 
-	warnings := results.GetWarnings()
-
-	if len(warnings) > 0 {
-		j.logger.Debug("Got warnings from rule", "rule", j.Name(), "warnings", warnings, "job", payload.Job.ID)
-		for _, warn := range warnings {
+	if len(decision.Warnings) > 0 {
+		j.logger.Debug("Got warnings from rule", "rule", j.Name(), "warnings", decision.Warnings, "job", payload.Job.ID)
+		for _, warn := range decision.Warnings {
 			allWarnings = append(allWarnings, fmt.Errorf("%s (%s)", warn, j.Name()))
 		}
 	}
-	patchData := results.GetPatch()
-	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, patchData)
+	patchedJob, mutated, err := jsonpatcher.PatchJob(payload.Job, decision.Patch)
 	if err != nil {
 		return nil, false, nil, err
 	}

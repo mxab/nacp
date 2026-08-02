@@ -49,3 +49,17 @@ groups:
     attributes:
       - ref: mutator.name
         requirement_level: required
+  - id: metric.nacp.opa.decision.duration
+    type: metric
+    metric_name: nacp.opa.decision.duration
+    stability: stable
+    brief: "Duration of a policy decision taken against an OPA bundle."
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: opa.bundle.source
+        requirement_level: required
+      - ref: opa.decision.path
+        requirement_level: required
+      - ref: opa.decision.outcome
+        requirement_level: required

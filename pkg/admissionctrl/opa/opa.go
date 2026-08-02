@@ -72,31 +72,17 @@ func (q *OpaQuery) Query(ctx context.Context, payload *types2.Payload) (*OpaQuer
 	return &OpaQueryResult{&resultSet}, nil
 }
 
-func (result *OpaQueryResult) GetWarnings() []interface{} {
-
+// Decision reads the query bindings through the same decision contract the
+// bundle adapters use. Lenient mode keeps the tolerance the embedded adapters
+// shipped with: a missing or wrongly typed binding reports nothing.
+func (result *OpaQueryResult) Decision() *Decision {
 	rs := *result.resultSet
 
-	warnings, ok := rs[0].Bindings["warnings"].([]interface{})
-	if !ok {
-		return make([]interface{}, 0)
+	decision, err := ParseDecision(map[string]interface{}(rs[0].Bindings), Lenient)
+	if err != nil {
+		// Lenient parsing never fails, but do not let a future change here turn
+		// into a silent allow.
+		return &Decision{Errors: []error{err}, Patch: []interface{}{}}
 	}
-	return warnings
-}
-func (result *OpaQueryResult) GetErrors() []interface{} {
-
-	rs := *result.resultSet
-	errors, ok := rs[0].Bindings["errors"].([]interface{})
-	if !ok {
-		return make([]interface{}, 0)
-	}
-	return errors
-}
-func (result *OpaQueryResult) GetPatch() []interface{} {
-
-	rs := *result.resultSet
-	patch, ok := rs[0].Bindings["patch"].([]interface{})
-	if !ok {
-		return make([]interface{}, 0)
-	}
-	return patch
+	return decision
 }

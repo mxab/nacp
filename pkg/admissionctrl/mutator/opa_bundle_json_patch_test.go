@@ -1,7 +1,6 @@
 package mutator
 
 import (
-	"log/slog"
 	"testing"
 
 	"github.com/hashicorp/nomad/api"
@@ -13,7 +12,7 @@ import (
 
 func TestOpaBundleMutatorName(t *testing.T) {
 	opa := testutil.SetupOpa(t, "package mypolicy")
-	mutator, err := NewOpaBundleMutator("test", "test/path", slog.Default(), opa)
+	mutator, err := NewOpaBundleMutator("test", "test/path", opa)
 
 	require.NoError(t, err, "No error creating mutator")
 	assert.Equal(t, "test", mutator.Name(), "Name is correct")
@@ -22,11 +21,11 @@ func TestOpaBundleMutatorName(t *testing.T) {
 func TestNewOpaBundleMutatorValidation(t *testing.T) {
 	opa := testutil.SetupOpa(t, "package mypolicy")
 
-	mutator, err := NewOpaBundleMutator("test", "/mypolicy", slog.Default(), nil)
-	assert.ErrorContains(t, err, "OPA SDK is required")
+	mutator, err := NewOpaBundleMutator("test", "/mypolicy", nil)
+	assert.ErrorContains(t, err, "OPA bundle is required")
 	assert.Nil(t, mutator)
 
-	mutator, err = NewOpaBundleMutator("test", "", slog.Default(), opa)
+	mutator, err = NewOpaBundleMutator("test", "", opa)
 	assert.ErrorContains(t, err, "OPA decision path is required")
 	assert.Nil(t, mutator)
 }
@@ -64,7 +63,7 @@ func TestOpaBundleMutator(t *testing.T) {
 			expectedJob:     nil,
 			expectedMutated: false,
 			expectedWarns:   []string{},
-			expectedErrs:    []string{"failed to perform policy decision"},
+			expectedErrs:    []string{"is undefined in the active bundle"},
 		},
 		{
 			name: "reject non-object decision",
@@ -190,7 +189,7 @@ func TestOpaBundleMutator(t *testing.T) {
 			expectedErrs:    []string{"policy yielded an invalid error entry value"},
 		},
 		{
-			name: "handle invalid warning entry type as warning",
+			name: "handle invalid warning entry type as error",
 			policy: `package mypolicy
 			warnings = ["this is fine", 5]
 			`,
@@ -198,7 +197,7 @@ func TestOpaBundleMutator(t *testing.T) {
 			inputJob:        &api.Job{},
 			expectedJob:     nil,
 			expectedMutated: false,
-			expectedWarns:   []string{"this is fine"},
+			expectedWarns:   []string{},
 			expectedErrs:    []string{"policy yielded an invalid warning entry value"},
 		},
 		{
@@ -223,14 +222,14 @@ func TestOpaBundleMutator(t *testing.T) {
 			expectedJob:     nil,
 			expectedMutated: false,
 			expectedWarns:   []string{},
-			expectedErrs:    []string{"policy yielded patch failed"},
+			expectedErrs:    []string{"policy yielded an invalid patch entry value"},
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			opa := testutil.SetupOpa(t, tc.policy)
-			mutator, err := NewOpaBundleMutator(tc.name, tc.path, slog.New(slog.DiscardHandler), opa)
+			mutator, err := NewOpaBundleMutator(tc.name, tc.path, opa)
 
 			require.NoError(t, err, "No error creating mutator")
 			result, mutated, warns, err := mutator.Mutate(t.Context(), &types.Payload{Job: tc.inputJob})

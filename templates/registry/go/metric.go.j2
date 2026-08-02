@@ -71,10 +71,10 @@ func {{metric.metric_name | camel_case }}AttrToAttrs(in []{{metric_name}}Attr) [
 }
 {% endif %}
 
-// Adds an increment to the existing count.
-func (m {{ smart_title_case(metric.metric_name) }}) Add(
+{{ [metric.instrument | map_text("metric_type_doc")] | comment | trim }}
+func (m {{ smart_title_case(metric.metric_name) }}) {{ metric.instrument | map_text("metric_type_method") }}(
     ctx context.Context,
-    inc float64,
+    {{ metric.instrument | map_text("metric_type_value_name") }} float64,
 {% for attr in metric.attributes | required | attribute_sort %}
     {{ attr.brief | trim | comment }}
     {{ attr.name | camel_case }} {{ attr.type | map_text("attribute_type_value")}},
@@ -84,7 +84,7 @@ func (m {{ smart_title_case(metric.metric_name) }}) Add(
 {% endif %}
 ) {
     {# TODO - handle other instrument types. #}
-    m.inst.Add(ctx, inc, metric.WithAttributes(
+    m.inst.{{ metric.instrument | map_text("metric_type_method") }}(ctx, {{ metric.instrument | map_text("metric_type_value_name") }}, metric.WithAttributes(
         {% if metric.attributes | not_required | length > 0 %}
         append({{metric.metric_name | camel_case }}AttrToAttrs(optAttrs),
         {% endif %}
@@ -97,8 +97,8 @@ func (m {{ smart_title_case(metric.metric_name) }}) Add(
     ))
 }
 {% else %}
-func (m {{ smart_title_case(metric.metric_name) }}) Add(ctx context.Context, inc float64) {
-    (*m.instrument).Add(ctx, inc)
+func (m {{ smart_title_case(metric.metric_name) }}) {{ metric.instrument | map_text("metric_type_method") }}(ctx context.Context, {{ metric.instrument | map_text("metric_type_value_name") }} float64) {
+    m.inst.{{ metric.instrument | map_text("metric_type_method") }}(ctx, {{ metric.instrument | map_text("metric_type_value_name") }})
 }
 {% endif %}
 

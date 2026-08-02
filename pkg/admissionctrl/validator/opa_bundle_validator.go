@@ -3,27 +3,24 @@ package validator
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log/slog"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/mxab/nacp/pkg/admissionctrl"
+	"github.com/mxab/nacp/pkg/admissionctrl/opa/bundle"
 	"github.com/mxab/nacp/pkg/admissionctrl/types"
-	"github.com/open-policy-agent/opa/v1/sdk"
 )
 
 type OpaBundleValidator struct {
 	name   string
 	path   string
-	logger *slog.Logger
-	opa    *sdk.OPA
+	bundle *bundle.Instance
 }
 
 var _ admissionctrl.JobValidator = (*OpaBundleValidator)(nil) // Verify that *T implements I.
 
-func NewOpaBundleValidator(name string, path string, logger *slog.Logger, opaSDK *sdk.OPA) (*OpaBundleValidator, error) {
-	if opaSDK == nil {
-		return nil, errors.New("OPA SDK is required")
+func NewOpaBundleValidator(name string, path string, instance *bundle.Instance) (*OpaBundleValidator, error) {
+	if instance == nil {
+		return nil, errors.New("OPA bundle is required")
 	}
 	if path == "" {
 		return nil, errors.New("OPA decision path is required")
@@ -31,58 +28,23 @@ func NewOpaBundleValidator(name string, path string, logger *slog.Logger, opaSDK
 	return &OpaBundleValidator{
 		name:   name,
 		path:   path,
-		logger: logger,
-		opa:    opaSDK,
+		bundle: instance,
 	}, nil
 }
 
-func (v *OpaBundleValidator) Validate(ctx context.Context, payload *types.Payload) (warnings []error, err error) {
-
-	result, err := v.opa.Decision(ctx, sdk.DecisionOptions{
-		Input: payload,
-		Path:  v.path,
-	})
+func (v *OpaBundleValidator) Validate(ctx context.Context, payload *types.Payload) ([]error, error) {
+	// Decide parses the result strictly: a decision that is not the documented
+	// {errors, warnings} document fails the admission instead of being read as
+	// "the policy found nothing".
+	decision, err := v.bundle.Decide(ctx, v.path, payload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform policy decision: %w", err)
+		return nil, err
 	}
 
-	v.logger.DebugContext(ctx, "OPA decision", slog.Any("result", result))
-
-	if rmap, ok := result.Result.(map[string]interface{}); ok {
-		if errs, found := rmap["errors"]; found {
-			if errlist, ok := errs.([]interface{}); ok {
-
-				for _, e := range errlist {
-					if emsg, ok := e.(string); ok {
-						err = multierror.Append(err, errors.New(emsg))
-					} else {
-						err = multierror.Append(err, fmt.Errorf("policy yielded an invalid error value: %v", e))
-					}
-				}
-				if err != nil {
-					return
-				}
-			} else if errs != nil {
-				err = fmt.Errorf("policy yielded an invalid errors value: %v", errs)
-				return
-			}
-		}
-		if warns, found := rmap["warnings"]; found {
-			if warnlist, ok := warns.([]interface{}); ok {
-				for _, w := range warnlist {
-					if wmsg, ok := w.(string); ok {
-						warnings = append(warnings, errors.New(wmsg))
-					} else {
-						warnings = append(warnings, fmt.Errorf("policy yielded an invalid warning value: %v", w))
-					}
-				}
-			} else if warns != nil {
-				warnings = append(warnings, fmt.Errorf("policy yielded an invalid warnings value: %v", warns))
-			}
-		}
+	if len(decision.Errors) > 0 {
+		return decision.Warnings, multierror.Append(nil, decision.Errors...)
 	}
-
-	return
+	return decision.Warnings, nil
 }
 
 func (v *OpaBundleValidator) Name() string {

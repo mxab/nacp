@@ -37,7 +37,10 @@ require (
 	oras.land/oras-go/v2 v2.6.0
 )
 
-require github.com/open-policy-agent/opa v1.16.0
+require (
+	github.com/open-policy-agent/opa v1.16.0
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
@@ -216,7 +219,6 @@ require (
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.77 // indirect
 	oss.indeed.com/go/libtime v1.6.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect

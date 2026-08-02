@@ -37,3 +37,13 @@ text_maps:
     boolean[]: "...bool"
   metric_type_interface:
     counter: Float64Counter
+    histogram: Float64Histogram
+  metric_type_method:
+    counter: Add
+    histogram: Record
+  metric_type_doc:
+    counter: Adds an increment to the existing count.
+    histogram: Records a new measurement.
+  metric_type_value_name:
+    counter: inc
+    histogram: value
