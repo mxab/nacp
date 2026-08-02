@@ -31,6 +31,30 @@ Switch from `hashicorp/go-hclog` to `log/slog` for logging.
 ### Initial logging config
 Allow configuring the initial logger from `text` to `json` formats by adding `-bootstrap-json-logger`
 
+### Dependencies
+
+All direct dependencies have been updated to their latest releases, and the
+`github.com/hashicorp/nomad` main module has been removed — NACP now depends only on
+`github.com/hashicorp/nomad/api`.
+
+- **OPA upgraded from 1.16 to 1.19**
+  The Wasm engine switched from `wasmtime-go` to the pure-Go `wazero`, which removes the cgo
+  dependency from the build.
+
+- **Removed the `hashicorp/nomad` main module**
+  The main module has been licensed under BUSL-1.1 since Nomad v1.6.6, while NACP and
+  `nomad/api` are both MPL-2.0. It was pulled in for a single production call
+  (`helper.MergeMultierrorWarnings`) plus two test-only helpers.
+  - `MergeMultierrorWarnings` is now vendored at `pkg/helper/warning.go`, taken verbatim from
+    Nomad v1.6.3 — an unambiguously MPL-2.0 release, predating the BUSL-1.1 switch at v1.6.6 —
+    so warning strings returned in `X-Nomad-Warnings` remain byte-identical.
+  - Nomad's `helper/tlsutil` and `lib/file` test helpers were replaced with `crypto/x509` and
+    `os.WriteFile` equivalents in `cmd/nacp/tlshelper_test.go`.
+  - This removes all BUSL-1.1 code from the dependency tree and roughly halves the module
+    graph (510 → 258 modules).
+
+  See [update_and_nomad_dep_removal.md](update_and_nomad_dep_removal.md) for the full rationale.
+
 ### Breaking Changes
 
 - **Switch from `hashicorp/go-hclog` to `log/slog` for Logging**
@@ -65,6 +89,15 @@ Allow configuring the initial logger from `text` to `json` formats by adding `-b
 
 - **Upstream error responses are passed through untouched**
   Warning and validation-error injection is now limited to successful (2xx) upstream responses, so Nomad's own error bodies reach the client intact instead of being unmarshalled into a response struct and mangled.
+
+- **Stricter Rego assignment safety in OPA 1.19**
+  OPA now treats the right-hand side of `:=` as a read that must be made safe by other expressions, and it can no longer be satisfied through the left-hand side.
+  - Policies that previously compiled may now fail with `rego_unsafe_var_error`.
+  - All policies bundled with NACP were checked and needed no changes, but custom policies should be re-verified against OPA 1.19.
+
+- **Error attributes in exported logs now use the `exception.*` semantic conventions**
+  The `otelslog` bridge records an error-valued log attribute on the log record's error field rather than as a regular attribute, and it is exported as `exception.message` / `exception.type`.
+  - Collector pipelines, queries, or dashboards matching on an `error` attribute must be updated.
 
 ### Security
 
