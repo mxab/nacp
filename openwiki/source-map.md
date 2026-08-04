@@ -3,6 +3,11 @@ type: Source Map
 title: NACP source map
 description: Practical navigation map for NACP runtime code, policy adapters, configuration, observability, tests, fixtures, and examples.
 tags: [source-map, go, testing, opa, nomad]
+openwiki:
+  roles: [repository, testing]
+  change_kinds: [navigation, configuration, policy-adapter]
+  source_paths: [cmd/nacp/nacp.go, pkg/config/config.go, pkg/admissionctrl/controller.go]
+  test_paths: [cmd/nacp/nacp_test.go, pkg/config/config_test.go, pkg/admissionctrl/controller_test.go]
 ---
 
 # NACP source map
@@ -24,14 +29,14 @@ The runtime code implements the ordered lifecycle in [architecture](architecture
 
 | Area | Key paths | Use it for |
 | --- | --- | --- |
-| HCL schema/defaults | `pkg/config/config.go`, `pkg/config/config_test.go`, `pkg/config/testdata/` | Config structure, defaults, and decoding tests. |
+| HCL schema/defaults/validation | `pkg/config/config.go`, `pkg/config/config_test.go`, `pkg/config/testdata/` | Config structure, defaults, startup validation, duplicate-name rules, and decoding tests. |
 | Embedded OPA query engine | `pkg/admissionctrl/opa/` | Rego module loading, query evaluation, result binding extraction, Notation builtin registration. |
 | JSON Patch implementation | `pkg/admissionctrl/mutator/opa_json_patch.go`, `pkg/admissionctrl/mutator/jsonpatcher/` | Embedded OPA patching and patch application. |
 | OPA SDK/bundle adapters | `pkg/admissionctrl/{validator,mutator}/opa_bundle_*.go` | SDK decision result handling for validation and patch mutation. |
 | Remote policy adapters | `pkg/admissionctrl/{validator,mutator}/*webhook*.go`, `pkg/admissionctrl/remoteutil/` | Payload serialization, response parsing, forwarded context headers, outbound instrumentation. |
 | Image verification | `pkg/admissionctrl/notation/`, `pkg/admissionctrl/validator/notation_validator.go` | Trust policy/store loading and Docker-task image verification. |
 
-These paths implement the controller types listed in [policy integrations](policy-integrations.md#configuration-model). Keep result shape tests adjacent to the adapter that interprets it.
+These paths implement the controller types listed in [policy integrations](policy-integrations.md#configuration-and-startup-validation). Keep result shape tests adjacent to the adapter that interprets it.
 
 ## Operations and generated observability
 
@@ -60,15 +65,13 @@ These files operationalize the proxy rather than change admission semantics; see
 
 Examples are capability demonstrations, not production deployment manifests (`example/readme.md`). They connect policy behavior to [policy integrations](policy-integrations.md) and should be updated alongside contract changes when they remain representative.
 
-## History anchors
+## History navigation
 
-Use narrow history queries rather than reading unrelated commits:
+Use narrow history queries rather than reading unrelated commits when the checkout contains history:
 
 ```bash
 git log -- cmd/nacp/nacp.go pkg/admissionctrl/controller.go
 git log -- pkg/config/config.go pkg/admissionctrl/mutator/opa_bundle_json_patch.go
-git show 8793e10 -- cmd/nacp/nacp.go
-git show 2c950b5 -- cmd/nacp/nacp.go pkg/admissionctrl/mutator/opa_bundle_json_patch.go
 ```
 
-High-signal changes include the move into `pkg/`, token-resolution scoping (`8793e10`), addition of OPA SDK configuration, and the later bundle JSON-Patch POC. Those changes explain why the current pipeline carries request context and has two OPA execution models.
+This checkout is shallow: the prior wiki `gitHead` is unavailable locally. Do not depend on historical commit IDs from this page; verify lifecycle and configuration claims directly against the current source and tests until a fuller clone is available. The pipeline's request context and two OPA execution models are documented by [architecture](architecture.md) and [policy integrations](policy-integrations.md).
