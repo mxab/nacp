@@ -14,6 +14,7 @@ import (
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/log/logtest"
 )
@@ -86,12 +87,12 @@ func TestOtlpSetupWith(t *testing.T) {
 				Context:      context.Background(),
 				Severity:     log.SeverityInfo,
 				SeverityText: log.SeverityInfo.String(),
-				Body:         log.StringValue("some test log"),
+				Body:         attribute.StringValue("some test log"),
 				// otelslog records an error-valued attribute on the record's
 				// Error field instead of as a regular attribute.
 				Error: testErr,
-				Attributes: []log.KeyValue{
-					log.String("foo", "bar"),
+				Attributes: []attribute.KeyValue{
+					attribute.String("foo", "bar"),
 				},
 			},
 		},
