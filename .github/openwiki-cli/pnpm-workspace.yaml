@@ -9,3 +9,5 @@
 # to work when its build is skipped. See README.md in this directory.
 allowBuilds:
   better-sqlite3: true
+minimumReleaseAgeExclude:
+  - openwiki@0.3.0
