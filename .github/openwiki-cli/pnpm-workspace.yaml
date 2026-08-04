@@ -1,0 +1,11 @@
+# pnpm does not run dependency lifecycle scripts unless the package is listed
+# here. Of the ~198 packages in this tree, exactly one needs to run one:
+# better-sqlite3 ships a native addon built by its "install" script
+# (prebuild-install || node-gyp rebuild). OpenWiki reaches it through
+# @langchain/langgraph-checkpoint-sqlite and fails at startup without it
+# ("Could not locate the bindings file"), so this entry is required.
+#
+# Do not add entries here without first confirming the package genuinely fails
+# to work when its build is skipped. See README.md in this directory.
+allowBuilds:
+  better-sqlite3: true

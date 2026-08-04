@@ -68,3 +68,7 @@ misc/hashitalk_deploy2023/demos/setup/infra/ip_address.txt
 .DS_Store
 debugconfig/nacp.conf.hcl
 debugconfig/opa.yml
+
+# OpenWiki CLI installer (.github/openwiki-cli) — manifest and lockfile are
+# committed, installed dependencies are not.
+node_modules/

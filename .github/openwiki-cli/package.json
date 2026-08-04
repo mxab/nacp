@@ -1,0 +1,10 @@
+{
+  "name": "nacp-openwiki-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned installer for the OpenWiki CLI used by .github/workflows/openwiki-update.yml",
+  "packageManager": "pnpm@11.8.0",
+  "dependencies": {
+    "openwiki": "0.2.4"
+  }
+}
