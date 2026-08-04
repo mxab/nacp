@@ -3,35 +3,70 @@ type: Architecture Guide
 title: Proxy and admission pipeline
 description: How NACP selectively intercepts Nomad job APIs, orders mutation and validation, and returns Nomad-compatible outcomes.
 tags: [architecture, nomad, proxy, admission-control]
+openwiki:
+  roles: [architecture, workflow]
+  change_kinds: [lifecycle, routing, request-rewrite]
+  source_paths: [cmd/nacp/nacp.go, pkg/admissionctrl/controller.go, pkg/admissionctrl/types/opa_payload.go]
+  symbols: [newProxyHandler, JobHandler, ApplyAdmissionControllers, AdmissionMutators, AdmissionValidators]
+  test_paths: [cmd/nacp/nacp_test.go, pkg/admissionctrl/controller_test.go]
+  invariants: [Mutators run in configured order before validators, validators receive isolated copies, and only actionable routes are admitted.]
+  validation_commands: [go test ./cmd/nacp -count=1, go test ./pkg/admissionctrl -count=1]
 ---
 
 # Proxy and admission pipeline
 
-`cmd/nacp/nacp.go` builds NACP around Go’s `httputil.NewSingleHostReverseProxy`. The proxy forwards ordinary Nomad API traffic, but decodes job-bearing requests that match its admission routes. It sends their payloads to the configured controllers in [policy integrations](policy-integrations.md), replaces the job in the original Nomad request envelope, and forwards it upstream when the endpoint’s admission rules allow it.
+`cmd/nacp/nacp.go` builds NACP around Go's `httputil.NewSingleHostReverseProxy`. Ordinary Nomad API traffic is forwarded, while job-bearing admission routes are decoded, evaluated by controllers configured through [policy integrations and configuration](policy-integrations.md), rewritten with the admitted job, and forwarded when their endpoint rules allow it.
 
 ## Intercepted surface
 
-Only `PUT` and `POST` requests matching the following shapes go through admission:
+Only `PUT` and `POST` requests matching these paths go through admission:
 
 | Intent | Path | Request handling |
 | --- | --- | --- |
-| Create/register | `/v1/jobs` | Decode `api.JobRegisterRequest`, admit its `Job`, then forward rewritten request. |
-| Update/register | `/v1/job/<id>` | Same register flow; matching uses the job-path regex in `cmd/nacp/nacp.go`. |
-| Plan | `/v1/job/<id>/plan` | Decode `api.JobPlanRequest`, admit its `Job`, then forward rewritten request. |
-| Validate | `/v1/validate/job` | Decode `api.JobValidateRequest`, admit its `Job`, forward it, then rewrite Nomad’s validation response. |
+| Create/register | `/v1/jobs` | Decode `api.JobRegisterRequest`, admit its `Job`, then forward the rewritten request. |
+| Update/register | `/v1/job/<id>` | Same register flow; matching is `jobPathRegex` in `cmd/nacp/nacp.go`. |
+| Plan | `/v1/job/<id>/plan` | Decode `api.JobPlanRequest`, admit its `Job`, then forward the rewritten request. |
+| Validate | `/v1/validate/job` | Decode `api.JobValidateRequest`, admit its `Job`, forward it, then rewrite Nomad's validation response. |
 
-Any other method/path is proxy traffic, not admission traffic. The regex also makes update and plan matching narrower than a generic “all Nomad job IDs” claim, so route changes must update endpoint tests.
+All other method/path combinations are proxy traffic, not admission traffic. Actionable request bodies are limited to 32 MiB by `maxAdmissionBodySize`; route changes must decide whether that boundary applies and update endpoint tests.
 
 ## Request lifecycle and outcomes
 
-1. NACP derives `RequestContext.ClientIP` from the first `X-Forwarded-For` value, falling back to `RemoteAddr`.
-2. If any configured controller enables `resolve_token`, an actionable admission request triggers `GET /v1/acl/token/self` against Nomad with the incoming `X-Nomad-Token`. Returned ACL data is attached to the payload context.
-3. NACP constructs `types.Payload` as `{ "job": <api.Job>, "context": <optional request context> }` and invokes `JobHandler`.
-4. The handler runs mutators in configuration order. Each mutator receives the prior mutator’s output. A mutator error or a nil returned job fails fast.
-5. The handler then runs validators, aggregating validation errors while retaining warnings. Mutators therefore must accept imperfect input; validators see the final mutated job.
-6. NACP rewrites the original Nomad request with the admitted `Job`. It stores warnings (and, for the validate endpoint, validator errors) in request context so `ModifyResponse` can merge them into Nomad’s response, including gzip-compressed bodies.
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Proxy as NACP proxy
+    participant Nomad
+    participant Handler as JobHandler
+    participant Mutators
+    participant Validators
+    Client->>Proxy: actionable Nomad job request
+    Proxy->>Proxy: build request context
+    opt resolve token enabled
+        Proxy->>Nomad: GET ACL token self
+        Nomad-->>Proxy: sanitized token source
+    end
+    Proxy->>Handler: apply payload
+    Handler->>Mutators: run in configured order
+    Mutators-->>Handler: final job and warnings
+    Handler->>Validators: validate isolated job copies
+    Validators-->>Handler: warnings and aggregated errors
+    Handler-->>Proxy: admitted job or admission error
+    Proxy->>Nomad: forward rewritten request
+    Nomad-->>Proxy: Nomad response
+    Proxy-->>Client: merge warnings or validation errors
+```
 
-For **register** and **plan**, any admission error produces NACP’s local HTTP 500 and the request is not proxied. For **validate**, mutator errors still stop locally, but validator errors are forwarded as part of the rewritten Nomad validation response. This endpoint distinction is implemented in `handleRegister`, `handlePlan`, `handleValidate`, and the corresponding response handlers in `cmd/nacp/nacp.go`.
+This diagram shows the actionable-route path; non-actionable traffic bypasses `JobHandler` and is directly proxied.
+
+1. NACP derives `RequestContext.ClientIP` from the first `X-Forwarded-For` value, falling back to `RemoteAddr`.
+2. If any configured controller enables `resolve_token`, an actionable request triggers `GET /v1/acl/token/self` against Nomad with the incoming `X-Nomad-Token`. The context uses `config.SanitizeACLToken`, which excludes the token `SecretID`.
+3. The proxy creates `types.Payload` as `{ "job": <api.Job>, "context": <request context> }` and calls `JobHandler.ApplyAdmissionControllers`.
+4. `AdmissionMutators` runs mutators in configured order; each sees the prior output. A mutator error or nil job fails fast.
+5. `AdmissionValidators` receives the final job but JSON-copies it independently for each validator. It aggregates validator failures with `go-multierror` while retaining warnings. Validators therefore cannot alter the forwarded job.
+6. The proxy replaces the request envelope's `Job`, stores warnings (and, for validate, validator errors) in request context, then `ModifyResponse` rewrites successful Nomad responses. Register, plan, and validate response handlers retain gzip encoding when rewriting.
+
+For **register** and **plan**, any admission error produces NACP's local HTTP 500 and the request is not proxied. For **validate**, mutator errors still stop locally, but validator errors are forwarded and merged into Nomad's validation response. This distinction is implemented by `handleRegister`, `handlePlan`, `handleValidate`, and their response handlers in `cmd/nacp/nacp.go`.
 
 ## Controller contract
 
@@ -49,17 +84,17 @@ type JobValidator interface {
 }
 ```
 
-Mutators report a resulting job, whether it changed, warnings, and one fatal error. Validators report warnings and errors; `JobHandler` combines validator failures with `go-multierror`. This contract is implemented by the concrete OPA, SDK/bundle, webhook, and Notation adapters mapped in [policy integrations](policy-integrations.md#controller-families).
+Concrete OPA, SDK/bundle, webhook, and Notation adapters implement these interfaces as described in [policy integrations](policy-integrations.md#controller-families). `NewJobHandler` records whether token resolution is required and creates controller-labeled metrics; it also wraps application, mutation, and validation work in OpenTelemetry spans.
+
+### Change navigation
+
+Consult this page when changing proxy routing, payload lifecycle, error presentation, or a controller interface.
+
+- **Implementation:** start at `newProxyHandler`, then the relevant `handle*` routine in `cmd/nacp/nacp.go`; sequencing is in `JobHandler.ApplyAdmissionControllers`.
+- **Invariants:** do not reorder configured mutators; do not validate a pre-mutation job; preserve validator copies and error aggregation; do not accidentally admit non-actionable routes.
+- **Focused tests:** `TestProxy`, `TestJobUpdateProxy`, and `TestAdmissionRouteMatching` cover HTTP behavior. `TestJobHandler_ApplyAdmissionControllers` covers order/errors; `TestJobHandler_ValidatorsReceiveIsolatedCopyOfMutatedJob` protects copy isolation.
+- **Validation:** run `go test ./cmd/nacp -count=1` for route/rewrite changes, `go test ./pkg/admissionctrl -count=1` for orchestration changes, or both if the request-handler contract crosses the boundary. A full suite is conditional on cross-package changes.
 
 ## Security and transport boundaries
 
-The proxy has independent listener and upstream-Nomad TLS configuration; [operations and testing](operations-testing.md#transport-and-telemetry) explains both boundaries. Client-IP context is policy-visible, so deployments that trust it must ensure upstream proxy layers sanitize `X-Forwarded-For`. Resolved token data is in the serialized payload context, not a dedicated remote-policy header.
-
-Inbound handling, controller spans, and controller metrics surround this lifecycle. The [operations guide](operations-testing.md#transport-and-telemetry) explains how those signals are configured and where their tests live. The [source map](source-map.md#runtime-and-admission) locates the endpoint tests that protect this behavior.
-
-## Change checklist
-
-- Preserve mutation-before-validation ordering and configured slice order.
-- Test every changed endpoint flow in `cmd/nacp/nacp_test.go`; include response rewriting and gzip when applicable.
-- Test controller sequencing, error aggregation, warnings, and nil-job handling in `pkg/admissionctrl/controller_test.go`.
-- Inspect targeted history before changing sensitive proxy behavior: `8793e10` narrowed ACL self-token lookups to actionable routes; later work added OPA SDK and bundle controllers.
+The proxy has independent listener and upstream-Nomad TLS configuration; [operations and testing](operations-testing.md#transport-and-telemetry) explains both. Client IP is policy-visible, so deployments that trust it must sanitize `X-Forwarded-For` before NACP. Resolved token data is serialized in payload context rather than a dedicated remote-policy header; webhook-specific header projection is defined in [policy integrations](policy-integrations.md#webhooks).
