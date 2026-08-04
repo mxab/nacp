@@ -55,6 +55,12 @@ All direct dependencies have been updated to their latest releases, and the
 
   See [update_and_nomad_dep_removal.md](update_and_nomad_dep_removal.md) for the full rationale.
 
+- **OpenTelemetry upgraded to 1.45.0 / 0.21.0 (contrib 0.70.0)**
+  Upstream removed the `Kind`, `Value` and `KeyValue` types from `go.opentelemetry.io/otel/log`;
+  log bodies and attributes now use the shared `go.opentelemetry.io/otel/attribute` types. This
+  is confined to NACP's test assertions — the emitted OTLP logs, metrics and traces are
+  unchanged.
+
 ### Breaking Changes
 
 - **Switch from `hashicorp/go-hclog` to `log/slog` for Logging**
