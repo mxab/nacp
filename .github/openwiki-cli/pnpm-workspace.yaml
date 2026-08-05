@@ -5,6 +5,10 @@
 # @langchain/langgraph-checkpoint-sqlite and fails at startup without it
 # ("Could not locate the bindings file"), so this entry is required.
 #
+# This allowlist is a second gate, not the only one: the workflow installs with
+# --ignore-scripts and then rebuilds this package by name, so a package added
+# here still would not run at install time.
+#
 # Do not add entries here without first confirming the package genuinely fails
 # to work when its build is skipped. See README.md in this directory.
 allowBuilds:

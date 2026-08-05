@@ -39,12 +39,23 @@ jobs:
       # The CLI is installed from a committed lockfile rather than resolved
       # fresh on every run, so the whole transitive tree is pinned by integrity
       # hash. --frozen-lockfile makes drift from package.json a hard failure
-      # instead of a silent re-resolution. pnpm blocks dependency lifecycle
-      # scripts by default; the one package that needs to build is allowlisted
-      # in .github/openwiki-cli/pnpm-workspace.yaml.
+      # instead of a silent re-resolution. --ignore-scripts means no package in
+      # the ~198-package tree gets to execute code at install time.
       - name: Install OpenWiki
         working-directory: .github/openwiki-cli
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # better-sqlite3 is the one package whose build is genuinely required: it
+      # ships a native addon that OpenWiki reaches through
+      # @langchain/langgraph-checkpoint-sqlite, and without it a run dies with
+      # "Could not locate the bindings file". Naming it explicitly — rather than
+      # `pnpm rebuild --pending`, which would rebuild everything the install
+      # skipped — keeps the exception to exactly one package. It is also the only
+      # entry in .github/openwiki-cli/pnpm-workspace.yaml's build allowlist,
+      # which gates this step as well.
+      - name: Build better-sqlite3 native addon
+        working-directory: .github/openwiki-cli
+        run: pnpm rebuild better-sqlite3
 
       - name: Run OpenWiki
         run: .github/openwiki-cli/node_modules/.bin/openwiki code --update --print
