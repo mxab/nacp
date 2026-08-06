@@ -70,5 +70,5 @@ The proxy and controller order are the core behavioral contract. Preserve mutati
 
 ## Backlog
 
-- **Historical progression audit** — source anchor: `openwiki/.last-update.json`, `.git/`; the recorded prior `gitHead` `1310f1b5f624390bf788c3c02f285226b8ee4eae` is unavailable in this shallow checkout, so a source-backed range history cannot be reconstructed here.
+- **Historical progression audit** — source anchor: `openwiki/.last-update.json`, `.git/`; the recorded prior `gitHead` `e10faf62eb238c28902bf7bbab4e5579750b0faf` is unavailable in this shallow checkout, so a source-backed range history cannot be reconstructed here.
 - **OPA bundle production lifecycle** — source anchor: `pkg/admissionctrl/{validator,mutator}/opa_bundle_*.go`, `example/demo/opa.yml`; bundle availability, refresh, and rollout behavior need deployment-level evidence beyond the current code and examples.
