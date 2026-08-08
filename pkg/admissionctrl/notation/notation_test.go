@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -268,16 +269,31 @@ func launchRegistry(t *testing.T, creds *creds) (func(), network.Port, string) {
 
 }
 
+// drainDockerStream consumes a docker daemon JSON progress stream, failing the
+// test on the first reported error.
+func drainDockerStream(t *testing.T, r io.Reader) {
+	t.Helper()
+
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := scanner.Text()
+		info := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(line), &info); err != nil {
+			t.Fatal(err)
+		}
+		if info["error"] != nil {
+			t.Fatalf("%v %v", info["error"], info["errorDetail"])
+		}
+
+		fmt.Println(line)
+	}
+}
+
 func buildImage(t *testing.T, address string, creds *creds) string {
 	t.Helper()
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	// show connection details
 
 	if err != nil {
 		t.Fatal(err)
@@ -335,22 +351,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 			fmt.Println(item)
 		}
 	}()
-	scanner := bufio.NewScanner(buildRes.Body)
-	for scanner.Scan() {
-		lastLine := scanner.Text()
-		// read last line as json
-		info := map[string]interface{}{}
-		err := json.Unmarshal([]byte(lastLine), &info)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-		if info["error"] != nil {
-			t.Fatalf("%v %v", info["error"], info["errorDetail"])
-		}
-
-		fmt.Println(lastLine)
-	}
+	drainDockerStream(t, buildRes.Body)
 
 	auth := "nothing"
 	if creds != nil {
@@ -360,25 +361,10 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 		All:          true,
 		RegistryAuth: auth,
 	})
-	scanner = bufio.NewScanner(pushRes)
-	for scanner.Scan() {
-		lastLine := scanner.Text()
-
-		info := map[string]interface{}{}
-		err := json.Unmarshal([]byte(lastLine), &info)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-		if info["error"] != nil {
-			t.Fatalf("%v %v", info["error"], info["errorDetail"])
-		}
-
-		fmt.Println(lastLine)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
+	drainDockerStream(t, pushRes)
 
 	insp, _, err := cli.ImageInspectWithRaw(ctx, imageTag)
 	if err != nil {
