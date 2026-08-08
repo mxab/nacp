@@ -138,86 +138,96 @@ func newProxyHandler(nomadAddress *url.URL, jobHandler *admissionctrl.JobHandler
 		proxy.Transport = transport
 	}
 
-	originalDirector := proxy.Director
-
-	proxy.Director = func(r *http.Request) {
-		originalDirector(r)
-	}
-
 	proxy.ModifyResponse = func(resp *http.Response) error {
-
-		var err error
-
-		if isRegister(resp.Request) {
-			err = handRegisterResponse(resp, logger)
-		} else if isPlan(resp.Request) {
-			err = handleJobPlanResponse(resp, logger)
-		} else if isValidate(resp.Request) {
-			err = handleJobValdidateResponse(resp, logger)
-		}
-		if err != nil {
-			logger.ErrorContext(resp.Request.Context(), "Preparing response failed", "error", err)
-			return err
-		}
-
-		return nil
+		return modifyProxyResponse(resp, logger)
 	}
 	var proxyHandler http.Handler = proxy
 
 	nacpHandler := func(w http.ResponseWriter, r *http.Request) {
 
-		ctx := r.Context()
-		reqCtx := &config.RequestContext{
-			ClientIP:     getClientIP(r),
-			ResolveToken: jobHandler.ResolveToken(),
-		}
-
-		token := r.Header.Get("X-Nomad-Token")
-		isAdmissionActionable := isRegister(r) || isPlan(r) || isValidate(r)
-		if isAdmissionActionable {
-			r.Body = http.MaxBytesReader(w, r.Body, maxAdmissionBodySize)
-		}
-		if isAdmissionActionable && jobHandler.ResolveToken() {
-			tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
-			if err != nil {
-				logger.ErrorContext(ctx, "Resolving token failed", "error", err)
-				writeError(w, err)
-				return
-			}
-			if tokenInfo != nil {
-				reqCtx.AccessorID = tokenInfo.AccessorID
-				reqCtx.TokenInfo = config.SanitizeACLToken(tokenInfo)
-			}
-			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
-		} else {
-			logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
-		}
-
-		ctx = context.WithValue(ctx, ctxRequestContext, reqCtx)
-		r = r.WithContext(ctx)
-
-		var err error
-		if isRegister(r) {
-			r, err = handleRegister(r, logger, jobHandler)
-
-		} else if isPlan(r) {
-			r, err = handlePlan(r, logger, jobHandler)
-
-		} else if isValidate(r) {
-			r, err = handleValidate(r, logger, jobHandler)
-
-		}
+		r, err := resolveRequestContext(w, r, jobHandler, nomadAddress, transport, logger)
 		if err != nil {
-			logger.WarnContext(ctx, "Error applying admission controllers", "error", err)
+			logger.ErrorContext(r.Context(), "Resolving token failed", "error", err)
 			writeError(w, err)
-
-		} else {
-			proxyHandler.ServeHTTP(w, r)
+			return
 		}
 
+		r, err = applyAdmission(r, logger, jobHandler)
+		if err != nil {
+			logger.WarnContext(r.Context(), "Error applying admission controllers", "error", err)
+			writeError(w, err)
+			return
+		}
+
+		proxyHandler.ServeHTTP(w, r)
 	}
 	return nacpHandler
 
+}
+
+func modifyProxyResponse(resp *http.Response, logger *slog.Logger) error {
+
+	var err error
+
+	if isRegister(resp.Request) {
+		err = handRegisterResponse(resp, logger)
+	} else if isPlan(resp.Request) {
+		err = handleJobPlanResponse(resp, logger)
+	} else if isValidate(resp.Request) {
+		err = handleJobValdidateResponse(resp, logger)
+	}
+	if err != nil {
+		logger.ErrorContext(resp.Request.Context(), "Preparing response failed", "error", err)
+		return err
+	}
+
+	return nil
+}
+
+// resolveRequestContext attaches the NACP request context to r, resolving the
+// Nomad token first if any admission controller asked for it. The returned
+// request always carries a usable context, even when resolving fails.
+func resolveRequestContext(w http.ResponseWriter, r *http.Request, jobHandler *admissionctrl.JobHandler, nomadAddress *url.URL, transport http.RoundTripper, logger *slog.Logger) (*http.Request, error) {
+
+	ctx := r.Context()
+	reqCtx := &config.RequestContext{
+		ClientIP:     getClientIP(r),
+		ResolveToken: jobHandler.ResolveToken(),
+	}
+
+	isAdmissionActionable := isRegister(r) || isPlan(r) || isValidate(r)
+	if isAdmissionActionable {
+		r.Body = http.MaxBytesReader(w, r.Body, maxAdmissionBodySize)
+	}
+	if isAdmissionActionable && jobHandler.ResolveToken() {
+		token := r.Header.Get("X-Nomad-Token")
+		tokenInfo, err := resolveTokenAccessor(ctx, transport, nomadAddress, token)
+		if err != nil {
+			return r, err
+		}
+		if tokenInfo != nil {
+			reqCtx.AccessorID = tokenInfo.AccessorID
+			reqCtx.TokenInfo = config.SanitizeACLToken(tokenInfo)
+		}
+		logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP, "accessorID", reqCtx.AccessorID)
+	} else {
+		logger.InfoContext(ctx, "Request received", "path", r.URL.Path, "method", r.Method, "clientIP", reqCtx.ClientIP)
+	}
+
+	return r.WithContext(context.WithValue(ctx, ctxRequestContext, reqCtx)), nil
+}
+
+func applyAdmission(r *http.Request, logger *slog.Logger, jobHandler *admissionctrl.JobHandler) (*http.Request, error) {
+	if isRegister(r) {
+		return handleRegister(r, logger, jobHandler)
+	}
+	if isPlan(r) {
+		return handlePlan(r, logger, jobHandler)
+	}
+	if isValidate(r) {
+		return handleValidate(r, logger, jobHandler)
+	}
+	return r, nil
 }
 
 func handRegisterResponse(resp *http.Response, logger *slog.Logger) error {

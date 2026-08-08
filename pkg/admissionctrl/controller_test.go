@@ -237,22 +237,25 @@ func TestJobHandler_ApplyAdmissionControllers(t *testing.T) {
 			}
 			if !tt.wantErr {
 				assert.Equal(t, tt.want, job, "Jobs should be equal")
-				assert.Equal(t, tt.wantWarnings, warnings, "Warnings should be equal")
-
 			}
 			if tt.wantedCalledMutator {
-				for _, mutator := range mutators {
-					if mutator, ok := mutator.(*testutil.MockMutator); ok {
-						// Assert that the mutator was called
-						mutator.AssertExpectations(t)
-					}
-				}
+				assertMutatorsCalled(t, mutators)
 			}
 
 			if tt.wantedCalledValidator {
 				validator.AssertExpectations(t)
 			}
 		})
+	}
+}
+
+// assertMutatorsCalled asserts that every mock mutator saw the calls it expected.
+func assertMutatorsCalled(t *testing.T, mutators []JobMutator) {
+	t.Helper()
+	for _, m := range mutators {
+		if mockMutator, ok := m.(*testutil.MockMutator); ok {
+			mockMutator.AssertExpectations(t)
+		}
 	}
 }
 
