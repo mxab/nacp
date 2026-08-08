@@ -287,28 +287,33 @@ func AssertLogBodyPresent(t *testing.T, records logtest.Recording, body string, 
 	for _, logRecord := range records {
 		for _, record := range logRecord {
 			if body == record.Body.AsString() {
-
 				found = true
-
-				for _, a := range attrs {
-					attrFound := false
-
-					for _, kv := range record.Attributes {
-
-						if kv.Key == a.Key {
-							attrFound = true
-							assert.Equal(t, kv.Value.AsString(), a.Value.AsString(), "Expected log to contain %s", a)
-							break
-						}
-
-					}
-					assert.True(t, attrFound, "Expected log to '%s' contain %v = %v", body, a.Key, a.Value.AsString())
-
-				}
+				assertRecordAttrs(t, body, record, attrs)
 			}
 		}
 	}
 	return assert.True(t, found, "Expected log body to be present")
+}
+
+func assertRecordAttrs(t *testing.T, body string, record logtest.Record, attrs []attribute.KeyValue) {
+	t.Helper()
+
+	for _, a := range attrs {
+		kv, attrFound := findAttr(record, a.Key)
+		if attrFound {
+			assert.Equal(t, kv.Value.AsString(), a.Value.AsString(), "Expected log to contain %s", a)
+		}
+		assert.True(t, attrFound, "Expected log to '%s' contain %v = %v", body, a.Key, a.Value.AsString())
+	}
+}
+
+func findAttr(record logtest.Record, key attribute.Key) (attribute.KeyValue, bool) {
+	for _, kv := range record.Attributes {
+		if kv.Key == key {
+			return kv, true
+		}
+	}
+	return attribute.KeyValue{}, false
 }
 
 func rec(msgs ...logtest.Record) logtest.Recording {

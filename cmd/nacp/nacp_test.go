@@ -35,31 +35,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type proxyTestCase struct {
+	name   string
+	path   string
+	method string
+
+	token                      string
+	resolveToken               bool
+	wantTokenResolveToBeCalled bool
+
+	accessorID string
+
+	requestSender         func(*api.Client) (interface{}, any, error)
+	wantNomadRequestJson  string
+	wantProxyResponse     any
+	wantError             string
+	nomadResponse         string
+	nomadResponseEncoding string
+	//	responseWarnings []error
+	validators []admissionctrl.JobValidator
+	mutators   []admissionctrl.JobMutator
+}
+
+// callTracker records which endpoints of the fake Nomad backend were hit.
+type callTracker struct {
+	backendCalled   bool
+	admissionCalled bool
+	tokenCalled     bool
+}
+
 func TestProxy(t *testing.T) {
 
-	type test struct {
-		name   string
-		path   string
-		method string
-
-		token                      string
-		resolveToken               bool
-		wantTokenResolveToBeCalled bool
-
-		accessorID string
-
-		requestSender         func(*api.Client) (interface{}, any, error)
-		wantNomadRequestJson  string
-		wantProxyResponse     any
-		wantError             string
-		nomadResponse         string
-		nomadResponseEncoding string
-		//	responseWarnings []error
-		validators []admissionctrl.JobValidator
-		mutators   []admissionctrl.JobMutator
-	}
-
-	tests := []test{
+	tests := []proxyTestCase{
 		{
 			name:   "create job adds hello meta",
 			path:   "/v1/jobs",
@@ -429,49 +436,8 @@ func TestProxy(t *testing.T) {
 	for _, tc := range tests {
 
 		t.Run(tc.name, func(t *testing.T) {
-			nomadBackendCalled := false
-			nomadAdmissionCalled := false
-			tokenCalled := false
-			nomadDummy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				nomadBackendCalled = true
-				if req.URL.Path == "/v1/acl/token/self" {
-					tokenCalled = true
-					if tc.token != "test-token" {
-						rw.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-					json.NewEncoder(rw).Encode(&api.ACLToken{
-						AccessorID: tc.accessorID,
-						Name:       "test-token",
-						Policies:   []string{"test-policy"},
-						Type:       "client",
-						Global:     false,
-					})
-					return
-				}
-
-				nomadAdmissionCalled = true
-				assert.Equal(t, req.Method, tc.method)
-				assert.Equal(t, req.URL.Path, tc.path)
-				jsonData, err := io.ReadAll(req.Body)
-				require.NoError(t, err)
-				if tc.wantNomadRequestJson == "" {
-					assert.Equal(t, 0, len(jsonData), "Body should be empty")
-				} else {
-					assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
-				}
-
-				if tc.nomadResponseEncoding == "gzip" {
-					rw.Header().Set("Content-Encoding", "gzip")
-					rw.WriteHeader(http.StatusOK)
-					gzipWriter := gzip.NewWriter(rw)
-					defer gzipWriter.Close()
-					gzipWriter.Write([]byte(tc.nomadResponse))
-				} else {
-					rw.WriteHeader(http.StatusOK)
-					rw.Write([]byte(tc.nomadResponse))
-				}
-			}))
+			tracker := &callTracker{}
+			nomadDummy := httptest.NewServer(newNomadDummyHandler(t, tc, tracker))
 			defer nomadDummy.Close()
 
 			nomadURL, err := url.Parse(nomadDummy.URL)
@@ -494,26 +460,85 @@ func TestProxy(t *testing.T) {
 			}
 
 			resp, _, err := tc.requestSender(nomadClient)
-			assert.Equalf(t, tc.wantTokenResolveToBeCalled, tokenCalled, "token should %sbe called", func() string {
-				if tc.wantTokenResolveToBeCalled {
-					return ""
-				} else {
-					return "not "
-				}
-			}())
-
-			if tc.wantError != "" {
-				require.Error(t, err)
-				assert.Contains(t, err.Error(), tc.wantError, "Error should match")
-				assert.False(t, nomadAdmissionCalled, "Nomad admission endpoint must not be called after token resolution fails")
-				return
-			} else {
-				require.NoError(t, err, "No http call error")
-				assert.Equal(t, tc.wantProxyResponse, resp, "Response matches")
-				assert.True(t, nomadBackendCalled, "Nomad backend was called")
-			}
+			assertProxyResult(t, tc, resp, err, tracker)
 		})
 	}
+}
+
+// newNomadDummyHandler serves the fake Nomad backend for a proxy test case and
+// records on tracker which of its endpoints the proxy reached.
+func newNomadDummyHandler(t *testing.T, tc proxyTestCase, tracker *callTracker) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		tracker.backendCalled = true
+		if req.URL.Path == "/v1/acl/token/self" {
+			tracker.tokenCalled = true
+			writeTokenSelfResponse(rw, tc)
+			return
+		}
+
+		tracker.admissionCalled = true
+		assertAdmissionRequest(t, tc, req)
+		writeNomadResponse(rw, tc)
+	}
+}
+
+func writeTokenSelfResponse(rw http.ResponseWriter, tc proxyTestCase) {
+	if tc.token != "test-token" {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	json.NewEncoder(rw).Encode(&api.ACLToken{
+		AccessorID: tc.accessorID,
+		Name:       "test-token",
+		Policies:   []string{"test-policy"},
+		Type:       "client",
+		Global:     false,
+	})
+}
+
+func assertAdmissionRequest(t *testing.T, tc proxyTestCase, req *http.Request) {
+	t.Helper()
+	assert.Equal(t, req.Method, tc.method)
+	assert.Equal(t, req.URL.Path, tc.path)
+	jsonData, err := io.ReadAll(req.Body)
+	require.NoError(t, err)
+	if tc.wantNomadRequestJson == "" {
+		assert.Equal(t, 0, len(jsonData), "Body should be empty")
+		return
+	}
+	assert.JSONEq(t, tc.wantNomadRequestJson, string(jsonData))
+}
+
+func writeNomadResponse(rw http.ResponseWriter, tc proxyTestCase) {
+	if tc.nomadResponseEncoding != "gzip" {
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte(tc.nomadResponse))
+		return
+	}
+	rw.Header().Set("Content-Encoding", "gzip")
+	rw.WriteHeader(http.StatusOK)
+	gzipWriter := gzip.NewWriter(rw)
+	defer gzipWriter.Close()
+	gzipWriter.Write([]byte(tc.nomadResponse))
+}
+
+func assertProxyResult(t *testing.T, tc proxyTestCase, resp any, err error, tracker *callTracker) {
+	t.Helper()
+	tokenCallExpectation := "not "
+	if tc.wantTokenResolveToBeCalled {
+		tokenCallExpectation = ""
+	}
+	assert.Equalf(t, tc.wantTokenResolveToBeCalled, tracker.tokenCalled, "token should %sbe called", tokenCallExpectation)
+
+	if tc.wantError != "" {
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), tc.wantError, "Error should match")
+		assert.False(t, tracker.admissionCalled, "Nomad admission endpoint must not be called after token resolution fails")
+		return
+	}
+	require.NoError(t, err, "No http call error")
+	assert.Equal(t, tc.wantProxyResponse, resp, "Response matches")
+	assert.True(t, tracker.backendCalled, "Nomad backend was called")
 }
 
 func TestJobUpdateProxy(t *testing.T) {
