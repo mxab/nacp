@@ -38,7 +38,7 @@ Run the smallest relevant package test without cached results. The full reposito
 | OTel provider/export and HTTP instrumentation | `pkg/otel/otel_test.go`, `cmd/nacp/nacp_otel_test.go` | `go test ./pkg/otel ./cmd/nacp -count=1` | exporter behavior or metrics schema changes |
 | Notation registry/signature behavior | `pkg/admissionctrl/{notation,validator}/` tests | `go test -tags=integration ./pkg/admissionctrl/notation` | the image verification contract crosses packages |
 
-CI in `.github/workflows/go.yml` runs format, `go vet ./...`, build, and `go test -tags=integration -coverprofile=cov.all.out -v ./...`, then excludes generated `o11y/metric.go` from coverage before SonarCloud analysis. Use that broader path before a cross-package or release handoff, not as the first check for a narrow change.
+CI in `.github/workflows/go.yml` runs format, `go vet ./...`, build, and `go test -tags=integration -coverprofile=cov.all.out -v ./...`, then excludes generated `o11y/metric.go` from the coverage report before SonarCloud analysis. `sonar-project.properties` also excludes that generated source through `**/o11y/metric.go`. Use that broader path before a cross-package or release handoff, not as the first check for a narrow change.
 
 ## Generated metrics
 

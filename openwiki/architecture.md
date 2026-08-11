@@ -7,7 +7,7 @@ openwiki:
   roles: [architecture, workflow]
   change_kinds: [lifecycle, routing, request-rewrite]
   source_paths: [cmd/nacp/nacp.go, pkg/admissionctrl/controller.go, pkg/admissionctrl/types/opa_payload.go]
-  symbols: [newProxyHandler, JobHandler, ApplyAdmissionControllers, AdmissionMutators, AdmissionValidators]
+  symbols: [newProxyHandler, resolveRequestContext, applyAdmission, modifyProxyResponse, JobHandler, ApplyAdmissionControllers, AdmissionMutators, AdmissionValidators]
   test_paths: [cmd/nacp/nacp_test.go, pkg/admissionctrl/controller_test.go]
   invariants: [Mutators run in configured order before validators, validators receive isolated copies, and only actionable routes are admitted.]
   validation_commands: [go test ./cmd/nacp -count=1, go test ./pkg/admissionctrl -count=1]
@@ -15,7 +15,7 @@ openwiki:
 
 # Proxy and admission pipeline
 
-`cmd/nacp/nacp.go` builds NACP around Go's `httputil.NewSingleHostReverseProxy`. Ordinary Nomad API traffic is forwarded, while job-bearing admission routes are decoded, evaluated by controllers configured through [policy integrations and configuration](policy-integrations.md), rewritten with the admitted job, and forwarded when their endpoint rules allow it.
+`cmd/nacp/nacp.go` builds NACP around Go's `httputil.NewSingleHostReverseProxy`. `newProxyHandler` composes `resolveRequestContext`, `applyAdmission`, and `modifyProxyResponse` around that proxy. Ordinary Nomad API traffic is forwarded, while job-bearing admission routes are decoded, evaluated by controllers configured through [policy integrations and configuration](policy-integrations.md), rewritten with the admitted job, and forwarded when their endpoint rules allow it.
 
 ## Intercepted surface
 
@@ -90,7 +90,7 @@ Concrete OPA, SDK/bundle, webhook, and Notation adapters implement these interfa
 
 Consult this page when changing proxy routing, payload lifecycle, error presentation, or a controller interface.
 
-- **Implementation:** start at `newProxyHandler`, then the relevant `handle*` routine in `cmd/nacp/nacp.go`; sequencing is in `JobHandler.ApplyAdmissionControllers`.
+- **Implementation:** start at `newProxyHandler`. `resolveRequestContext` owns request context, admission-body limiting, and optional token lookup; `applyAdmission` dispatches to the relevant `handle*` routine; `modifyProxyResponse` dispatches response rewriting. Sequencing is in `JobHandler.ApplyAdmissionControllers`.
 - **Invariants:** do not reorder configured mutators; do not validate a pre-mutation job; preserve validator copies and error aggregation; do not accidentally admit non-actionable routes.
 - **Focused tests:** `TestProxy`, `TestJobUpdateProxy`, and `TestAdmissionRouteMatching` cover HTTP behavior. `TestJobHandler_ApplyAdmissionControllers` covers order/errors; `TestJobHandler_ValidatorsReceiveIsolatedCopyOfMutatedJob` protects copy isolation.
 - **Validation:** run `go test ./cmd/nacp -count=1` for route/rewrite changes, `go test ./pkg/admissionctrl -count=1` for orchestration changes, or both if the request-handler contract crosses the boundary. A full suite is conditional on cross-package changes.
