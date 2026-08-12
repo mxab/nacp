@@ -19,11 +19,9 @@ import (
 	"github.com/moby/go-archive"
 	"github.com/moby/go-archive/compression"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/network"
+	"github.com/moby/moby/client"
 
 	"github.com/notaryproject/notation-core-go/signature/cose"
 	"github.com/notaryproject/notation-core-go/testhelper"
@@ -31,7 +29,7 @@ import (
 	"github.com/notaryproject/notation-go/dir"
 	"github.com/notaryproject/notation-go/registry"
 
-	dockerRegistry "github.com/docker/docker/api/types/registry"
+	dockerRegistry "github.com/moby/moby/api/types/registry"
 	"github.com/notaryproject/notation-go/signer"
 	"github.com/notaryproject/notation-go/verifier/trustpolicy"
 	"github.com/notaryproject/notation-go/verifier/truststore"
@@ -327,7 +325,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 
 	imageTag := baseImageTag + ":v1"
 
-	opts := types.ImageBuildOptions{
+	opts := client.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
 		Tags:       []string{imageTag},
 
@@ -340,14 +338,14 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 	}
 	defer func() {
 
-		items, err := cli.ImageRemove(ctx, imageTag, image.RemoveOptions{
+		res, err := cli.ImageRemove(ctx, imageTag, client.ImageRemoveOptions{
 			Force:         true,
 			PruneChildren: true,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, item := range items {
+		for _, item := range res.Items {
 			fmt.Println(item)
 		}
 	}()
@@ -357,7 +355,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 	if creds != nil {
 		auth = creds.credsJsonBase64()
 	}
-	pushRes, err := cli.ImagePush(ctx, imageTag, image.PushOptions{
+	pushRes, err := cli.ImagePush(ctx, imageTag, client.ImagePushOptions{
 		All:          true,
 		RegistryAuth: auth,
 	})
@@ -366,7 +364,7 @@ func buildImage(t *testing.T, address string, creds *creds) string {
 	}
 	drainDockerStream(t, pushRes)
 
-	insp, _, err := cli.ImageInspectWithRaw(ctx, imageTag)
+	insp, err := cli.ImageInspect(ctx, imageTag)
 	if err != nil {
 		t.Fatal(err)
 	}
