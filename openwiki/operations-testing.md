@@ -36,7 +36,14 @@ Run the smallest relevant package test without cached results. The full reposito
 | Controller sequencing and adapter contracts | `pkg/admissionctrl/controller_test.go` and colocated adapter tests | `go test ./pkg/admissionctrl/... -count=1` | shared configuration or executable wiring changes |
 | HCL schema/defaults/startup failures | `pkg/config/config_test.go` | `go test ./pkg/config -count=1` | controller construction is changed too |
 | OTel provider/export and HTTP instrumentation | `pkg/otel/otel_test.go`, `cmd/nacp/nacp_otel_test.go` | `go test ./pkg/otel ./cmd/nacp -count=1` | exporter behavior or metrics schema changes |
-| Notation registry/signature behavior | `pkg/admissionctrl/{notation,validator}/` tests | `go test -tags=integration ./pkg/admissionctrl/notation` | the image verification contract crosses packages |
+| Notation task selection/errors | `TestNotationValidatorValidate` in `pkg/admissionctrl/validator/notation_validator_test.go` | `go test ./pkg/admissionctrl/validator -count=1` | the verifier, registry, trust-store, credential-store, or image-client boundary changes |
+| Notation registry/signature behavior | `TestVerifyImage` in `pkg/admissionctrl/notation/notation_test.go` | `go test -tags=integration ./pkg/admissionctrl/notation` | the image verification contract crosses packages |
+
+### Notation validation dependency boundary
+
+The production verifier in `pkg/admissionctrl/notation/notation.go` uses Notation and ORAS to verify a remote artifact; it does not use a Docker client. Its Docker-backed integration test, `TestVerifyImage`, launches a registry, builds and pushes an image, signs it, and verifies both unauthenticated and authenticated registry cases. That test imports the split Moby API/client modules declared in `go.mod` (`github.com/moby/moby/api` and `github.com/moby/moby/client`), which replace the legacy `github.com/docker/docker` module named by the current visible dependency-change commit.
+
+For a validator-only change, run the ordinary validator package test first. Run the integration command only when changing registry/signature behavior, the test's Docker/Moby client boundary, or the dependency declarations; it requires a usable Docker environment. The result then feeds the `notation` controller contract described in [policy integrations](policy-integrations.md#notation-image-verification).
 
 CI in `.github/workflows/go.yml` runs format, `go vet ./...`, build, and `go test -tags=integration -coverprofile=cov.all.out -v ./...`, then excludes generated `o11y/metric.go` from the coverage report before SonarCloud analysis. `sonar-project.properties` also excludes that generated source through `**/o11y/metric.go`. Use that broader path before a cross-package or release handoff, not as the first check for a narrow change.
 

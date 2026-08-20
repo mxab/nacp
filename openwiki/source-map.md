@@ -34,9 +34,9 @@ The runtime code implements the ordered lifecycle in [architecture](architecture
 | JSON Patch implementation | `pkg/admissionctrl/mutator/opa_json_patch.go`, `pkg/admissionctrl/mutator/jsonpatcher/` | Embedded OPA patching and patch application. |
 | OPA SDK/bundle adapters | `pkg/admissionctrl/{validator,mutator}/opa_bundle_*.go` | SDK decision result handling for validation and patch mutation. |
 | Remote policy adapters | `pkg/admissionctrl/{validator,mutator}/*webhook*.go`, `pkg/admissionctrl/remoteutil/` | Payload serialization, response parsing, forwarded context headers, outbound instrumentation. |
-| Image verification | `pkg/admissionctrl/notation/`, `pkg/admissionctrl/validator/notation_validator.go` | Trust policy/store loading and Docker-task image verification. |
+| Image verification | `pkg/admissionctrl/notation/`, `pkg/admissionctrl/notation/notation_test.go`, `pkg/admissionctrl/validator/notation_validator.go`, `pkg/admissionctrl/validator/notation_validator_test.go` | Trust policy/store loading, remote verification, Docker-task selection, and the Docker-backed registry integration test. |
 
-These paths implement the controller types listed in [policy integrations](policy-integrations.md#configuration-and-startup-validation). Keep result shape tests adjacent to the adapter that interprets it.
+These paths implement the controller types listed in [policy integrations](policy-integrations.md#configuration-and-startup-validation). Keep result shape tests adjacent to the adapter that interprets it. The Docker-backed registry test is an operational, conditional check; its prerequisites and scope are defined in [operations and testing](operations-testing.md#notation-validation-dependency-boundary).
 
 ## Operations and generated observability
 
