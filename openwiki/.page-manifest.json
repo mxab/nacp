@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/system-map.md": {
+      "pageVersion": "sha256:2e1b908341b05e756813b6ee05cd81e215ede15d815aa54346c75cd84ff84764",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    },
+    "/openwiki/integrations/image-verification.md": {
+      "pageVersion": "sha256:cb89b5cf20fa6a6365a3edeac971231f926a93ffb0ec9ab6f6ab9ec57919e609",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    },
+    "/openwiki/integrations/opa-policies.md": {
+      "pageVersion": "sha256:575f5eb72edbb8868cd76a94449f8374f2f96cd23c6f3694e4f5e83c88da432e",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    },
+    "/openwiki/integrations/webhooks.md": {
+      "pageVersion": "sha256:c835284fea227430f29e7877bc881e82e0ac8ad54142c38d2e492eeebe5e8b68",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    },
+    "/openwiki/operations/configuration-and-deployment.md": {
+      "pageVersion": "sha256:6f0379144c608e805e4f1fac50d04d981e978c920c34f878506af1516670a0dd",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    },
+    "/openwiki/operations/observability.md": {
+      "pageVersion": "sha256:5f10ad1145b492c4764bc3b065536537b39b470be4e7ae9227f628edd5d57748",
+      "completedBy": "openwiki/0.5.0",
+      "completedRunId": "934d1b29-6f35-48ac-b473-d04891e602c8",
+      "gitHead": "72afb1c68ddf7a86f7720ebbbb5da6e0f460b621",
+      "sourceFingerprint": "sha256:20d10ef6375c3c11a45bd7b9dc3bc1f4a0411d005bfc62dd72b1d1df5b46eca5"
+    }
+  }
+}

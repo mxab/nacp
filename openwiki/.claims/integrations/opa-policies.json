@@ -1,0 +1,518 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:575f5eb72edbb8868cd76a94449f8374f2f96cd23c6f3694e4f5e83c88da432e",
+  "claims": [
+    {
+      "id": "claim_931b3ec5841942d5a61346944817599b",
+      "statement": "All four OPA adapters evaluate the admission Payload with the job under input.job and optional context under input.context; the pipeline runs mutators first and validates isolated copies of the final mutated job.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L228",
+          "version": "repo-lines-v1:sha256:927d640a1a689e7b9416064a29fbb29451911b05cadb73ead52922878bd7e3e0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2ZTQwOGQ1MmMyYmExYmU3NDJlZGU3MzYwZTRkNDAyYjE5Y2FhNzg3ZGE0NDRmMmJlNjYxZmVmZDQ1YjM2MmU2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMGIwYjA3ODdlYWM0ODk4YmIzZjA0ZDgwNTc2YTJlYThjOWY4NDgwZDc1OThmMGI1YmRhZTE4MTU3Zjk0OWZlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L26-L30",
+          "version": "repo-lines-v1:sha256:39119ea636471ed8a061550e7faaad25fb9e61b8f63b2243a33ff3e9c2b7c8e2:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc3MzVmZGJlM2YwNmFiZDljOTMyMjQyMjRiYjA5NjExYzQ4NmIxOTBkMDNkMWI0OTQ1NzQwN2ExZTI1MWU5ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzdhOWI1ZTkwMTljOGRiODc4M2VjOWMzZmViYjBhMmM5ODYyZjYxYTA1YzMwOGZlODk1ZTRhOWJlZDAzZWRiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjgxMTVjOTdhMjYyZTM3MDdjZDc0NjJkN2E5MDg0OWY3N2MzYjBhODhkMmE5ODUxZjRlZTIyZWM4NGVhNGMwZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTRkNDM3MWVlNmI3NjExMWVmZGRiMDNiODU1NWUyYWQ0MjdjNDExNzM0ODgxMTA5MzA4YjQ2Mzg0MjJkMTYyMyJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L64-L73",
+          "version": "repo-lines-v1:sha256:16a793eb4551bf5f37e308c517dca96ad5536c74e0e647c1e4df10a946760502:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1M2RmNmUwMTJiOTY4MjRkYWQwODM5M2Q0YWRkOWE1NzI5YWVhMjI0ZTc0M2IyMmVlOTk0ZGUyM2NmNTcwMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhODNhODQxZTE4ZmFiMDdmZTlhM2VmZDliNTZkN2NmNmIzODYxMTY4OGM5YjgzODEwMTU5NTc4MmMzOWI5MGYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/types/opa_payload.go",
+          "version": "repo-file-v1:sha256:3afce8fafda8c7caf93eda21270a9cb005215816eb0fd0a721aba3f1a5c6f262"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L39-L43",
+          "version": "repo-lines-v1:sha256:ad072f5955fffd735770a0c03d7e40cb94a6ec837f0d6990d0d327a364117bc9:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTI1ZjNjMzAyMzJhNzUwYTUyNTk1YmVjYWFjODg2YjMzOTJjNzBkMTk1YTZiM2E0YzE0MmIxMGYyM2YxMDhmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzdhOWI1ZTkwMTljOGRiODc4M2VjOWMzZmViYjBhMmM5ODYyZjYxYTA1YzMwOGZlODk1ZTRhOWJlZDAzZWRiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2U0ZTQyZjcwNDAxN2JmZjExZWI4NjE4NDVkMzJhMDQyNGE2Nzg4YmExZTc0NDI4YWIxMjYwMmM4YTNmYTJmMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzU2ZjQxZjgyMGI1N2I2MTRkZDNlY2ZkMTYxZDc0Zjk5Y2UzMTNmZmRkMTkwYzE1YjlkZTgzMDFmYTMwMTczOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4513f81b7071403e8c7b24d393c5b76a",
+      "statement": "Current factories support opa and opa_json_patch as embedded prepared-query controllers and opa_bundle and opa_bundle_json_patch as shared-SDK decision controllers; bundle support has not replaced the embedded engines.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L698-L705",
+          "version": "repo-lines-v1:sha256:fdcbe09ccc3349d68669080beea0640f6cd52a67622ee6ea8ee2b57e8c8c56e2:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWY3MDUxYTdiODdlYjhiMDZmMDVmYTk0MGY3NTAwMDI1OWQ0ODYyMzUzYmU1YzhlNTIzMDdlOWE0M2E5ZmU1MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFhNTM1MzEwOWNkMWNmZmY3NjI2MzkzNTJkMjYwZmI2MTE5ZmVkN2Q1NzQzZDg3YTg1MWU0MzMwZDhkYTRjNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzQ0OGM0ZDA5MjI1ODVhODhmYzQ2YjBjMjAyNTE0ZWMxZDEzMjdiMDE3YjdlZDY5Y2VjODNhMDk5MDA1ZGExOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDMxMzMxY2FmNzljNWY0MGZhOGJhYjdkODUyMGUzMWUyNGRkZGI3MTJmMzlkNjc1YTU5ODY5MmE1N2Y2MTBiOCJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L858",
+          "version": "repo-lines-v1:sha256:753ea3dd5c931bfa0b0d2978851a228ed83e73680f4ec2a957041f3c6c67e243:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYWU3ODdmNWQ3ZGFjY2ZkMzhlNmI1N2E3ODZlZWY2ZjE0MTUwOWU0YTI0YmM0ZmY1Y2NhODgwYWQ3MGU3ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0YmI0YWUzYmVjMGU0OGY4NWFiODliZjk4YWIzMjQ4MGJhMTE3OGY2MmVmNjA0MDI1NTBhYTMxMWU4ZDk5YmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_81e80b0e8cfb4e859011b79af1e95e8a",
+      "statement": "Embedded OPA reads one module filename as supplied, prepares the configured query at construction, and reuses it for requests without per-request file rereading; file or preparation errors fail construction.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_json_patch.go#L61-L73",
+          "version": "repo-lines-v1:sha256:9df8f39c5a1ac719193f5011d14c1eb5c5ef37b31ee5cc9fc132807785d4115d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1ZWE1N2U2NzU1NTI0MmIxNDI1MWUxMmJlODY4N2Q4YWUzMTNmYTFjYTQ3OTZkMjhhYjk2MWJiYzhkOWM4OTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1MDgzOGMwOTdmYzhlMjYyNzYyZWExN2YyY2U3ZTM0MjEyY2I1NTVmZjFhOTMwYTcwYzY0OGM3YzE4ZTE5YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNGY4OWZjMGVjOThjOTgyNDE4M2U3OTVkM2VkZDE5ZTkzMGY3YmM0NzFmOTAxMmFhM2Q1MDNiZTJmODk3NGIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L73",
+          "version": "repo-lines-v1:sha256:5429fbac17fbd7a16e18eaae7e9257076f23162dc716c0d253110bda052f2bff:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDQ0MjgxODlkZTlhZWNlYzQyY2ZlNTZhMjZlYzEyNjgyYWRjZWFhMjQ1N2U3MWY3MjdjOTg3M2UzNzI5YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNzlkYTEwZGI2NTA5YWY5YTM2YjY4MjE2MmNjNDNmMWViNzYzOGQzYzZjMGJlNzAwNGI0MjlkN2ZmYzdjZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhODNhODQxZTE4ZmFiMDdmZTlhM2VmZDliNTZkN2NmNmIzODYxMTY4OGM5YjgzODEwMTU5NTc4MmMzOWI5MGYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L67-L80",
+          "version": "repo-lines-v1:sha256:5a2a33f9bce40df25f61fbc5925b163586ad4468b132cbf678e4b54c3f85ed09:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyYTE0NDIxNDQxOTFiNTIzZjU5YzA4NzliNWYxYWM3ZDQ2OTU4OGZhODhjMGJkNmMzMjMyZGY4NDU2MzZiMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwMWJiY2E3N2FhOGI2NDcyNTRkM2U4ODgzNzdjYmVmYThkOGZiNzhhNzIxMmI4ZTZmNGU5MDk2ODZmODVhNTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNGY4OWZjMGVjOThjOTgyNDE4M2U3OTVkM2VkZDE5ZTkzMGY3YmM0NzFmOTAxMmFhM2Q1MDNiZTJmODk3NGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a14ee1c7473f44569ee305bda87de50c",
+      "statement": "Embedded getters inspect only the first result row's bindings named errors, warnings, and patch, not expression objects or later rows; absent, null, or non-[]interface{} bindings become empty collections.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L75-L102",
+          "version": "repo-lines-v1:sha256:d714690a0d3bafaa8fbc5a145193bb299b55bb581d255cd92485057f3f87c6e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhNmNiOWNjOGZjNmQ0NzEyYTcxMjg3YTZkNTVlMTc2ZDQ5NWFjM2Q1YmM2ZGZhOWQwOTNkYzI3ZDZkMDMzZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlNWQyNDE5YzMxYzJkZWZjZmVjZTE5ZmE4YWU3ZTg4MWY3NjZiMjAzMGE1ZWY5ZjAwNzhlMjE4ZTBhZTkzNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L70-L94",
+          "version": "repo-lines-v1:sha256:706e616a28d079844c2a397a1ba33f2751fd2436bccdea3d6eaebccb69930763:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlZGM2NjI1YTNkNThjZTRlMWQ1YjlkNGQyZjc5MTg2OGE1ZTdlNDg2N2QwNGI3NzFkN2RlMDZmNmYxOWZiMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlYzM1NDM4MzQ0OGNiN2NkZjY2NjYwZDhhMTU2NDhlYmFhYzBmMzg5MjkyMTkwNTJlMTg1MzQyYmZjNDEyZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTQzOWY5MTk3MGI2ZWIyMWM1ZWQxZGRkNjY1YzgwMGI2Yjg4M2JkNGYzZjUyYmE3NzM2ZDY2ZTIyNDM5MmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_11444d9088434aba87a82807504c8eff",
+      "statement": "An embedded query with zero result rows fails with 'no result set returned, maybe the query is wrong?'; binding an undefined policy document can cause this failure rather than the empty-collection behavior of an omitted binding.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L64-L73",
+          "version": "repo-lines-v1:sha256:16a793eb4551bf5f37e308c517dca96ad5536c74e0e647c1e4df10a946760502:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1M2RmNmUwMTJiOTY4MjRkYWQwODM5M2Q0YWRkOWE1NzI5YWVhMjI0ZTc0M2IyMmVlOTk0ZGUyM2NmNTcwMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhODNhODQxZTE4ZmFiMDdmZTlhM2VmZDliNTZkN2NmNmIzODYxMTY4OGM5YjgzODEwMTU5NTc4MmMzOWI5MGYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L51-L94",
+          "version": "repo-lines-v1:sha256:59cc3c3342e4312c873d9e68255d0c6df4e74a30d32f70bf4a517d30c5dba95c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2NTNiYjJmN2Q3ZGI5M2MzYzM0N2I1M2JhNzBkMzQyZmUyN2U0M2VmNzBiYzQ4M2UyYzAzYmYzMDdhNTJkZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiYjFhYTUwNzU0ZDlmOTMzYjE1MDI0ODhhMGM1ZDhjMjVkYWQzMjRkODg1Y2U4N2I5MDllMjJiMWU3ZTRiYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTQzOWY5MTk3MGI2ZWIyMWM1ZWQxZGRkNjY1YzgwMGI2Yjg4M2JkNGYzZjUyYmE3NzM2ZDY2ZTIyNDM5MmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4cffd801aa5b4e9db99fe7f1ea3513d9",
+      "statement": "Embedded validation collects warnings before errors, aggregates policy errors, and formats entries with %s plus the controller-name suffix without enforcing string entry types.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L75-L93",
+          "version": "repo-lines-v1:sha256:9c3ea1c5e690c292566b29cabb3f472a366a7c4a55ae2dffa71873c8fed58098:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhNmNiOWNjOGZjNmQ0NzEyYTcxMjg3YTZkNTVlMTc2ZDQ5NWFjM2Q1YmM2ZGZhOWQwOTNkYzI3ZDZkMDMzZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlNWQyNDE5YzMxYzJkZWZjZmVjZTE5ZmE4YWU3ZTg4MWY3NjZiMjAzMGE1ZWY5ZjAwNzhlMjE4ZTBhZTkzNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyNThjNjU2YjZkY2FhNjAwOGM3YTU1N2ZlOThmNzU1ZDUzMjNkZmZhNmQ2ZGQyZmYxNWIzMDI2ZDRkMGM1NzEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L20-L60",
+          "version": "repo-lines-v1:sha256:ffabda0c197db3d6b3d00a3e0137f9078e7aa80ab04470d78c080a113d0df2f7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkM2MwOWIzZWI0MThmMmYwY2ZhODc0MjM4Nzk5MmRmMjdhYjM0YTBlMDVjODc5NjdhNDY0Y2Y4NzQyZDAzNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZThlYWU2OThhNzNhODU5NjAxM2YxYzFkY2E5ODM5OTcyMzNjOTBiMWFjMWRmZDI2MmJiMzRmOTI1ZDRjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwYTkzZDM4ZDk4MGM3YjM3ZGFkYTNkMGVhNjM1ODAzNGE2NzcwMjU1ZmMyNTE0ODEwMjA2ZjRhODQ2NDY3MzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_63af59c54a4a4c7ba112062510800059",
+      "statement": "Embedded mutation processes errors before warnings or patches, suffixes message entries with the controller name, and returns nil job, false, and no warnings on policy errors or patch failures.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_json_patch.go#L22-L55",
+          "version": "repo-lines-v1:sha256:95d809cb6d7f4bf8edba873f897b53fcdd3b843a2c948722cc5075a23465b4a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwOTdiMGNhMWIyYWFjNWE4YzA1MzhmMzU5NDM0NGNkNzE1MTQxZGIxZTVhYTdkM2U1MTExYWU0YzMwNGY3OTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2Y2VjNmQ2ZDc1M2RmOTY5MTdlMzY3MDIwMGVmMTJjMGU3OWJkZmQzMzNiMzMzMGFkYzE1NmYzODhlZWU1ZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZThlYWU2OThhNzNhODU5NjAxM2YxYzFkY2E5ODM5OTcyMzNjOTBiMWFjMWRmZDI2MmJiMzRmOTI1ZDRjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiYmNlYTk4N2EwN2Q4ZmE3Nzg1ZjdlMWVmMjIwYTVhNWM3ODhkMjA0ZjVmZDI5MWYzZDI4ODRhNzUyNzJkZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_66a7876cb75544b583de379e86a1629d",
+      "statement": "Both bundle adapters invoke the shared SDK's Decision with the payload and configured Path, wrap SDK failures, and reject non-object results including scalars, arrays, and null; nonexistent decision paths fail evaluation.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L26-L39",
+          "version": "repo-lines-v1:sha256:48e8919a869227e6ba354cd5deee69af13a6d99a55549bd5437eef7290242eb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NzM1ZmRiZTNmMDZhYmQ5YzkzMjI0MjI0YmIwOTYxMWM0ODZiMTkwZDAzZDFiNDk0NTc0MDdhMWUyNTFlOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MTE1Yzk3YTI2MmUzNzA3Y2Q3NDYyZDdhOTA4NDlmNzdjM2IwYTg4ZDJhOTg1MWY0ZWUyMmVjODRlYTRjMGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiMzVhZWY2MDA1NWM3ZDc5ODU2YzYyMTU4MmYwYzk4NjkwZjA5NGUyOWM2OWI5YmIzOTUyNjAyY2IxYjU5ZDAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch_test.go#L58-L80",
+          "version": "repo-lines-v1:sha256:928c249b7d765782a443cf40af6c48e2b1a66e3b1a03218e98b2e76f16aa790b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZGFmMjBlNTI3YTFkOTIxOGJmZGYwYmI1MjVhZTg0NDJjODZiNDVlNzE4N2IxMWZiM2QxYjljY2Q3OTM2NDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4ZjVmNzdmODA1OGMyNDViY2QzODkwOTljZTA0MTZlYzdkNDM5OTdlZDY3M2VlNjA2ZGNhMzU2YTczZGIzNjUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L39-L53",
+          "version": "repo-lines-v1:sha256:81487f2572ce6a125ee1cedef409f9de2d6fcb3e43ea34b9cc036c1fd9f39215:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNWYzYzMwMjMyYTc1MGE1MjU5NWJlY2FhYzg4NmIzMzkyYzcwZDE5NWE2YjNhNGMxNDJiMTBmMjNmMTA4ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZTEwNmNiMjNhZTJlY2M5NDBhNWVkOTJjODY2ODcyMjk3NTgzYzU4Zjg4MGY3ODE5NjZmZGVkZDE5MjQ1NDMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator_test.go#L87-L100",
+          "version": "repo-lines-v1:sha256:db686664395afeed815ed86a7e718821dc9e6107a499ff3dff5a0f5762c4acbf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3YmVlZGRkMGRiYmY4Njk1ZDRlMmYzYzg1MjI4Y2FjMjhkN2RlMDUwYzM4Mjk0OGY5YmY0ZjI5NGU0MTViNTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5NjJmMTU2OWI2YzliZTQyZWRmYjZmMDNlMDcxYzMzYTVjMzhmNGM2YjFkNDIxMjFmNWFiYTExYmRlMWYyMmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a767fa535e8d49cea0c52a82b0e432b1",
+      "statement": "Bundle validation treats missing/null message fields as empty but otherwise requires collections containing only strings, rejecting null entries; it parses warnings first, discards malformed warning collections, and preserves valid warnings when errors are malformed or nonempty.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L55-L90",
+          "version": "repo-lines-v1:sha256:77fcbb803c740dd705807540b96839cfb390f29b25b58b067b0938662c0b0f36:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlMDZkNjY2YTJiNzRjYzkwMWYxZDRjZmI1MTdmM2E0ZjA5MjMzZGRiNGVhNGJlMTRjZWJhNDBhNTQzZjIwNWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiNzQ0MDM5YjY1NDA3MmZkMWE1ODlkODhmMzE4NjU4ZmE2OTAyZGEyMTdjMjVhOTJiNDExM2RlMTM2ZGJmNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzOWJiYzFhZWIxMDJhMjM2NWE5ODNmOGE0OTRjZjI4MWM5MDQ5ZjY1MjU4YTgwNDZjZDFiYWVmMTQyY2M2NjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkYTJmZDdmYjVhZDAwZjllOWYzYjM1NjM2NGFlZWJjNGNhODU1M2ZjYzE1Nzc2OGZmNjQ1OWM4MzYyOWRhMzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eeabf23c27d142acb87d90b2dfa477ce",
+      "statement": "Bundle mutation treats missing/null message fields as empty and skips null entries, rejects other non-string entries or non-list fields, handles errors before warnings, and preserves earlier valid warnings if a later warning entry is malformed.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L41-L105",
+          "version": "repo-lines-v1:sha256:b15594a9ee2bac6b24955f673e34b7e7cf0c4a416b2332abcc418b7a2e0ff626:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkMjgyNzhlYjcxNTYzZjQ0NWFmZjEwNGM5NjRjMDBjMDE3MmRlMDg2Njk4ODVmOWVkOGJhYjFmMzkzMTM3OTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMzQwODQ1YmI5NjI2ZmUyYjA2OTNjN2MyNjE1ZDAzN2UxMGQ4MjlmZDA4NWE1NzcwNmMxM2E1ZDk0ZmU3ZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZWQzY2VmZWQ0ZDYyMzhkMDZlYjIwMzY0YjY3MjJiNWM0YWRiYTVhMGRjYmY5MWNmMjY1N2FhZDg5ZGUxMTAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch_test.go#L180-L203",
+          "version": "repo-lines-v1:sha256:8bda0577031264ffeaf330d9d7868c3171470ac486da136ba3042ce0569ca333:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliYzMyZGJmOTNmM2Y5YzdhZWQyNmFkYzEyZWZiN2Q5NDI4ODYyODYyZjk5ZWFkZDg2NjhlODY1MWU4YjJmMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzYWI3NzUyYWFkYTQ3OTRjOTBiNDQwMjkyNTg5Y2MxOWI4OTUwZWU2YjcxNDY1YTFhMTBhMWY0ZWNmOGIyMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_85a521e395be420c8916786d76048709",
+      "statement": "Bundle adapters do not append controller-name suffixes to policy message strings.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L69-L103",
+          "version": "repo-lines-v1:sha256:393b327de9c4df95b119da76c2ce76e26ef183b68888b24f9788c10af944f761:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNDk2MjEwOGYyOWI1ZWY2OWFjNGUzODc4MWY3MWY3Zjc2NDQ0NWRiYzJiN2I0YTFkMjUxMTM5Nzk2OGQzMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MDllZjZlNjg1ZDFhZWJmMjYzY2Q4MTAzM2M5ZDgxNmJkN2VmNjUzZjEyNGViNWViM2Y5ZWZjNWI1Y2MzMjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjZDJjYTU4OWIxZjRjNmQ2ZjlhNTFlZTFhMjY4YjI4NjNlNzUyZWE3Njk3NWQxYTg5ZDNjOGZhMTM3NTJjYTMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L82-L89",
+          "version": "repo-lines-v1:sha256:677c800f271c849cfaebdb47c1fee44070c6bebc5100d74ac79e1e3b37d8c5ec:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODk5NDkzZThlMTgzNzExNzAwMDZkNzRmY2YwZmExZmFmMGJlYTY4Mjg2ZjY0YWFjOTcxNWJkMjM5NGVjNDgyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWIwNGMyOWJjNzU2ZGUzNTdjMDBhNTI3ZmMxNTI5YWE5ZWRhOGMyMThhYTBmZmQ0MjNlNjQ2MDQ2Y2FhZDQ0NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDNkNmFmM2M2ZDc3ODBhZTRiMjFjMWY5NTAyNzVjYTJlZjRiMjlkNDkxYWU2MmI3MDgwYTkwODM2ZWYxMzVhMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_123ee92eb2494106822404ad0ba5f457",
+      "statement": "Bundle mutation returns the original job with mutated=false for absent/null patches, requires non-null patches to be []interface{}, and retains parsed warnings on patch errors while wrapping PatchJob failures as 'policy yielded patch failed'.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L107-L117",
+          "version": "repo-lines-v1:sha256:cc1f4c2682024635abeb8f4a57d1745403557d8ae355c617c096195d93eb82c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMmRhYjYyNzBmMmI1YTNhNDQ2YWM0OWVhZGVlNTE3ZmYwMWQ2Zjk4NmRiNjhiMjI5ZTNjYmIwZTMzN2VlMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1YTQ2MTVkNWJlODkxMjkzZTA4YjcwOTc0Yjg2Yjc1NmFhNDhlMDNmZWRjMTIzYTA3ZWQzMWE4ZDNmOTY3ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDJjYTU4OWIxZjRjNmQ2ZjlhNTFlZTFhMjY4YjI4NjNlNzUyZWE3Njk3NWQxYTg5ZDNjOGZhMTM3NTJjYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2NjQ2ZmZlYmU3MmM4ZGI5OWFmYmQxZmM2NWRlODIxZWE3MTU5MDEyYWQ2ZDExNDI2OThjMzYwZTRjZjZmYTIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L45-L56",
+          "version": "repo-lines-v1:sha256:c2a33f09d49735c02c1f8ed0d250075969e8ed92dd0f8aec0220ce91b2281626:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwZDdiZTJmMWU1MjJjM2MyMjA2ZjU3YzM3MjcwY2UyMWRmMmY3ZWYxOTUyYjVhYmM5MjBjMTM1ODFiZWU5MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkOTZiZjg0NDIzNTAzMTYwYzY4MThlYzJiZTU1MGE2MDJjNDE0YjFkZDRmZGYyNTU2YTQ1ZTgwMzE5Y2IzOTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MzU0YjU2NTY2MTI4YTJkMThjZTM1YTU4MGM4OWU2MjE2ZWU0OGEzZjAwYTM4NDI2MjAxNWI4ZTI0MDViZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1OTkyOTUyYTNiNDQ0NmU2ZDU4YzU0YjkyZGUzYTQ5YzdjMTlmZTRlOWNlNDlmNTA3NzQ3NWEzZmJkMjFmNjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6ac7167672144dc8366b586d045c4c9",
+      "statement": "Both OPA patch mutators and the JSON-Patch webhook use PatchJob, which marshals only api.Job and the operation array, decodes and applies the patch, and unmarshals into a new api.Job; paths are job-root pointers rather than payload-root paths and cannot mutate caller context.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L87-L92",
+          "version": "repo-lines-v1:sha256:847156b032b5800335eb5e3c55717b0029072fcba22198a3a2fada46b0e77147:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNThjYWIxYzAyNDhmNzk4NjAzZjA5ZWM2OGE3MjFjOTc2ZWRkMmZhOGM3ZDE3NmRjYzBkM2FhOTNhOWQzZjViNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzOTE5MDg0NDljYjVmMjkzODI2YWUxNWJhMDRkYzc3ZjNiYzk5ZTBlNzkzYWE3YmI3NGUxYmQxNzY0MTQyNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGI5MTg2NDg3NThiYzQxMDBkZmEyYjQ3NzYyNmZkOWU3NGE2NzQ2N2E1ZDA3YTkyNjVmY2Y0NGI4ZjZlOTQwOSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go",
+          "version": "repo-file-v1:sha256:8837c8b1d36622e39a19a63341fe081c13e833656298f298ebaea038df21a919"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L107-L117",
+          "version": "repo-lines-v1:sha256:cc1f4c2682024635abeb8f4a57d1745403557d8ae355c617c096195d93eb82c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMmRhYjYyNzBmMmI1YTNhNDQ2YWM0OWVhZGVlNTE3ZmYwMWQ2Zjk4NmRiNjhiMjI5ZTNjYmIwZTMzN2VlMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1YTQ2MTVkNWJlODkxMjkzZTA4YjcwOTc0Yjg2Yjc1NmFhNDhlMDNmZWRjMTIzYTA3ZWQzMWE4ZDNmOTY3ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDJjYTU4OWIxZjRjNmQ2ZjlhNTFlZTFhMjY4YjI4NjNlNzUyZWE3Njk3NWQxYTg5ZDNjOGZhMTM3NTJjYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2NjQ2ZmZlYmU3MmM4ZGI5OWFmYmQxZmM2NWRlODIxZWE3MTU5MDEyYWQ2ZDExNDI2OThjMzYwZTRjZjZmYTIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_json_patch.go#L49-L55",
+          "version": "repo-lines-v1:sha256:9d22cbb6bb671b132ded2862a76b1278af9db210f3837d24e53868c9d9967196:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTA0MzQwMDk1Y2FhMTZiMTNjYmU3M2NkOGVlN2M4MmQyMzQ0YzkyMTU0ZDE3ODFjMDlkYTljMmIyMzgyOGJkMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzZjZWM2ZDZkNzUzZGY5NjkxN2UzNjcwMjAwZWYxMmMwZTc5YmRmZDMzM2IzMzMwYWRjMTU2ZjM4OGVlZTVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTA1YWI1YzYyMTZmNTUxN2M4NTBhYjI4Y2IzMTY5MGNiZjcxMmNmODg2YWU3N2M2Mzk2YWQ1YjczM2JkMzNmMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGJiY2VhOTg3YTA3ZDhmYTc3ODVmN2UxZWYyMjBhNWE1Yzc4OGQyMDRmNWZkMjkxZjNkMjg4NGE3NTI3MmRmOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_808615202652477eaab6aec2b7d84e7d",
+      "statement": "PatchJob returns failure rather than a partial job on marshal, patch decode/apply, or resulting api.Job unmarshal errors, including replacing Meta with a number.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go#L11-L37",
+          "version": "repo-lines-v1:sha256:86a06ed2466c8306bc4625c2c29b765f183bc28c3752077a86d7991b080cec92:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZTU2OWIyYmI3NWNkOGY4MTAzYTczNjBjNjA5MGJmNjBmMjY0MTk1YjY3MGU1YjE3MjRmNDVlYTgwMmFhY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ZWRhYjgwYzUzYzIzM2NhYmE2ZGY4NjUyOGU5MWEwMzFhY2IwYWNkMTI0N2YxZmZiZDQ2Y2JmMzMxY2M0YWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ODNjZDg1YjRjODgwNTEwYzA5M2JkNGExZTQ1MTRhNzZkNjBhNDIyMWM1NjY4MDUzMmIzMjgzOTllY2Q5ZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher_test.go#L52-L137",
+          "version": "repo-lines-v1:sha256:f89b066c7f22ca59f4d499bbcf5227f28cb6288d8dce2fb5c9357dd954937946:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5MjQ0ZTQ5MWEyNTZlMTMwZjE2NzQ4NTRlNDM5MTAxOThiZTk0M2M3MjBlYTY2YzMwMDdjYzVjYjgyYTJhNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3MjQyOGJlMjUzMjdiZDcxMmI0YmUyZjFhZWM2NzBjNjA1MmM1NWYxNmExOGM5NjJhNzQzN2MyOWNjNjllNmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_561e4a50402149a58d130480598d8f96",
+      "statement": "After successful PatchJob application, mutated is determined only by a nonempty decoded patch, not semantic job inequality; empty patches still return a newly unmarshaled job with mutated=false.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go#L11-L37",
+          "version": "repo-lines-v1:sha256:86a06ed2466c8306bc4625c2c29b765f183bc28c3752077a86d7991b080cec92:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZTU2OWIyYmI3NWNkOGY4MTAzYTczNjBjNjA5MGJmNjBmMjY0MTk1YjY3MGU1YjE3MjRmNDVlYTgwMmFhY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ZWRhYjgwYzUzYzIzM2NhYmE2ZGY4NjUyOGU5MWEwMzFhY2IwYWNkMTI0N2YxZmZiZDQ2Y2JmMzMxY2M0YWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ODNjZDg1YjRjODgwNTEwYzA5M2JkNGExZTQ1MTRhNzZkNjBhNDIyMWM1NjY4MDUzMmIzMjgzOTllY2Q5ZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher_test.go#L22-L30",
+          "version": "repo-lines-v1:sha256:8222fae5497e1cd7dad741f0896901ec1d68db9aedcadcf223117354a876d62f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODliYzc1MTFiMjJiNTM4ZGYxNDI4MzM3NTFkNGEwMzc0MWJiMjgzOTNiNDNmMTlmOGQ2NmQ0OTFkYWY1MmQ5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWJhZDdjYzJkZmFmYzIxNzVmYTJkOTcwNGUwMjAyZjk0MDgzYTlkYTY5YTU4NWIwYjE4YzQ4YmVhMjM2Mjc1ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTZmMTlmZTc5NDcwOGJhNDE3ZWUzNTA0OGM5YTg5ZDQxYmM1ZWNkNGI3NDIwZjNkYjAyNWMyODQ1YWMxZjhiYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWY0YWVjZGI1ZTEwOGQ1NmQ1MGE5Y2JlZTczZjAyOGU1M2VkMGUzOGMxNzQ2Njg0NjIxYzRhMWZjNjhiMDUyYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_53e4e93c174a46beba557a91778c7e2a",
+      "statement": "The costcenter_meta example emits Rego error-set messages for missing cost-center metadata or values without the cccode- prefix, with tests for missing, invalid, and accepted values.",
+      "evidence": [
+        {
+          "resource": "repo://example/example1/example1.conf.hcl",
+          "version": "repo-file-v1:sha256:b0bdd08539799327d3cdad51d28738593879e88a863b39554b7f01a990e660f7"
+        },
+        {
+          "resource": "repo://example/example1/validators/costcenter_meta.rego",
+          "version": "repo-file-v1:sha256:997360a48d1987efe27270d8f8c519bebd7ff2a5ea542aa4a9290bb9f8696825"
+        },
+        {
+          "resource": "repo://example/example1/validators/costcenter_meta_test.rego",
+          "version": "repo-file-v1:sha256:f00e2fdfc16c8e9f3de680f698886bf430c59470567e7df7f801a4b3592bdcb7"
+        }
+      ]
+    },
+    {
+      "id": "claim_6b056618674d425e8287df4df715de32",
+      "statement": "The hello_world_meta example produces an ordered patch array creating absent/null Meta before adding a missing/null hello key, preserves existing non-null hello values, and tests absent/null/empty Meta and no-op cases; the foobar bundle uses the same pattern for foo=bar.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/bundle/foobar/foobar.rego",
+          "version": "repo-file-v1:sha256:0fe7eacaa44745d2210c730493ade962c1acadea2aa2a7b1625e23b22cd8f40d"
+        },
+        {
+          "resource": "repo://example/example2/mutators/hello_world_meta.rego",
+          "version": "repo-file-v1:sha256:5d379e6d7e959373b5f3a725c409fd9e190f1adff8ff6db3161f82a090947607"
+        },
+        {
+          "resource": "repo://example/example2/mutators/hello_world_meta_test.rego",
+          "version": "repo-file-v1:sha256:f919213bdec4aa3ad1ed74cd552524eb847576fdb2bdfaa879155b20d7c1e07d"
+        }
+      ]
+    },
+    {
+      "id": "claim_168411f150cc4fce98d4da2fbb40add4",
+      "statement": "Controller validation requires known types, nonempty names unique within each kind, embedded filename/query blocks, and a configured opa_sdk plus nonempty opa_sdk_rule.path for bundle controllers; bundle constructors reject nil SDKs and empty paths without evaluating path existence.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L120-L132",
+          "version": "repo-lines-v1:sha256:adcbf967e5e89cdd5231a9af9f896b2108739f6aaf41acb6083b8d8739d28e1f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4Y2NlN2QwMGRmYzdhMzZjZGZhYjQ0ZjU4ZmZhNWI1ODdjNmExMWNlMzg5OGQ5Zjk5MjAyNjkzZDkyNDcxODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyYTYyYTQ1MmM3YTBlMjMzYWVhMTQyMTU4ZjA1NmIwNDRlNzZjZmMzMWEyMzc1ODEzNzU2ZjA2ZjNjMzVlMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjNjJiMWQ0MjM5OTMzZThjNTEyNzYxZTBmYzE3ZmU5NDk0NGEyNDBhMzM3ODI3MTlkM2FlMzgzMGUyMGI5YWYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L24-L37",
+          "version": "repo-lines-v1:sha256:c916e96d78fd9813dc38dae24153d7fbf70698130000a1c3e5286c021dbae61d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzNGZjYmVlNDMxZTNmOTAxMzEyZmFmMGE3ODBlNmNjZTNlMzA0MTVkOGI5ZDhmMTM1MGQ0NWIwNDFkZDRmN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjMWMxOWU2ZDhiNTJkNDI1MjJlYWEzZTFlNjg1OGFlNjM0YjRlY2IxYzAyZDkyN2FiNTI4NGI1ZWI0MzFlZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3ZDM1YzE3OTFjYjhkZWM1OWQxZjgxYmQzYzE5YWU2YjcwMjU5MWExOTU3NGMyYzRjZDY2Y2U0NzRiZDhiZWYifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L280-L365",
+          "version": "repo-lines-v1:sha256:50a65ca03e416c627aff0fbd91b09eeec44d08b13e159bda3e176846b2b4b489:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhODdjZTVkOTg0NmEyZjA5ZWU2MzE2ZGViYmMxZTdiMjFkNDlhZmM1Y2JlNjYwM2UxOTk1MzAyN2ExOGFhMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4YmQwZGNmMDBkN2Y5NzA4NTE5ZWRmNWM1NTFhYTFlMmVkYWViMjRmMjE0NTcyYTQ4OTExYzY3NjZlYzI2N2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db52686cb8d14b35b5a78d88162ad1d4",
+      "statement": "The demo config uses opa_sdk ID example with /local/opa.yml, a bundle validator at /helloworld, and a bundle mutator at /foobar; paths select package objects rather than individual errors or patch collections, and the setup ID and bundle name are not path prefixes.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/bundle/foobar/foobar.rego",
+          "version": "repo-file-v1:sha256:0fe7eacaa44745d2210c730493ade962c1acadea2aa2a7b1625e23b22cd8f40d"
+        },
+        {
+          "resource": "repo://example/demo/bundle/helloworld/helloworld.rego",
+          "version": "repo-file-v1:sha256:3ca2fe5e039ae098adb19aa6ab63eb6317fcf01969211a53e17342ddd41bb4df"
+        },
+        {
+          "resource": "repo://example/demo/nacp.conf#L79-L95",
+          "version": "repo-lines-v1:sha256:245152a1f096f7ed030be3b614f87e056398640b3bd9b8c21463aba7ab0ebb84:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1OTk1OTBhZGJmYmY2MTJkZGViMTFjOTJmMjkxN2VkOTA0MjQ1Y2NiMzczNTFjZDljYjE1MjJjMTJkNGQ2NmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxYTc5NmM3NWYyZjZhYTUyZDM5NzQ2ZDg2NzUwZDFmOGIzMmJkYWY5ZmE3Y2M0NTgxZWYxMTA1MmNjNGEwNTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://example/demo/opa.yml",
+          "version": "repo-file-v1:sha256:ac1652740ac8c7c307e088d52e32febb88b4e9d979f41cb8d6364bb024257ac6"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L26-L56",
+          "version": "repo-lines-v1:sha256:6a58f10ad91b6466e4d6408cd7cb80f0378ea3d50f9d1f14ff3f1598d1e0c23c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NzM1ZmRiZTNmMDZhYmQ5YzkzMjI0MjI0YmIwOTYxMWM0ODZiMTkwZDAzZDFiNDk0NTc0MDdhMWUyNTFlOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkOTZiZjg0NDIzNTAzMTYwYzY4MThlYzJiZTU1MGE2MDJjNDE0YjFkZDRmZGYyNTU2YTQ1ZTgwMzE5Y2IzOTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MTE1Yzk3YTI2MmUzNzA3Y2Q3NDYyZDdhOTA4NDlmNzdjM2IwYTg4ZDJhOTg1MWY0ZWUyMmVjODRlYTRjMGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1OTkyOTUyYTNiNDQ0NmU2ZDU4YzU0YjkyZGUzYTQ5YzdjMTlmZTRlOWNlNDlmNTA3NzQ3NWEzZmJkMjFmNjUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L39-L60",
+          "version": "repo-lines-v1:sha256:a561df558ba7f941e8cea945c37c714c24db1c728b7c4a964fdbd7720dc85135:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNWYzYzMwMjMyYTc1MGE1MjU5NWJlY2FhYzg4NmIzMzkyYzcwZDE5NWE2YjNhNGMxNDJiMTBmMjNmMTA4ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3MTVhYzZiMDVkYzhmYTkwYjExNTg0NDQ5Yjc4ZThlM2RiNmEzYzU3NjhiMmZjYWQzYzVkZDlkYjA0YzI1OTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4NjlmMWUyZjZhYzFkZWY1N2FmODQ2N2QyMjdkMGY4ZDNiYmNiODg4N2ZhM2MyOGE1ZTM2ZTZkNDRlYjNiOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0555663e093f4377bb91d540d609d239",
+      "statement": "The demo helloworld bundle requires Meta.hello to equal world, and the combined demo configures an embedded hello_world_meta mutator that supplies the label when absent.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/bundle/helloworld/helloworld.rego",
+          "version": "repo-file-v1:sha256:3ca2fe5e039ae098adb19aa6ab63eb6317fcf01969211a53e17342ddd41bb4df"
+        },
+        {
+          "resource": "repo://example/demo/nacp.conf#L57-L66",
+          "version": "repo-lines-v1:sha256:9eae74020ecb3dfbbe6d57fa6023d01c715849439b2284083f4b87ba10504e6c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjOTA3YWUyNDA5OTQ1Mjg4MGQ0ODExMTUxYTYwNzA0OTRkYmU2ZmU0ZGY5MTZjNTkzMWNkMzUyOTg2MTdkN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3NjJiNzhjNzk3NTFlNDg3MDQ3OTZjOGU2Mjk5ZWRmNjJjNmE2NTM2YTFjNjcwN2NlNzRmMWMxMmU1YzNkZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhZDY4MzQ5YjlkM2E5Y2ZjZmMzOGJhY2RkMGQzM2M3YjY0M2FiYTAzN2EzMjNmNWUyYjk0ODZiMmY5YjI1NmMifQ"
+        },
+        {
+          "resource": "repo://example/example2/mutators/hello_world_meta.rego",
+          "version": "repo-file-v1:sha256:5d379e6d7e959373b5f3a725c409fd9e190f1adff8ff6db3161f82a090947607"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a407dc5fa1b4bbeaee985fb4ee7b730",
+      "statement": "The demo Nomad job renders NACP HCL and OPA YAML into the NACP task, uses Nomad service templates to resolve opabundle into service nginx, and configures bundle demo to fetch /bundle.tar.gz.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/nacp.nomad.hcl#L21-L60",
+          "version": "repo-lines-v1:sha256:cd1a01b312303a31e1d3df27d237362a24d9c869e28f7cbbc9e070771e5d548c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4ZGY1MjMxZWU3Mjg5OTJjMjM2NTFiZDk1OTlmNDVmNWMzY2QyYWQwY2I5NWQ0YjUwMzJlNjBiYzgxZTg5ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0YjlhMGIxNmI5OTEwYmFhNWQwYTRkY2FmZjhhNjBjNDI5NjMzYmYyYWUzY2JhY2M4MjAyOTA3NTgwZDEwY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmYmQwMDkzMTRiYzI3MDg0MTY3MzRhMDJhZTVmZjM5YTFlNDhhMDUwYmU5MWY0M2IyZmFhOTIwMDJjNjJiZmMifQ"
+        },
+        {
+          "resource": "repo://example/demo/opa.yml",
+          "version": "repo-file-v1:sha256:ac1652740ac8c7c307e088d52e32febb88b4e9d979f41cb8d6364bb024257ac6"
+        }
+      ]
+    },
+    {
+      "id": "claim_69e6f69c88c547109634f3b340f744a6",
+      "statement": "The demo generatebundle prestart task renders helloworld and foobar sources and builds /alloc/data/bundle.tar.gz with OPA; Nginx serves the allocation data directory, exposing the archive to the SDK bundle service.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/default.conf.template",
+          "version": "repo-file-v1:sha256:d49ea22bde1e32764e53f132d1e74e1d43df0c6c6310b7a93f26ffebec7544c8"
+        },
+        {
+          "resource": "repo://example/demo/nacp.nomad.hcl#L162-L219",
+          "version": "repo-lines-v1:sha256:ba4eee333dfca0d46ee8110a1c5472ccf2b20e53cce17560b51eb9cfcee9bd7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1N2ZmYTU1M2M1OWEwN2JmMjFkODY1MGUxZDBiYjQ1MzhjMzUwZTljYzcyYTljOWYyNWI3MmYyYzNhMGY3NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxYmQwOWMwMWMxNWU0N2FlNGNkM2NkNmFjMjhlOTRkZTg3ZmY4NjgwZmFiNjRkZGMxYWM1OTg5MWNlOWE0ZmQifQ"
+        },
+        {
+          "resource": "repo://example/demo/opa.yml",
+          "version": "repo-file-v1:sha256:ac1652740ac8c7c307e088d52e32febb88b4e9d979f41cb8d6364bb024257ac6"
+        }
+      ]
+    },
+    {
+      "id": "claim_bd83cac99d6043edaddbbf7123d018c9",
+      "statement": "NACP constructs one SDK from the configured file and ID before building/listening on the HTTP server, waits on SDK readiness with a production 30-second timeout, stops it on readiness timeout/cancellation, and uses a fresh 10-second background timeout for SDK cleanup.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L622-L646",
+          "version": "repo-lines-v1:sha256:8e392be9cd5a4255bf9dc3c6995e2a7018b1229aa3c6bcbcc93adf3f5f9fd254:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczNzMzNzY0ZmViMjM5YTdiMWFkOWZkMDdmODg5ODI2NjRmMjY4ODY5ZjRhMWFiYWUzYzJiYWVhYmE0MGMwMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxNGI3YjllMGI5MzI2ODlmMDk0MzQ1NzBmNmI4NTc3MjBhNTNiMmNlZWQ1ZDU5OTIzY2M3ZTA1NDk4ZTQ4NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmYWI4ZTRkOTNmYjdkODg5MzZmMTk2YjViYWU1ZjFlZTg2MDRjNGNkMjljZGQ5ZTE0ZGE4YTMxOTljZDczZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIyNmY5ZDE2ZWNhNjU1NTlmNjI0ZGM1MmU1NTZhMzFhMTVhNjU1Yjc2OWViZDc4Y2FkOTc5YWFmZTk4MTZmMTUifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L922-L975",
+          "version": "repo-lines-v1:sha256:f91b0821d8cf988335cb375a6212e91c273b90b5ebd6366eeb824c67d40c3280:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YjI0M2U1MjhjMTk1MDJlNWEzZDVmZWI1MjUzNjVmOTMzNTFmY2VjNzEzMTdiNzNjNzZmOWJlMTU0MDZjYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NzliYzJhMGExYzJhNzVlODM4ZGI1MjQyNzRmYzk3OWIyYWFjNjE2NDJjZTU4ZmVhNmRlZjcwNDZlYzgxZWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxOThiYmYzOTUxODY2ZTJhODkwMmY4NWZjYTEwNWU4NmM4ZjM4Zjc1ZmUyNjg3YWQ3MmYyZjgxZjVmMDUwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2ZGNiZDU1YjQ4OGI4OThlNDQxODU1NGU0YTE2YjFiYWYxODgyMDQ1ZmQ0YTA3MzMxNzZmYWI3NjY2OTc1NDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2c05a55ee1a46b3a1274bb5b94184d2",
+      "statement": "OPA SDK/bundle support is explicitly experimental; initialization readiness does not establish ongoing refresh or degraded-mode guarantees, and the repository requires environment-specific validation before production reliance.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L151-L159",
+          "version": "repo-lines-v1:sha256:62f75306b87b42c92cdf34b4950dfa2531564d54e63da4c271b67cc3dc7dc9d7:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTJkMTMwOTJlNDE1MjM4ZWY5ZTAxZTRmNGVmMDljMDA1ZWUwYWQyYWU3OWMzODFkYmQ5OGFhMTZmZWM2ZGZkNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTEzYzkwZTc3OTgyZjhhNzIyYTJkYTI3M2QwMGFiYzUzMDVjY2I4MTVkZDk2MjkxMzU5MTNiYTJmZjI2NTE4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODgwOTE4YWM2NDMwNzA0MDMwMDQzMjc4YWJiMTY3MDAxYzY4MzQzZmM1YTNhZGY3ZjgyYjYxNjk1MjliODRhZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjdmMzIwMTgyZWE5YjEwYTNhNTE0OTlkOWI1YzY3MzkxYTE1Y2ZiNWFmNDIxOTBmMWFjYjU2MjI2NTVhYWIwOSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L939-L969",
+          "version": "repo-lines-v1:sha256:31494c33908226af6c234b56009d8201b2dfd022bf6030f7a754c1371c70948e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5ZmFmZjBkNDRhNDIwYjI5MDY3ODNhYzZlMTVjMGY2MDUxZGMyYTU3NjRjYmE5NWViZjAwNTEzMmJmNTgwNDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyZmNmMzk2ZjU2MzA3MDkyN2M5ZjAyYjFlY2Y4ODc2NDI4MjBhZmIyZjMyNDI4ZTRlMDJmZmIxNjlmNDY4YzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkYzE4MjAxNjYzNTA2Y2JhNDU3NWJlOTQzY2NjYWIxZGExNTNlYjcyYTYxNzViMTc2MDA3NWYwYzRkNmYzYzkifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1424-L1441",
+          "version": "repo-lines-v1:sha256:c263b10b667976dd59a798f9b33a4c0d832dc19f1da34fde4ccc307aa05d1815:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyMDkzN2NjNzMwZTVmMmJhYzU3NGFiZGEyZWQwOWMwZGExMjNhMjFkZjgxMDJjMTZlNWQxODkxZWRhMWUxMzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzYzhjODdlNTc4NGY3YmM2ZDRhNTJkNTQ5YTdkZjQ3MGY5MmExNGNiYTdkNzkxNWI5ZWFjZWM5M2Y2NjUxNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_946ddf18c7754c2ba69a06df74a96295",
+      "statement": "Embedded CreateQuery conditionally registers notation_verify_image as a string-to-boolean builtin, turning VerifyImage success into true and failure into false; Rego must convert the result to policy errors for rejection, and using the builtin without a verifier fails preparation.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L61",
+          "version": "repo-lines-v1:sha256:f4da3744091c46ccb8de57aa4f0855a1e8dee3af9469b065b3adf18ad2653ad8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDQ0MjgxODlkZTlhZWNlYzQyY2ZlNTZhMjZlYzEyNjgyYWRjZWFhMjQ1N2U3MWY3MjdjOTg3M2UzNzI5YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNzlkYTEwZGI2NTA5YWY5YTM2YjY4MjE2MmNjNDNmMWViNzYzOGQzYzZjMGJlNzAwNGI0MjlkN2ZmYzdjZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlODMxZGJiNjMzMjJkMTBlMWRlMzE1ZDhmZTliYmRkZTdmZGQwZTQ0NTdiZDAxZmJkYWJiNWE5MDAzYTQwOTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L110-L184",
+          "version": "repo-lines-v1:sha256:005d207f837b1e67cf0adb6d0adb7a0c45a65dc12af8acd6dc9e0ddef0691f9e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjNDBjOTM0OWVlNmMzNGZiODI4ODAzYzJiZjBiMjUzNGI3ODA5MzE3Mjk2YWZkNThkMjI4Y2NjNTUyYTcyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2OTZhMzVkNjkzNWUyNDYzODFkNTA0NDFlMzA2NDhhOGZkMTVjNTk0MTQ3OGY1Yzc2MTI3MTc4NjgwOWNhMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L45-L59",
+          "version": "repo-lines-v1:sha256:1b3d696c51f92c25ae40a0ebccc3eda71cbb3b4ebedfd86f0fd9bf88c8b24f1c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3OGE5MzQxOWMwOWE3NTAzNTEzMjQ2ODgwMDhhNWE0ZWM2MDA3NTM3NmE0M2IzY2QzMDQzYzFhYjg5NDE5NTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmYzM4ZWZkNjYyMGU5ZTI0ZjMzYjdjOWEwYmFlMjMxODlhZTIzMWMzNDgxZGExODA3ZWJmZTdkMGM1N2IwZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyZjJmZjVmZWVjNjBmNTg3YzhmYWU0ZTg3ZjgwOWE2NjFjZmZlZDZiNDdhYWU1ZjZkNmEyNjUzYWE4OTUyZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTlkY2JkNzVkMzIyZTA0OTRmYWJmZDRkYmQzZDEyYjU2OWRkMWI4ZDk5YWRlNzNkNDI5ZmE0MTBiM2QzM2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0f899d5e4fd247bab0a4ee905881af67",
+      "statement": "Current factories obtain the embedded opa validator's verifier from validator-level notation but the opa_json_patch mutator's verifier from opa_rule.notation; SDK initialization does not register notation_verify_image.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L858",
+          "version": "repo-lines-v1:sha256:753ea3dd5c931bfa0b0d2978851a228ed83e73680f4ec2a957041f3c6c67e243:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYWU3ODdmNWQ3ZGFjY2ZkMzhlNmI1N2E3ODZlZWY2ZjE0MTUwOWU0YTI0YmM0ZmY1Y2NhODgwYWQ3MGU3ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0YmI0YWUzYmVjMGU0OGY4NWFiODliZjk4YWIzMjQ4MGJhMTE3OGY2MmVmNjA0MDI1NTBhYTMxMWU4ZDk5YmUifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L951-L955",
+          "version": "repo-lines-v1:sha256:ea53f4b72206d5c7726838bdb378f6f7afde4d90570f2c5bbef2d09a656eaca0:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDM4ZjQwODMzYTM0NjkwMDYwMTE3MjdiMjA1MDU2OTgzYTdkNjA3NDkyYTQzOTc4Yzc4NTcyOWViZDY2MTIwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzdhOWI1ZTkwMTljOGRiODc4M2VjOWMzZmViYjBhMmM5ODYyZjYxYTA1YzMwOGZlODk1ZTRhOWJlZDAzZWRiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGZmNzVkNmRlNDc4ZGY2YjQxMTJmODg1MTM3ZjE1ODRkOGJhMGY2YTUyYWUyMGU2ZGUxMjgzMTlkZDQ1YzBiNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzhhYjVlNDI4Nzk4MDFmYzg4MzgzNWQxYjc2ODZmMzcxOTMwOTJiZjkzNjcwY2UyMDEzN2EwNDZmOGY2N2U3YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_534ffba5b2d84be48e8cb8695191f9c2",
+      "statement": "SetupOpa builds a mock HTTP bundle server containing example.rego from supplied policy text, configures an SDK to fetch it, and registers cleanup for server and SDK; bundle adapter tables use it to test paths, malformed decisions/messages, patch errors, and null patches.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch_test.go",
+          "version": "repo-file-v1:sha256:d9a88581acc3f851b967f6313417e47392775e5a9ce08c1a788059a216edb3b7"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator_test.go",
+          "version": "repo-file-v1:sha256:1cacdd794e9beb78586404443ac02219b3cfd00a5043eab1a0fdfbf41e95532f"
+        },
+        {
+          "resource": "repo://testutil/testutil.go#L152-L195",
+          "version": "repo-lines-v1:sha256:ad283079ba231ca06dfa889089597fdda0914a65323fd01ff4c6f766eeb658f7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2YzVjZjhiNTk0YWQzNDBkM2E1YTAyMzUxYTgwOWY3YmEzMWFkMDdlYWRiMzkxYjUyMWE2Yjg2N2YxMWRiMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjNTE2ZjEyZTNjOTJjZGNlN2Y1MTRlNmRiYzcwMTdhYzM3MDJlODhhYjViNDJmMTBlNTM0ODFlMTkzNTI1MzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db087d4f312e45e2a9cdfc1dd6f1b719",
+      "statement": "Embedded query tests use local testdata fixtures through testutil.Filepath and distinguish missing recognized bindings from empty result sets; SDK startup tests separately cover valid/invalid configurations, missing files, disabled setup, and readiness timeout.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1297-L1441",
+          "version": "repo-lines-v1:sha256:265cecb42fa3a9637f851f8e6a019fc1cc2629b6f0239f45e54eddb24f9baf49:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxZjFiM2JmYjIyMWUyOThkYTE2MDgyZTQxMTI4ZWUxOWRlMGQyOWM5MTFkNjM5YjRhYzZlZjMzY2E2OTY4NmZmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkYjc5Y2JkZWVkYmE2MWRiMzZmOGE4ZTA1YWYyYzc1OWI4YmFiOTY3MWI2NDgzMzE0ZjQyZTk0MTU3ZDZhMWZlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L17-L94",
+          "version": "repo-lines-v1:sha256:b8d9adc254ecc8b1ed2fada678a2065b625d176f05ec280b131b20f549b2eec8:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2MzBjMWNjZDAzOGNhNDdhMTFjMzFjNzkwZjI4Y2ZhY2RjZWZhNDU2YTVmNWQwZTAzNjk3MmFhODZlZTY0ODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0MTI0MWI5Y2RhMjBkMzkzMzgwNWEwMmM5NWYxMmE2Y2E4ZmE3NThkY2JiM2YyMDk5YTk4YTk5NDRlYmFkMTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTQzOWY5MTk3MGI2ZWIyMWM1ZWQxZGRkNjY1YzgwMGI2Yjg4M2JkNGYzZjUyYmE3NzM2ZDY2ZTIyNDM5MmIifQ"
+        },
+        {
+          "resource": "repo://testutil/testutil.go#L93-L102",
+          "version": "repo-lines-v1:sha256:70aff9a7d3602629958a6c640c5cde2a0bc34ae2a058649d0c2e977f310cf487:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmNDcyMGU3MjQyMjc5MzNkY2YxNTUxZWJiNWJlYWQyNWJkYmVmZTJjNGQwN2VkMWFlZjQ1MTA1YmY4NjY4NjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzZGE4MTBlNzRmMzdmZmM4NjEyZjg3ZGVmMmQzZjFkZjQ2M2Y2NjFlYWNjZDgxMzA3ZTEyMjE4ODUxM2I3ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjMmFiOTAxMjgxMWI3YTk0ZjYwMDM2Y2M2YjY2MzIyMDE3ODhkZjM4ZGUwNmJjOWFhNzFiOTE0MTY3NTdhODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_69f83477410d44bcbb59a68336cac2f1",
+      "statement": "Despite the opa_bundle validator type name, current bundle configuration retains opa_sdk for SDK setup and opa_sdk_rule for decision-path blocks.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L843-L858",
+          "version": "repo-lines-v1:sha256:b5bfb289a2a2b43350d193c6aa7d87d7624bca425eb91028bff78868cfead684:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYTBlODFhM2M1OWM2ZDc1YWM2YzMwZjQyNWMyYzM5YTY1NDNiNjk3NjM4NTQxMTU4OTczZGRmM2JhMDA1MjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYWU3ODdmNWQ3ZGFjY2ZkMzhlNmI1N2E3ODZlZWY2ZjE0MTUwOWU0YTI0YmM0ZmY1Y2NhODgwYWQ3MGU3ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkNzJmMTNmYzIwMGI5ZTQzYmZmM2ZjMjJjNDU5YTIxNDhiMjFhYjI5ODM1OTM3NmEzOGFmNDJmM2I2YmFjNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0YmI0YWUzYmVjMGU0OGY4NWFiODliZjk4YWIzMjQ4MGJhMTE3OGY2MmVmNjA0MDI1NTBhYTMxMWU4ZDk5YmUifQ"
+        },
+        {
+          "resource": "repo://example/demo/nacp.conf#L79-L95",
+          "version": "repo-lines-v1:sha256:245152a1f096f7ed030be3b614f87e056398640b3bd9b8c21463aba7ab0ebb84:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1OTk1OTBhZGJmYmY2MTJkZGViMTFjOTJmMjkxN2VkOTA0MjQ1Y2NiMzczNTFjZDljYjE1MjJjMTJkNGQ2NmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxYTc5NmM3NWYyZjZhYTUyZDM5NzQ2ZDg2NzUwZDFmOGIzMmJkYWY5ZmE3Y2M0NTgxZWYxMTA1MmNjNGEwNTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L324-L365",
+          "version": "repo-lines-v1:sha256:fda9b848f07d0d17c84cb11d21e92745bfd1b2d4d4b2a5f780acf27901a21058:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1YjIzMTQ4ZjdjZjYyMTcwYzE1NTFiN2NiOGVlODQzNTAxZmUzNDgzZmZjMTdjZGM0MmU0NzEyYTI5NjY0YzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4YmQwZGNmMDBkN2Y5NzA4NTE5ZWRmNWM1NTFhYTFlMmVkYWViMjRmMjE0NTcyYTQ4OTExYzY3NjZlYzI2N2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dc042494e7394690b60c1267c46d6f3c",
+      "statement": "NACP pins OPA v1.19.0 and uses /v1 Go APIs; its changelog warns of stricter := right-hand-side safety causing rego_unsafe_var_error in custom policies, malformed bundle-validator decisions now failing closed, and the prior shift to payload-wrapped job input.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L148-L162",
+          "version": "repo-lines-v1:sha256:ef8d650568c1b147a8f2cec4bd92a2f39018ecb1656059f774479b9bd76ac21f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkOGYxYjI1MTlmZTlhMjMxZTExYjA2YWVjYmRkZTg0YzA4YzAzNzE0YjA5ZWFiYjg5NTllNThlNTY1N2ZlYjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMGM3ZGM2YTc2NWI3MGM2OTA0Mzk1ZDZlYmVmMDAyNjcwMDhiMDc0Y2RmZDFmY2QwZTdjM2JkYzhkOTUxZWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NjBlZjdkOTMwZDlmODgxODFkYmY3NzEzZTBmMWEyZDlkODBkYjI2YWM0OGExZTk5NGRhYjgzNjE2MzM2YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjMWIzYmY5NjFmNDU0NDM2OGIwNTUxYmFiNjcxYjg4MGNhYzIyZmFmODY1YzZiMDNiMWMxYzA0YWJlN2U1ZjQifQ"
+        },
+        {
+          "resource": "repo://CHANGELOG.md#L84-L102",
+          "version": "repo-lines-v1:sha256:42660cbda05273c66f4078e5967e3514b870daa2de72b43c24d39bd31764aeed:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1Y2I2ZTQzZTVkOThmYzkxOGExNmM0YmQ4MWNiYjBlMTU2MjEzODEyMjYwZGVhNDZkZmM5MDQ3YjM5NmRjMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlYjE3YjNlZGJlYzkxOTM3N2JlMTllZjA4NWY2OTQ3ZmQ1ZmJhYTkwMTdiNWJjNGRjZjdiNTIxMjc4ZTNlOGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljZDFlYmVkNTIzNzJlMjk2YjEyMzM2MGFhNDFlZWYwMWZmOTc4ZGNkYjgxMWI0Y2NiYWExNWVlNGMwM2RmYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjMWFjMGNhNmIxZTNlNjAwZWM2Njc3M2MzNDcxOWVmN2ZjOTQ0YmEwOWQ0ZmQ0NTMxYzBlOWJmNTU5MDBkZmQifQ"
+        },
+        {
+          "resource": "repo://go.mod#L37-L41",
+          "version": "repo-lines-v1:sha256:fa1bc097449f875fa494b3fc17104d3af8a1f23b0a04eabd1db937c4f20b577b:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDM4NWNlZDlmNjhhZjE1OTJiZTZiMzFjNDgyZDY0NmMwYzBjN2ZkOTEzZTA1YjI3MzhiOTRkOWYzZTk1ZmQ1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjU4NDIyODhlMjhlYzE0N2EzYTA5YmMxZDFmZmZiNGEyOGZhN2Q3MTRmMWY2MGMyZDdjZTg2NGRjMjUwYTIwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWM3Njk5ZTA4N2MzOGY2NzZkMDVmN2Q3MTZlNTcwOTJmZjU4M2IyNTk4ZGIyODUwMTQ0MzYzMjBlOTU1M2QwMCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L10-L14",
+          "version": "repo-lines-v1:sha256:dfdd7f1627eeeb4b8121f24db65ebbcf3515158425d6320ce4bba59e40d946fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDQ1ZmZkMTQzNmQ3MGU5YTU4NTk2ZjA4NDA2ZDkzNDMyOGU2ZWFjNDY1YjMyYWY2MTI5YjFjZDMzM2U5ZjVjNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWUzMDk2ZGUwM2MzMDc5YzU5ODAxNTVjMzlkYjE2MTVmZGU0YTU5MmI2NTA3MzkxOWQ1YzA1MTE1YmIwOGIwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWM5YzFhMzk5YzU5MzJiOGRmMGE1NjJkZWEzYWM5NmIzYzMxYWUwODUxMTlhNjUwZGU3OTE5ODY1MmY0N2RmZiJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-06T10:26:01.086Z"
+  }
+}

@@ -1,0 +1,746 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:6f0379144c608e805e4f1fac50d04d981e978c920c34f878506af1516670a0dd",
+  "claims": [
+    {
+      "id": "claim_dee90316b056401fb41532d47baf41a6",
+      "statement": "NACP applies admission only to PUT/POST register, update, plan, and validate routes and proxies other requests; update and plan matching accepts any non-slash job ID, so direct access to Nomad bypasses NACP enforcement.",
+      "evidence": [
+        {
+          "resource": "repo://SECURITY.md#L13-L23",
+          "version": "repo-lines-v1:sha256:d925673a8bd35b68e739d441678425f0a2fda628d1f42ef8c55db32233a4401f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0YzMxMDNmNTUwNTRjNzk2MzQ0MzNjN2EwOThhY2UwNTZlY2U4MTZlYzNiYzZhYjM0NWJkMDYwMzlmMmJmYWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMWMwMzhkMmE4Y2Q1YjBkMDFkODdjMjc3ZGI4ZjYwOTQ5ODc2MzU5MTEwOTExNDA3NDUxNTBlYjk3NjM2ZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmNWRiMWUzOTE4NWM1ZjA3YzVkZGY3ZDBhZGZhODYwYjhiYmRlOWExMmQ5YzA0ZmVkODIwZGYzMTI5MzgzYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L133-L165",
+          "version": "repo-lines-v1:sha256:fa412c6eba02733f022a99e70d0076e570d2a7d17c5b09b6c17f9ee0e15cae2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiOGI3Y2ZmZWNhZmQ0MGMyZjQzZDI0NmRmYWFkODU2OTE4M2JmNjc2N2ViNjZlMmExZjEzZjNkOTNhOTJlN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4MDI0MzM2OWE1NDFiNGQyNmFmZTlhYTRkNzI0ZjlkMDYzYmM0OWM5ZTY1ZTYxMDg0ZTEyNzQ0OGVmYzVmNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1NDdhYmQ3N2Y1Mjk1MjVjNjI4YzU2Mzk2ZmUyOWFiZWEzZTdlNDc0Y2I5NDY1YzMxNGI4ZWU4NjNmMmE2ZjMifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L220-L231",
+          "version": "repo-lines-v1:sha256:f32982e4ce5a109ec2015798af4fa50df4ac5fe57cc3f27cfc1947c3a354e181:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ODRmNzJjMjY5ZmU4Y2FlZjRkMGQ5ZTY4YWY1YzZhMDdiNGE2OTJkZWIwYWJjY2Y3ZjJlZjI4ZDJhMjM5YjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyNjNmMTkxNmFiNjlmMmUyZGIxNjFkNGUxZjRlMTE0YzYwN2NkYmE2NTQzZmEyMjFkMjA2ZGQ1OTBiNTI0NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmYTYyY2EwMzA4ODdlMzI2YzA3NGJkZWZiZTliZDAwMWE1NDllMDQxMTA4YzQ4YWQzMDhlMGYxODYxMzYwOWQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L541-L561",
+          "version": "repo-lines-v1:sha256:e4d9b0ab1f6881aa2f4e261fa3801f5bb49d557864b343b79e542e52a67ac693:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzN2JkYTY4ZGZhNmU3NWQ1ZmFhZDExYTNiNDAyZTZlNmE5YWRiOGRhOTNlNzc5Mjk5YzVjZGQxYjQ2NGI2OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3YWE5OGRhNThjNjdkOTFjMzhkOGQxMzIxYjZiMTlkZTk5ZTMzMzFmMmYxMmIwYzhmMTU2OTg2MWVjODgzYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhMmM2MDEzNTAwYWRjMjhhNmUzNjNlMDljZmUwMThlZWM1MThmY2JiZDc1ZWZiOWRhNGQ4NDM1NzEwOGUyNjEifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L60-L61",
+          "version": "repo-lines-v1:sha256:4891fdc6e20d44bf73a49a11436dae8e333f6254f5cf075d03942b18100ac3e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDhjOWI5M2I3N2RlOGE1ODhhMDIxNDhkOGUzZjY5NmM3ZmVhMjg5MjBkOWQ1NmYzNDlkMWNjYjU0M2JlY2Y5YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWNlY2RiYTQ0MWMyM2ExZjkzMjYwMTBhMDI2NDg2MzJlM2JmZDJiZTkwMzE4YjlmOGYzM2ZkZmQzNzlhOWI3MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmVkNjlhZTdkYjY3ZDNhNGZkOWU3NGQzYThkNGZkMjdmNDYxOTAxYWU2YTNhNTY5NTE3NGJkNWUzNTVkYjM5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjEyMjdlMDYxZjExYWU1ZjY3NzNiYmJlMWExMmJiZWQ5ZWZmYjY2YzJiZDNhNDc1OTRhYjBmYjgyZmI5NzE1NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb008435b41646c2a4564f8e5d686bbc",
+      "statement": "The CLI uses defaults only when -config is omitted or empty, does not search for a conventional file, and fails startup for an explicitly missing or invalid config path; bootstrap logging is info-level stdout text or JSON selected by -bootstrap-json-logger.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L563-L595",
+          "version": "repo-lines-v1:sha256:962dd04fc6ddfbb6b11876488650d69f57091568300bef830a5af78f56c13ca1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhNmM4NGY5MzQ0YTUyMGVhMDk2YzJiOTEyMTQ0ZWQxNDVhNjEyY2NmMWE1ODY2Zjg5MzBlYzgzZTg2MjIwNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmODFiOWVjZjhlNGFhMDFmMzQxNzVjMDU1NWE0MDU4ZTk0NDRhZjRkNWJkOWI1YmVkNjJiMGZkMmQ2ZGYyN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OTFhOGMxYjg0MjA2ZTRhNjZkYjFmYjE5MjRmODQyNGNlY2Y4MmFkZmQxYzM2YWFhZGIxMGVkNTE0ZWIxYjUifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L748-L765",
+          "version": "repo-lines-v1:sha256:8cfc83ea6ee151d62398cd23f45d0693924656f62839e2673d01b9ed29f5860f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4ZTUzM2M2ZTI3YWQ2MTc2Njc4NjUzN2Q0NzhlNDA0OTM4NWY0YTZmODQwNDRhMmRiNWIzOGJjZTI2MzY5NmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMGViYWEwMzAwY2NjMWI4ZGFjOGI5MWNhMDQ1YmM5ODMwN2EzY2VmMWQ4NGVkM2NhMmI2NDU2MzYyYzVmNTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwZjYwYWJlMzAyNThlMjMyNTFmNzNmMDZhYmQyZDgxMjMyOTljZTY1ZjIwMTJlYjNkNDY2YzA4MGNlMjEyMzYifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1241-L1288",
+          "version": "repo-lines-v1:sha256:13647190527fb3a5195444e4b059bf771497e857a3515f0b5e2b36eab3ceb701:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyZjU4ZjA2ZjE3NGYxY2JiMmNhNTYyODlmMzNmMDJhN2ExYjZiNzFhMGY1MGFlOTQ3NDM5ZDZjMmZhZjdjZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1NGM5YmM5MzI4NWNjODU0YmIzZDViOThhMmM5OWI5NmFkNjY2N2U0ZWNkZWEzNmY2NDc3MDY5ODc4YWRlNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5ODc1YjA4N2FhNGRmNDIyMmIxMjc2NjQwZDJlZDZhZGJmM2U1ZmMyYTBjYWRjMWQ4NmNlY2M4MzIzMGYzMzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6afefefcb864750a0f048bf362e05c2",
+      "statement": "HCL is decoded over defaults with top-level bind and port, defaulting to 0.0.0.0:6464, Nomad http://localhost:4646, no TLS or OPA SDK, and empty controller lists; an empty HCL file retains these defaults.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/config/config.go#L143-L204",
+          "version": "repo-lines-v1:sha256:26175925531ce69b73a95592b585c136653404e49c69d199056bb62a5d8ed550:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNjY4MTQ2Mzk0YmY2NjQ0ZDJjYWExYzdkYWQ5ZGU1MWUzY2RiZWFhYjY1ZGFiNWYwYTE1ZWU4OGRkOTRmNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1MWE3ODZhMTkxMDIzZThiZGVkODk1ZTU2MmUxYWRiYzU2ZDEzNGExOGIyZmM3ZGEzYWUwYTM3ODJjYjQ1ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmZmE2M2M2MGRiOTFkNDU3MzI5MTc5NjFiZjBlNGJkNGY4MTA5ZjYzZDBhZWFkM2E4OTA0N2U1N2ExNTc4YTMifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config_test.go#L537-L578",
+          "version": "repo-lines-v1:sha256:6ac345c8be4bb331954e7af051b6d0d9e7a18a2ff12d5afadd102e885ca74996:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhMTM4NGUwZGY5YjU3NWI2OWJjYTU0Y2NiOGNlODU4OTI1YmIyNjk1Zjg5YTA2M2ZkYjQ1ZmZhYTk0NjYwYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxZTVmYTkxNTA1YThkZjcxOTkyNjczZGNmOTc2MTNlNTA3YTc0NGExNDQzMGE5YjVjYTU3ZWY1ZDVjZGFmOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4YTE5YzI1OWU2Mzc2ZGViOTY2ZjgyNDJhYTcxNzA0YjU2NGZhZTk3MGQ4MmExM2U1ZTZkYTM4ZGM0NGNiMzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0NTljNWJmM2NjNmNmNzlhZTIwMmI5MzZlMTExODRmYWE2YTlkMjdjNjlhMjQ4ZTM1ZmIwYWVhYzQ1YjhjMmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fe6efe3ee804446c8278d23552689627",
+      "statement": "Default logging is info-level text on stdout with JSON disabled and its destination defaulting to stdout; OTEL logging, metrics, tracing, and per-controller resolve_token are disabled by default.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/config/config.go#L162-L194",
+          "version": "repo-lines-v1:sha256:aecb2fb0fbb36a017403d6cd3dc4a93ac91dda0efcadf5113dee984a5e18d76c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkODFhYjc3YmRlMDc0MDBmZTkzMzhiMGQxYjY5ZWNmYjU1M2U5MTA1YmIxZjdjNjBlYmY2M2JlNDY5MmE1N2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMmM5ZDM0OTM5YTU0NTUwY2VmNTRhMTA5ZTdkODRhMjIzMTU1NTdjYjIzZDQzYjhhNDAyMWNiNWRmMzE0NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0YjIyODE1ZGE1ZTc5YzlkM2E4Yjg5NDEwMjczNWVhNWM4ZjcyOTMxN2RhNTgxNzQ0NGRhYTAwZDZiNzM2YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwZGEzMmFiNGFiOGZhYjYzNzJhOGM1MTI5YWIzNmU1ODNmODNjN2ZhOTdmNTBkNjhjZjU5NjdjZTFmYjRhYTcifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L33-L50",
+          "version": "repo-lines-v1:sha256:2d813395e54af991c01c5113018a001b3aa3cd13c7c95ff7f09e8a0a71337f11:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwYzJmNDUwYzMyNDY0NmVlMzU3ZDc4MGY2ODBkZjllY2I5NDRhZTE4MDRjYTE4OWVjYTFhMTJmYjFlZDlkYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NzM2ZDFiYTY1ZjdmYmVhMjZjZTZjOGYwNTM5MjllZTI0NWJkMzdkMmU1ZmIwMGEzNDU2MTMxYzk4MWE4OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5ZmRiNDkyMWQ3YjQ4MzU5MTgwZDFmZmJiMTZmNDYwMmZiNGY4OGE4OGI5ODk1ZThjMGJhYmY0ZTMzYzkwMmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6df9bd368064c07b1c6e8b9de02570f",
+      "statement": "HCL loading applies a max_sig_attempts default of 50 to zero-valued Notation configurations, including nested opa_rule blocks on mutators and validators, while validation requires a positive effective value and trust policy/store paths.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/config/config.go#L196-L236",
+          "version": "repo-lines-v1:sha256:edfe9b00ec4e2c4217c6608785140ccbec8fc6f11a885b310748049a40f229d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyNTNjZmNkMzJiZDMwNmVlNmY4ODljOGNhZjUyNTM2MmFkNGEyODE5ZmNkNmUxNDJkNzQwZWRmYWE5MjdkY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIwNDllOWE0ZWY0ODZjN2U2OTE3ZTJiMjNiNTAzNjIwZTc3Y2M3YTdjYjhlN2I5YjZlYjY4ODA2YzZlMGU3ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxMmZhOTY1N2FiMDEzOGI5NjJhY2E4OWRjOGQzY2YyMjE0NTBiNWU2NGJjZWRiY2M2N2JhMzg4ZWQ5MjkxMGIifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L384-L391",
+          "version": "repo-lines-v1:sha256:56cc6c2e298153e2f800a4e4dc61d6c2ed9b9b898f4be161e23f5cbb402776fd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDg1MTJkM2UwY2E5MGQ4MjBlMTE4MmNiZWI0YzY5MDcwYjFhZWNmY2Q4NGNkODEwZDhiNmJiOTE3ZjRiNDRmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWRhMWQ3OTE0ODA5ZTM0OTlkNDU3M2U4YmZlNTgyNmFlMDgyZWEyZTJhMTRkYjdjYzE0MTcyNTc3YzZhNzM1YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTYzMWI2ZTJjYTA3ZDhiYWYwZWI0NGU3NDlkYmY0OTBiMzkyZTNhNTM0ZWY2MTAyMjc3MTE0NmNkZjlhZjFhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZmYTExNzcyZThhYTdhODg3NTA2ZDkwMWIwZmUwZmYxYzNhNTg4NGE1MGYyYTJmNjdlYjcxZjU4NTU0YzczYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_070fc8604e724e719dbf14f148b503e0",
+      "statement": "NACP uses an empty HCL evaluation context and passes local rule, SDK config, TLS, and trust-policy paths directly to filesystem APIs rather than resolving them relative to the config file; relative paths therefore depend on the process working directory.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L767-L775",
+          "version": "repo-lines-v1:sha256:68bfcb646fee259b5f76d4b2ae778d1928e19800dedaa50354b46bf1d18ef168:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmE5N2MxZWI1NmM4YWFiNzI0ZjliYzYyZDJmZjQ4YTI1MGU0NmM0NjVkOTFkOGFiMjQ1OWM0ODIyOGJjNjQ1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjczZmE0MzM0NzkwMzgxMjAzOTlkMGFlZTU1ZmZhMjJmNzNiOTVhNDM5OTJkNzVjOWM2MWU2ZWNjZTk2ODYzNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDdhODMwZWZhYjk3MDczM2U4MDdjM2E3ZjI0NDI4OGMxNzE1NzNkZDY5ODM1ZTJjYTA2ZTQxMzQ5Zjc2NmIzYyJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L880-L918",
+          "version": "repo-lines-v1:sha256:14a10bf313fbb5d6b04178ba6f12c4f2940f30291b389c587c97f025a1b86045:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiOWVmYmM4OTU4MjQ1NTZlNGRmYjJjMWM5Yzk0NGM5ZGMwMzk5MmNjZWI2MjRiZDFkMjZlY2M5ZmQwZTFiZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2OGQ2NDJiMmQxZTcwZTdlMjgyNWY2MTQ1OGMyZTU1NjA0NDhlY2M2MzQ1ZTY0M2QwNDM5ZmM0N2EzMzdkZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxOThiYmYzOTUxODY2ZTJhODkwMmY4NWZjYTEwNWU4NmM4ZjM4Zjc1ZmUyNjg3YWQ3MmYyZjgxZjVmMDUwZGIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L939-L945",
+          "version": "repo-lines-v1:sha256:0bd2b60483833d59e7726c43e4b41c1583e6990515c8a8ec0cbbadc13ccdee9e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDlmYWZmMGQ0NGE0MjBiMjkwNjc4M2FjNmUxNWMwZjYwNTFkYzJhNTc2NGNiYTk1ZWJmMDA1MTMyYmY1ODA0OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjUzZjhmNGVjOTkwOGJlNWRhNDI0YjBlZGU5MjQ4YzA1ZTVlNGNhODEzYThhODY0YTY1ZTBkYjNhZDRkMGMwNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzJmY2YzOTZmNTYzMDcwOTI3YzlmMDJiMWVjZjg4NzY0MjgyMGFmYjJmMzI0MjhlNGUwMmZmYjE2OWY0NjhjMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzY3NTQ0MGI1ODE3ZGIxNzI1YTc4NzA1ODYzZTY1NWM5ZWNmODAyNTIzZTY1MjFlMjQzYThkMGExMzkzOTVkMiJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L38-L48",
+          "version": "repo-lines-v1:sha256:6312a21cb6e1b114a3233fc89ff27738813f915dd1c12dd87753873f7a14d3b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0YzI0ZTU2ZDgwNjFmZTEzZWQwYzIxNjQ0ZGZhZjkzZTlkMjQ1NWJkYzA5ZTMwY2VkZjg0MmQ3ZThjNGY1ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1NmE4ZGEyZDE2OGJkNTJmOGVlOWYxZjQ3MDdhZjA5ZDYyZWExNGM2ZjM1YmM2ZTU0ZDczNTRiZDczOTI3ZjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYjAyNGE2ZmU2MzQyZTBmNWI1ZjNkOThlZjM1NmE3MjliMjNjZDA4N2ZkNTIzMjQyOWFkYTViMTAxMWQ3ZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkMjU0YjcwZDE0YjMyOTNjODc0ZTNlYjdkYmFkYTIxMzk2NGMxODc5MGFjN2ZjNWMwMTQyZDMyZjYwYmY0MjkifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L31",
+          "version": "repo-lines-v1:sha256:d90b698b3d2c3449ef1d3077fa0cf370e4c4f5497f7d5ff2cec153d940c718de:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWIwNDQyODE4OWRlOWFlY2VjNDJjZmU1NmEyNmVjMTI2ODJhZGNlYWEyNDU3ZTcxZjcyN2M5ODczZTM3MjljNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ2ZDNjZjBlYjJhYjkwN2I1MGQyZTNhM2FlZDMxOWRhMTNlM2RiMTgxNmIzYTkwMmJkNzM2MzVkNDdlN2IxZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjE3OWRhMTBkYjY1MDlhZjlhMzZiNjgyMTYyY2M0M2YxZWI3NjM4ZDNjNmMwYmU3MDA0YjQyOWQ3ZmZjN2NmNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTFjMWNiYWVhYWM4Mjg5OTNkY2U1MWE5ZWYxOGQ3ZTFlMzZmOWU1OWVmZjk5MDY0MTU1MDA1ZWZlZWMwYjdlYiJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L196-L204",
+          "version": "repo-lines-v1:sha256:96dd9792fc698230cb30af3f82547b48a8de2a9c8193d463005ed2d632bdfe5c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI1M2NmY2QzMmJkMzA2ZWU2Zjg4OWM4Y2FmNTI1MzYyYWQ0YTI4MTlmY2Q2ZTE0MmQ3NDBlZGZhYTkyN2RjYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjA0OWU5YTRlZjQ4NmM3ZTY5MTdlMmIyM2I1MDM2MjBlNzdjYzdhN2NiOGU3YjliNmViNjg4MDZjNmUwZTdmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGZmYTYzYzYwZGI5MWQ0NTczMjkxNzk2MWJmMGU0YmQ0ZjgxMDlmNjNkMGFlYWQzYTg5MDQ3ZTU3YTE1NzhhMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dee3997aaae843d59567a0a1e68ca35c",
+      "statement": "Controllers require type and name labels, nonblank names, and unique names within each controller kind; construction preserves each list's order, and admission runs mutators before validators.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L789-L841",
+          "version": "repo-lines-v1:sha256:7fefd5ddc94645e6545a3b7be42e0e62c39afa641000004b06d381d907b0ee2c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4OWYzZWQzZjc4YWE4ZmJhZDc1MTczNmNhNDVhY2RkMTNmYjJhNWY2Nzg2NzM0NjViN2ZhNGZhYWQwMTQ0NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3NDVmODE1Yzk4NDI1ZDJiY2YxNWJjNDRmMjdlNzRjNDMzMzQyYTZmOTU3N2NiMGE5OTQ1M2IxYTYwZDRiNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0ZTFiNzE0NjRiODJkMjdlN2M4ZWRkYjM0MWRlYzdmMmIxMWQ5N2IzNTJmMmRiNWQ2MTg0MTkyNzhjZjZlOGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L124",
+          "version": "repo-lines-v1:sha256:8c489808d2cee337f79347576914e71036e0b8c61791430883fc39023986e88b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNDA4ZDUyYzJiYTFiZTc0MmVkZTczNjBlNGQ0MDJiMTljYWE3ODdkYTQ0NGYyYmU2NjFmZWZkNDViMzYyZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjYjM5ODk3ZWM1YTc5MGFiYTEwZWE0MmRmM2ZlNTFhMTdlZjdhNDk2MGVmMjUzYmE1MWM4MzVhNmFjMjU1NmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzMmQ0MGNkMDRlMzkxZDFkMWM5Mjc1MWFiYmZjOWVkMzFmNTkxOTMzZDVkMzI0YWZkN2MyMDI2YWFmMWRkNzgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L128-L228",
+          "version": "repo-lines-v1:sha256:a67e06e15b9817adafc78be652a54217b29cbb899903d4bdf5ab261edb1258be:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxOGFmZGM4ODQ1NWYwZjk3MGJiMTVlNmY4YmZjNzE2Yjg1MWI0ZTdlZWZkMGRmZTA5ZjY5NjA1MjllOThjYjYzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMGIwYjA3ODdlYWM0ODk4YmIzZjA0ZDgwNTc2YTJlYThjOWY4NDgwZDc1OThmMGI1YmRhZTE4MTU3Zjk0OWZlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiMzJkNDBjZDA0ZTM5MWQxZDFjOTI3NTFhYmJmYzllZDMxZjU5MTkzM2Q1ZDMyNGFmZDdjMjAyNmFhZjFkZDc4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L280-L346",
+          "version": "repo-lines-v1:sha256:e9469ed93c0dd7f2d7ce27578848d43ef7a1e3b7d37eda55b317441afae4af35:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhODdjZTVkOTg0NmEyZjA5ZWU2MzE2ZGViYmMxZTdiMjFkNDlhZmM1Y2JlNjYwM2UxOTk1MzAyN2ExOGFhMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEzNDI2NjNhZGE0M2U0NzQwODU0NzU3ZjlmY2I0ZDZiMjQwMTZlNDRkZjQ1MjlkNWVhOGQ1YjM0MWY2ZmY3ZDgifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L33-L50",
+          "version": "repo-lines-v1:sha256:2d813395e54af991c01c5113018a001b3aa3cd13c7c95ff7f09e8a0a71337f11:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwYzJmNDUwYzMyNDY0NmVlMzU3ZDc4MGY2ODBkZjllY2I5NDRhZTE4MDRjYTE4OWVjYTFhMTJmYjFlZDlkYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NzM2ZDFiYTY1ZjdmYmVhMjZjZTZjOGYwNTM5MjllZTI0NWJkMzdkMmU1ZmIwMGEzNDU2MTMxYzk4MWE4OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5ZmRiNDkyMWQ3YjQ4MzU5MTgwZDFmZmJiMTZmNDYwMmZiNGY4OGE4OGI5ODk1ZThjMGJhYmY0ZTMzYzkwMmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_93208663ef8a49c283a111f746d9e603",
+      "statement": "Supported HCL mutators are opa_json_patch, json_patch_webhook, and opa_bundle_json_patch; validators are opa, webhook, opa_bundle, and notation, each requiring its corresponding rule, webhook, or notation block.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L873",
+          "version": "repo-lines-v1:sha256:ee2d1d52126facffafca4616a6d79c443cf44de9d0dbf47ba274fcd277369f6a:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkOTY4MWI5MTM3NzYyNjA0ZDNkZTM1M2FhMWNkYmE2ZWNjODAzYTg4NGYwODUyOWQ5MmJlODQ3NmMzZGU4MmMifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L308-L391",
+          "version": "repo-lines-v1:sha256:c7c5a4bdfd9003b0134f4a640dc5d332aa467b865b9e6fa5c799527f4bea97e4:eyJzZWxlY3RlZExpbmVDb3VudCI6ODQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzNmI1YjRmNDBiZjQ0ZmZjYTVhOTBhNGY5MmQ0ZGMyMzZiMGY1OWE1OGQ3YWJkMGRlOTEyZDQ5OTIxNTVhMmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2ZmExMTc3MmU4YWE3YTg4NzUwNmQ5MDFiMGZlMGZmMWMzYTU4ODRhNTBmMmEyZjY3ZWI3MWY1ODU1NGM3M2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7105f0462fbf4c5ebb463bab8603bdb3",
+      "statement": "Local OPA controllers require nonblank filename and query; bundle controllers require an opa_sdk_rule decision path and a shared opa_sdk with nonblank ID and config_path; webhook controllers require an absolute HTTP(S) endpoint and a nonblank syntactically valid method.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L39-L43",
+          "version": "repo-lines-v1:sha256:ad072f5955fffd735770a0c03d7e40cb94a6ec837f0d6990d0d327a364117bc9:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTI1ZjNjMzAyMzJhNzUwYTUyNTk1YmVjYWFjODg2YjMzOTJjNzBkMTk1YTZiM2E0YzE0MmIxMGYyM2YxMDhmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzdhOWI1ZTkwMTljOGRiODc4M2VjOWMzZmViYjBhMmM5ODYyZjYxYTA1YzMwOGZlODk1ZTRhOWJlZDAzZWRiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2U0ZTQyZjcwNDAxN2JmZjExZWI4NjE4NDVkMzJhMDQyNGE2Nzg4YmExZTc0NDI4YWIxMjYwMmM4YTNmYTJmMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzU2ZjQxZjgyMGI1N2I2MTRkZDNlY2ZkMTYxZDc0Zjk5Y2UzMTNmZmRkMTkwYzE1YjlkZTgzMDFmYTMwMTczOSJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L248-L250",
+          "version": "repo-lines-v1:sha256:07e5973162d168b5e89a4a0e6f4aa8e922b52590fa58ec6586d4fde6229fefa1:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDc1ODMyODU4YWI0N2E0ZDYxYzkwOWYyNjRiNjM5YTkxN2E2ODlmYzQ4NmI5MmZlZDc1MGY3MzhlNjQxODA5NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzNhYzdhN2YyZmEzMWNjNjY1NDhiMmFkOTE4OTZiYjUxZmYxM2Y5ZjRkZDE3MGZhYmJlOTNkNmFjZjdmNWE2NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmFlZDk2ZGVlZmI2OWJmOWYxZjA2NDhjYWU5ZjE1ZGMyYTQ5MmU2NWUxY2I3NDg5YTkyMjYwNjdiMmMxNTkzMyJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L348-L381",
+          "version": "repo-lines-v1:sha256:2406e546234b3553b1d839e1632b9d3607d2d03df5eacad085194eeda2967d07:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwY2VjYTVmNzFlNzIxYjM0OTM2M2JiOTU0YTg3MTRiOTI3Njk5ZjFlNGFmZjA3NGQ2NTY5M2Y4MWIxZTI5ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5OTk1ZjZlODhiZWNkNWFlMzFiYWI3MjgyM2Q5ZjYxZWZiODMyNzQ4MzlmMDM5NDU5OGVkMzQ4ZDVlZTI0MDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_98363ed67ac140d89bc91acbd9f4541b",
+      "statement": "Configuration validation runs after HCL decoding and again in buildServer, checking port 1..65535, nonblank bind, effective Nomad configuration and absolute HTTP(S) address, listener cert/key presence, upstream cert/key pairing, and controller requirements; the loader additionally restricts slog destinations to stdout or stderr.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L672-L679",
+          "version": "repo-lines-v1:sha256:cfc10201af3b0970fd3862480b98e22c8b2094a7f9c77a1e76fe5a4877ba9a15:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjQ1NzcwOTY3ZDBhM2ZjZTkxMDg5NTgwZGU2NGM0YWEwNGMyNGQwMjNlNDFkMzkwZTE5OGMxYzFkYzJlMDdiNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZjNWQ4ZWM3ZDUzYTkxOTMzMjU2NjNkYzBlN2NiZmJkODNlODdkZjc3ZTFjOTY2YjY2NTdmZTY1Nzg0MGUwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2EwMTZhZTc0YWE3ZjU4NjZhNGNmMWFlM2UxODZiYTliNzNhMGQ2YjJjODJiYTkyY2U2NjFjMjQyMTQ1OTYyMiJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L218-L305",
+          "version": "repo-lines-v1:sha256:103f7726ead18bd71638848dc7d1b8dbe0e767391b750f341fed405aa53eab6c:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxN2Q2ODhhMjViMjFmOWJmN2IyNGQ1OTZlMDU5ODhjMDMzMDJmZGYwMTljMjQ3OTNkOGEzMzRmYjliMjQ3YWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyZjJmZjVmZWVjNjBmNTg3YzhmYWU0ZTg3ZjgwOWE2NjFjZmZlZDZiNDdhYWU1ZjZkNmEyNjUzYWE4OTUyZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3MDkxNzZmN2ZiMjA0YmJlYWE1MDQzZDkyNDJhZjk2Y2RkOGYyYWEyNDBjYjQzMjc1NmE1MDUwNjFlN2U5ODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e8bc72532db4c428810fc81a50c4496",
+      "statement": "Startup validation is not exhaustive: it does not prove bind availability, remote connectivity, or file contents, and unsupported logging levels reach a panic in logger construction rather than a Validate error; supported levels are case-insensitive debug, info, warn, and error.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L638-L647",
+          "version": "repo-lines-v1:sha256:819cad9fe808b9dcf24cf0e4f797b9f6db1ee5103a8847e7cd12bddbb2d9b181:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxZDFiOWIzZjIzODc1ZWM1NDdiZTY5MmU2YWUyNjA2MjVkNmJiYzYxMTRiM2IyNzZiMzZiMWY3NWNmOThlOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZWZjNDk0MThkMjZkY2YxMjliMjJhNmFhMjExMDhjZWVjMzc2NzdhMzJkMDhlOWQ1ZmVlMzVkZGE2NmJiOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5MzI3YjJkMDZiYWU5YTI1Y2IzNDk3MzZmNWM0MGUwMTk0NWVhYzdlNmIwODhjNGFmZjQwZmYzMjA3N2NhMzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxMjc4NGQwMGI4ZDJjNzlmOGNjMzBiOTBiMTk0MGM0YjAxMWEzNGZhZTIxZjRkZDgwMjc1NmI4MjBmOWE1OTEifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L238-L403",
+          "version": "repo-lines-v1:sha256:bf9cfa0aa879967e37c1b55f63fc4470fca1890802650f19b135401d4e2e5444:eyJzZWxlY3RlZExpbmVDb3VudCI6MTY2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzNWYyODE1OWEzYzdiZjBmMTFkZTU4YWE1MmY4NWJkOTcyYTYwOTAwYWE1MWMzODBkODlmZjQ0ZjA2Yjg2ZGM2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://pkg/logutil/logutil.go#L100-L117",
+          "version": "repo-lines-v1:sha256:4b465422fcdc63e34fb97fa142750b25160d81b8d9ba6525beefd158714bad02:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiYmJmMzg5MTViMjczNjUyYWM5M2E3NWU2MzU3Yzk4ZDFlYjRkNTZmNzdmMmViZGNmNjYwMWQ1NDk4NDk4MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxM2RlN2M3OTYyOTk4ZGZhNmM2YmRhNDAyZTk2OTBkMzRkOTE2YTYwMDI3OTc1MTUzNzQ0NzRkZWM0ODBmNWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzOWUxNGM0ODc1ZDQ2ZDRmOTVkODUxZWVhNzZmMjZhNTZjZjJhODMwN2IzMzQ0OGM5NzNhNjAzN2E5NWQ2YzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://pkg/logutil/logutil.go#L19-L42",
+          "version": "repo-lines-v1:sha256:401d84e88a31d9fc0e87003184c564bb8f6b9bd98a526c905f6942aeec9560fa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZDk4NmIwZGY3ZTljNDdhYTc4MmIwNjYwOTQ2OWJjOGVlY2E0NzYxMmI4MzhjZjgyOWRkYTRiY2RkZDMzMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjFlNmFhNjM3MWQ3ZDcyMTRmMjU5OGJlYWY5YzM4OTk5Y2ZkMjg1NzQxNGY5NDRhMWEyNDUyNmVhMmFmZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9fedff0f8745429e89a5dbb065c8d8b3",
+      "statement": "NACP must be placed on a restricted control-plane network with listener and upstream TLS; configured webhooks and bundle services are trusted policy infrastructure, credentials belong outside source control, and insecure_skip_verify and repo_plain_http are reserved for controlled development.",
+      "evidence": [
+        {
+          "resource": "repo://SECURITY.md#L13-L23",
+          "version": "repo-lines-v1:sha256:d925673a8bd35b68e739d441678425f0a2fda628d1f42ef8c55db32233a4401f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0YzMxMDNmNTUwNTRjNzk2MzQ0MzNjN2EwOThhY2UwNTZlY2U4MTZlYzNiYzZhYjM0NWJkMDYwMzlmMmJmYWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMWMwMzhkMmE4Y2Q1YjBkMDFkODdjMjc3ZGI4ZjYwOTQ5ODc2MzU5MTEwOTExNDA3NDUxNTBlYjk3NjM2ZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmNWRiMWUzOTE4NWM1ZjA3YzVkZGY3ZDBhZGZhODYwYjhiYmRlOWExMmQ5YzA0ZmVkODIwZGYzMTI5MzgzYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9d64f7afa4584ab89d7e04f9c6f83372",
+      "statement": "NACP trusts the trimmed first X-Forwarded-For entry without authenticating the sender, otherwise deriving client IP from RemoteAddr with a raw-string fallback; that IP is included in policy context and webhook client-IP headers, requiring trusted-edge sanitization.",
+      "evidence": [
+        {
+          "resource": "repo://SECURITY.md#L17-L19",
+          "version": "repo-lines-v1:sha256:ae49894f4c2db854f5a2871c06420aaaa394ec1298bca2477947c6415ffc7731:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWM3NjgyODM3NWVkN2QxZmExYzUxOTk5M2Y2NTZkZTAxZTYzMmVmYWY0ZjE3OTQxZmExYzZmZGYyNzc1MWFkOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzgwYTc2ZDA5N2MzY2E5NTQ5ZDI2NjI2N2ZmYWJhOWM4ODY3M2EyYmIyOGQxZDhiZTAxOTEzMDBkOWUwOGQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDdmMmRiMzc0Y2ZkNDM5N2FmZDAwZTJhZmFkMzUyMzkyYWE4NDM5NDdhZDEwNjdlN2VjMzNmN2ZlOTNjOGViNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTA3NWYxYmZlZTk4ZWRkNmYzNzMwZTQ3M2E1YTk3YmYwYmI1MWZhZmY2ZWY4MjNlNGFmYjE0ZDZiNDEwZDgzZSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L217",
+          "version": "repo-lines-v1:sha256:eaaa8562a4bd29c041e657b223a81170a69bbb8f9a3592921f8f71f386414689:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZDJlYmI3NWYyY2JiOTY4NTk2YjgwYTkwMGRlYTA0NDQ3ZGJlMDJlOGI3MDZmYzk0NjVmZDc5M2I5ZDIxODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2MGJhZTAxODM4MGE2YjNhNzYzZWQ1N2QzYjE5NmI2YjhiMGUwNjJlN2YwMDRmOTMxYmRiZWU0MmViOGYzZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMjU1NjlmMjc0M2NkOTQ5Y2FhYzc5MWQzMWJhYWNiNjQ5YmUxMzM4NDJhOGJjYWY4YjlmYzMyYmIzMjMxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2MTNkZGRkNmE5N2E5OWYzMmFiYzhhNTk5YTFmNzBmY2FkZjc1ZDU3Nzk5MTg3YTE3NWMxM2RlMTg1Zjg2YzIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L69-L83",
+          "version": "repo-lines-v1:sha256:a911f43a5fa8befe6278a6794553206b08dd97c11fb4526cea90abf21fd75450:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMTI5ZjI0MDA4NGQ5YmFmOTc2MzNlMzlkNzQ0ZTQ5NDkwOTZlMTZhNmMxNmY3M2QyMTkzZDlhNjVkMTZhYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlN2RiNzA0ZDdmMzU4ZDNjOGNhOWE3NDk2OWVhMWI2NDU5MDE5NjYzY2YzM2Q2OTgyOGQ2NzI2YzNmMTk4ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxZjU4MjQ3NmUxNzNiNjQ5NTVjMWZiYzJkMTZmMGJlZmVjYWVjNjVjZjM0ODdjY2QwNDM5NDc5MWNiMjE2YTkifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L18-L29",
+          "version": "repo-lines-v1:sha256:a12fe11015fd7836df15321e3094bb0ae2fb4ef7832d7c5fffb81ec04abca52a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZjRjNjg1MGZmYWQ0YzBiNTExNTM4Y2IxY2Q4NmYzYWY4OWI3ZDg4NWZiY2NhOTJlZTAyOWY1OGQ0MzI3ODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjYjg2YTA3OGExM2U2MTM0Zjg2NWE4ZWNmNGYxOGIwMTI2MTI0MzQwYjliMGJiOGZlMWM2N2RlOWZiMmI0YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNDUzZmNiYjg2ODI0NGExNTI1MTY5Y2JmOTkyNzc5ZWM5MTM1Mzk1OTVkZDZmOTI0MjFhYzdkZGQ4ZmIwYjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b26ba9613e54a56a93f7edd5ffd9cdb",
+      "statement": "Top-level listener TLS uses cert_file and key_file and defaults to server-only TLS without a CA file; a nonempty ca_file enables RequireAndVerifyClientCert unless no_client_cert is true, and listener TLS has a TLS 1.2 minimum.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L640-L643",
+          "version": "repo-lines-v1:sha256:f4a6c3855d52d3eeedc4243f13dd8853638ee593fe94c893a71a0191b17a6d70:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjEzZTdhNTY5ZjQ5NjkxMzY1MTBjNWQ4M2I4MGQ1ZWVhZDExNzE2YWZiNzM2Mzg0MGJjZWY4M2Q2N2Y4YjNmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMThjMDdmZjA5M2UyNjVhZmI2NGM0ZTc2ZDg5ZTc4NjEzMWYzMzEzNTFiOWVhZmY3ZTNjNWE2ZmZhN2I1NTVlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWRjMjAzNmEzMGZiYTUwNzcyMjRjZjNjZmIxZWUzOTUwMzM4YmU1YzNlZWEwYTgyNmViN2YwOTMxN2EwMjQ4OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTI0MDI4MGNhOTdkYzMwMTBjOTkyMGRmYWYyOWI2ZDY1YmQwOTRjMWJmZjlmNmI1NjIwN2MzZTAwZDdkMmQxNyJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L723-L734",
+          "version": "repo-lines-v1:sha256:c97bc0cd80e22cf9655647237fd97977fde9681f259fdabce67e5310fdde0b82:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2YmEzZDA0OTM0YmNmMDMyMGIxM2U0NDA2NDhkZWQ5NzUwNzc4NTViZjhkNDI4NWUyNWNhOGI1NjNmMWI3ZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjFkOGE5ZmM5MDdhOWExYWNmNWEwOTU2MjliZGQ0YmQ2ZTFiMDEzNjcyNGQ4Zjk0NjY0ZGI5NGMyNTkxYWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRlNTc4ZThhMTc4MDI1ZjFkY2M4OGVhNGY1Yzc0NjNjYmE2NDlkM2FkNzU5ZjAzMjBjNTI4ZjRhZmU2Njc4M2UifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L767-L787",
+          "version": "repo-lines-v1:sha256:3ac8836623bc2353c8f0629323bab280f440de9d6f5fcbb6fc5bd7aa9474e3fb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhOTdjMWViNTZjOGFhYjcyNGY5YmM2MmQyZmY0OGEyNTBlNDZjNDY1ZDkxZDhhYjI0NTljNDgyMjhiYzY0NTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3M2ZhNDMzNDc5MDM4MTIwMzk5ZDBhZWU1NWZmYTIyZjczYjk1YTQzOTkyZDc1YzljNjFlNmVjY2U5Njg2MzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNWY0NjIzM2Q0NzQ2NzhhNGFlMjFmNTg4NmZkNmY5MmNhMzg2OWU5N2Q1MWYwZjBlYTY5ZDU4YTc2MzQ4ZWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_157eb25d5b014fffb734e34934ccdb38",
+      "statement": "Nested nomad.tls configures a separate upstream transport with TLS 1.2 minimum, optional client certificate pair, custom CA or system roots, and insecure_skip_verify; this transport also serves ACL self-lookups, and the Nomad URL scheme selects HTTPS.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L676-L721",
+          "version": "repo-lines-v1:sha256:ea4db155fdb2ce08461c39b02e46ec1a7ecca9ddb3d8c9bd528da4dae1b25347:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkZWZjMzU2MzE3MjE5OWMwYjg3OTI1ODUyMjQyNDZjNzU3OWE1OGJhOTQ3OWU5NzkyNjQwOTlkNzBmMmI4M2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMTY1OTUyNTk1ZDE5NmU4NGMwNGRkMGY1ODYyMThjM2U3NDMzN2MxYzQ1ODlhMDdmMzNiNzU2ZDYyZmY3NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjOGQ1ZjNiMTAxMGE2MzMzYzFmMzVmNGNmMGJmZTRiNmE4M2MwNjk3MmYwZWEzNjM2NThjZWQyZmI4ZmVjMjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3MzllMWIzYzc0Mzk1Nzg3MDQ0OTg4MjU4NmE5OGM1ZjMwODA5OWM2NmU0NDdjMmE3YjJmZTIzMzVhMjRhMDAifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L108",
+          "version": "repo-lines-v1:sha256:802bcae007307056b2c7826bb43c7a780abc27f843412bcd90fa66db9837345b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYWM3MGViMDRmNmIxOWY2ZTY4NGE4Zjg0ZGU5ZTFlMGI1Mjk5MDI4MWMxNjE2MDI1NTdhN2U3OTNiMDVhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3NTBlMGIwNTk2YjJiYTYyZjEyMTMzNDFlNTNlY2FkNjIzZDkxNGQzYTg2MmUxMjk5YzA3MWRiYzI4ZTQyNjIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L894-L921",
+          "version": "repo-lines-v1:sha256:f30b8ce75b1b9719aa62e02ad863c14c877bc18049a69198cd08ecd2c724c76c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViMTFlOGJjNDY4MGE4M2YyMTk0ZTllODI0YzVmY2M4NWQwMzlhMjUwYWRmYTY2MTA3ZjNiZDc0ZjM0NzJiNzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzYjgyMGVjOWIyM2JhMDE2YTE3ZmQwYjUxYmU0ZDFlNWVmZTBiYzE0Yjc3MDcyZWMxYzMyNDM0M2U5ZTQ1ZDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0MzhhODE3NDNiYWM2Yjc3OWFiZDkyOGZiYjc1MDE0NDE0MWIyOWZjMjQxMDQ3YzAzZGNkMmFlMmQ4NjZiNTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a0a46abcfbad42b3a19e1e0e8e49e3ed",
+      "statement": "Both TLS HCL blocks require ca_file, cert_file, and key_file attributes syntactically, although empty values support runtime configurations such as CA-only upstream TLS; supplied CA PEM must contain a valid certificate, and custom upstream roots replace rather than augment the system pool.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L767-L775",
+          "version": "repo-lines-v1:sha256:68bfcb646fee259b5f76d4b2ae778d1928e19800dedaa50354b46bf1d18ef168:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmE5N2MxZWI1NmM4YWFiNzI0ZjliYzYyZDJmZjQ4YTI1MGU0NmM0NjVkOTFkOGFiMjQ1OWM0ODIyOGJjNjQ1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjczZmE0MzM0NzkwMzgxMjAzOTlkMGFlZTU1ZmZhMjJmNzNiOTVhNDM5OTJkNzVjOWM2MWU2ZWNjZTk2ODYzNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDdhODMwZWZhYjk3MDczM2U4MDdjM2E3ZjI0NDI4OGMxNzE1NzNkZDY5ODM1ZTJjYTA2ZTQxMzQ5Zjc2NmIzYyJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L894-L920",
+          "version": "repo-lines-v1:sha256:57c4eb1535f0bb5fff5b8b3abe4860400939b53197f6e00654d80f3f4f94aae4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViMTFlOGJjNDY4MGE4M2YyMTk0ZTllODI0YzVmY2M4NWQwMzlhMjUwYWRmYTY2MTA3ZjNiZDc0ZjM0NzJiNzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwZDA2NGNhZmE5NjBiOTk1ZGUwYjU4OWYxNzQzOTgyMmRkNzM0MDNmMDE3NDIxZDQ0ODI3MGRmNmQ5MjNkOTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzYjgyMGVjOWIyM2JhMDE2YTE3ZmQwYjUxYmU0ZDFlNWVmZTBiYzE0Yjc3MDcyZWMxYzMyNDM0M2U5ZTQ1ZDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5NjI5NTg0YTJiZjYwOGU5ZDVjZGQ5MmYzZDdjYmVkMGM5NmIxMWI1YTA1ODg1YmNlZTZjMjMxNTAwYzMyMDIifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L254-L277",
+          "version": "repo-lines-v1:sha256:986e38e683f08db33576a76fb2813562a4672d4c1ddd2fb5ce243bd8063a2558:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4OTA4ZTZiM2E3MmNhMmVlNzRhMDY2OTRhYTEyZTM4ZjA4ZjUxOWI0ZDdiNTAyYzBkY2U1OGQ2M2Y2OTMyZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhZWQ5NmRlZWZiNjliZjlmMWYwNjQ4Y2FlOWYxNWRjMmE0OTJlNjVlMWNiNzQ4OWE5MjI2MDY3YjJjMTU5MzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhYjEwMTM3MDdkMmIxYTNkM2UzNGQ1NmU2Y2I4ODMyNTAwM2M3ZmY0YjFkODU5OWYxNTFlNTk0ODkyY2YwM2MifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L90-L105",
+          "version": "repo-lines-v1:sha256:ce3598d90c09f745e6ccb6fceaf4536d0ce4995a3a7c33d862d106a9c18047d0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyZTYyMGIxMTRkMzhjNjZlMjhlZTk3NzZmZWQwN2E5NzQzYTBlZTA5NWY5MGY5OTZhNzY5OGYwYjA3NjcyZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI2NzNiYjZiMjU0ODJjMGYyOTAzMzM0NDVlNjg5OTk0MWQ0YjEyZWExMDNiOGRiYzc3YjU2ZWQ3YzU4NjU5NzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d4ae3c7cb5ff4ecdb6569855d182d89c",
+      "statement": "Tag pushes run a release workflow that imports GPG credentials, logs into GHCR, and invokes GoReleaser; release configuration builds CGO-disabled Linux, Windows, and Darwin binaries, tar.gz or Windows ZIP archives, signed checksums.txt, and latest plus release-tag GHCR images.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/release.yml",
+          "version": "repo-file-v1:sha256:d403e7d2b653045e5075836110e89735506d8e417b29c7f58e1ff61ca6e253b1"
+        },
+        {
+          "resource": "repo://.goreleaser.yaml",
+          "version": "repo-file-v1:sha256:d43683166fe2681ee8b470e360f9daa979931a6899fd339d864dbab194ab4bad"
+        }
+      ]
+    },
+    {
+      "id": "claim_9e633c3a0aa24dc5859eb37e1ddad4c2",
+      "statement": "The release Dockerfile consumes a prebuilt nacp binary and runs /nacp in scratch as UID/GID 10001:10001 with a system CA bundle from Alpine, while dev.Dockerfile compiles source with CGO disabled and runs the binary as nobody in Ubuntu.",
+      "evidence": [
+        {
+          "resource": "repo://Dockerfile",
+          "version": "repo-file-v1:sha256:62d09a267d0516d7f080954a56176d07ee6262a31ac3b5811521835cc0b0de6b"
+        },
+        {
+          "resource": "repo://dev.Dockerfile",
+          "version": "repo-file-v1:sha256:dd5b96551a6eff0a191b2beef5b7b76cd178e854e61ac90ec92667c318338cdd"
+        }
+      ]
+    },
+    {
+      "id": "claim_7e55d0442f674e5bb1da9200dcd55d04",
+      "statement": "Release deployments must provision configuration, policies, SDK configuration, TLS keys/certificates, and Notation trust/credential resources at readable runtime paths for UID/GID 10001:10001; the scratch image's system CA bundle does not provision application policy or private signing trust material.",
+      "evidence": [
+        {
+          "resource": "repo://Dockerfile",
+          "version": "repo-file-v1:sha256:62d09a267d0516d7f080954a56176d07ee6262a31ac3b5811521835cc0b0de6b"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L880-L945",
+          "version": "repo-lines-v1:sha256:612e28e485807689b1cbd2d3f6ab2a4f846f62f35c2882f38b877c1da8c3f712:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiOWVmYmM4OTU4MjQ1NTZlNGRmYjJjMWM5Yzk0NGM5ZGMwMzk5MmNjZWI2MjRiZDFkMjZlY2M5ZmQwZTFiZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1M2Y4ZjRlYzk5MDhiZTVkYTQyNGIwZWRlOTI0OGMwNWU1ZTRjYTgxM2E4YTg2NGE2NWUwZGIzYWQ0ZDBjMDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2OGQ2NDJiMmQxZTcwZTdlMjgyNWY2MTQ1OGMyZTU1NjA0NDhlY2M2MzQ1ZTY0M2QwNDM5ZmM0N2EzMzdkZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2NzU0NDBiNTgxN2RiMTcyNWE3ODcwNTg2M2U2NTVjOWVjZjgwMjUyM2U2NTIxZTI0M2E4ZDBhMTM5Mzk1ZDIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L31",
+          "version": "repo-lines-v1:sha256:d90b698b3d2c3449ef1d3077fa0cf370e4c4f5497f7d5ff2cec153d940c718de:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWIwNDQyODE4OWRlOWFlY2VjNDJjZmU1NmEyNmVjMTI2ODJhZGNlYWEyNDU3ZTcxZjcyN2M5ODczZTM3MjljNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ2ZDNjZjBlYjJhYjkwN2I1MGQyZTNhM2FlZDMxOWRhMTNlM2RiMTgxNmIzYTkwMmJkNzM2MzVkNDdlN2IxZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjE3OWRhMTBkYjY1MDlhZjlhMzZiNjgyMTYyY2M0M2YxZWI3NjM4ZDNjNmMwYmU3MDA0YjQyOWQ3ZmZjN2NmNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTFjMWNiYWVhYWM4Mjg5OTNkY2U1MWE5ZWYxOGQ3ZTFlMzZmOWU1OWVmZjk5MDY0MTU1MDA1ZWZlZWMwYjdlYiJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L20-L31",
+          "version": "repo-lines-v1:sha256:742d28e0c68c8916b7ef7779dfb211cea55f141cb39f1f14bb90dc8f215da976:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMmQzN2NlOTBkNzNiNDQxZWQzOGMyYzBjMzcwMDk5NmZlNmJjMGJjMzc1M2ZmMGNkNWU5MGZkYzljYWQ2NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmNjc1YWU4MTZhNmQ5YzE5YTFjMDRhMDMzMDBhOTQ1ODEwM2I3ZmFhM2Q0NDVlNzdmOTVlMWZhYmU2YzYzM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkNGM1MmVjMGI4ZjliZTRmOGQyY2NiZDQ4NGI0YTY3YmExOTQxMzA4NGJmMDMyZjgwMWFkYWI2ZTExZWUyYjgifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L90-L112",
+          "version": "repo-lines-v1:sha256:efc4f8faa75a09e23dfe6858998eb3e17b2927d9c104a7ee2eb89ca80b7efc32:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyZTYyMGIxMTRkMzhjNjZlMjhlZTk3NzZmZWQwN2E5NzQzYTBlZTA5NWY5MGY5OTZhNzY5OGYwYjA3NjcyZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0ZjRhMzFmZmI1NmRkMjk2MmIxOTM0NDY0ZThmYTZiMTQ5MDU1NmZmZTQ2MjYxNjI1MGFlMDUwZjI3M2IyYTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5d7c8d36bc1544409b426122873cc746",
+      "statement": "The demo Nomad job renders nacp.conf, Rego, and opa.yml into allocation paths and starts NACP with /local/nacp.conf.hcl; nacp.conf is a Nomad template, not raw NACP HCL, and discovery loops can render duplicate fixed controller names that validation rejects.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/nacp.conf",
+          "version": "repo-file-v1:sha256:8962cea1360c69a1cf642240a7502011624795f4ee9c78fdebfdd3f5e6160a8c"
+        },
+        {
+          "resource": "repo://example/demo/nacp.nomad.hcl#L21-L61",
+          "version": "repo-lines-v1:sha256:c87b9a873f6bffd591863aaed1f479d1ee12877038a58a8e6aa73d2d3ff7d58f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4ZGY1MjMxZWU3Mjg5OTJjMjM2NTFiZDk1OTlmNDVmNWMzY2QyYWQwY2I5NWQ0YjUwMzJlNjBiYzgxZTg5ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0YjlhMGIxNmI5OTEwYmFhNWQwYTRkY2FmZjhhNjBjNDI5NjMzYmYyYWUzY2JhY2M4MjAyOTA3NTgwZDEwY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4Y2M0YzI5NTdkZmE1OWY0ODQ1YTlhODUwODVlODE5YmExMDliZTE2NGQ3OGIwZDE1MDBhZjdjYTlmNTk2YzYifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L280-L305",
+          "version": "repo-lines-v1:sha256:da27904788d84e9f1c085d385c112a3ddf0d3ac6b3bc53019a54d0dcb9ae1059:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhODdjZTVkOTg0NmEyZjA5ZWU2MzE2ZGViYmMxZTdiMjFkNDlhZmM1Y2JlNjYwM2UxOTk1MzAyN2ExOGFhMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3MDkxNzZmN2ZiMjA0YmJlYWE1MDQzZDkyNDJhZjk2Y2RkOGYyYWEyNDBjYjQzMjc1NmE1MDUwNjFlN2U5ODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4635749836274ea68947254af06fab47",
+      "statement": "NACP exposes no CPU/memory resource fields in its HCL schema; the demo's CPU/memory block belongs to monitoring, and its NACP service registration has no health check. Admission request size caps are not process-memory caps because decoding, patching, and validator job copies allocate additional data.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/nacp.nomad.hcl#L125-L159",
+          "version": "repo-lines-v1:sha256:4b57750d9267dc16137b65289413e3c14a2d83a5850f2f47262b6a7f2d2b80d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkZmZmY2JiNDY2MWNlNmM2MjBkMmY0ODQyODdjMTlkNmNjYmJkOTBmNThiM2RiZTQ2MmJkNDk3OWE5MGJjY2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjMDhjYjdiODU0OTI2NGYxNWIyNGMyM2EzOTJiOTQ2YjM0ODM1ZTMyMDg1NGUwYWM1YTA1MzNjNTZjOWMzNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4ODhhYThkNmFhMzczNGQ4ZWFjZGNjNmExNjQ0YWUxMzhmZjk3NzA2ZGY1N2MzYzBiNzg2ZWU0YzEyMjU4NjYifQ"
+        },
+        {
+          "resource": "repo://example/demo/nacp.nomad.hcl#L31-L37",
+          "version": "repo-lines-v1:sha256:6fa7d949f44aa5559d572923d60086ce766b6ef4dd8e1412988788a0cce98c6a:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2I0MGQxYTdkZTk2M2Y2NzM1ZGM0MWMwNzZiNTJmYmZhZTg4NjQ1NTY1YWI1YzdiZjliYTQ0MGIyMWM3M2VmNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI2MmY2MGQ4NTkwYTU3OWNmNDZmOGQ2NzM3OGM0YzU3MmI5NjJjZWNjZGI5MGM3YTVmN2I0MmI5NjA3ODJhNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjdhMDA0ZjRmMGY2OTczZTAzZThhMzZjMDQzNmIyYmVkZDczMGMzNWQ2YjVlMDQwOWY5ODVmYTk3YTVlNDFjZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTg4Mzg3MTllNDA2Y2M2NTcxMmEyYzgzNjEwMTIwNGQ3ZGQwNTdmNDEzYWRmNWYxNTY4ZDYzZmY2OWUxZjU4MiJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L200-L248",
+          "version": "repo-lines-v1:sha256:a12c71c59e6703258d07b9e95ece6ae0db573422695d7de99da97caf8dffc01a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MWIxNGY3YTFmN2Q3ZWViYzBkYmRkNjE5MjE4YTFmYzFjMmQxMjQyMDI1Y2U5ZmZhNTI0MzlhZGI2MGU1YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNGFjZTA4NmE5NjU3OWU4N2QyNzdmOGIzZTI3NTllM2NhODhiZjhkNDcyZGM5Zjg4OWJiZTc3MjI3ZTkyNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0MjY1ZjQyZDNiN2ViNzcxZTdkMzZiNmVmMmM0MGRmOGYwNmRkOTk4MTQ2OTgzMzhiNzg1MWI4YWM5NTU2ODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhOGY5NDQ0MjdhMTM5MGJhNGYzZTNhNGIwZDA0ODg0ZWQ2NzkzMjJkNWYxZmVlMTJkMTljN2Q3MmMyZGE1MzQifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L91",
+          "version": "repo-lines-v1:sha256:b02d04e947b8cc8889a8f19a1676b8dfd4fb8dbb5c95a0f56648034625ab757d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYmI0OTRhZDhkODc3NDU0M2U4NjJhZTFhNmY4NWYzNDdkOTM0NGIyMWRkN2IzNjFhMDcyYTlmMjg1YzRiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNzY0MGZlMGI3NWQ2YTkxMWI2ZTk4MmEyYTNkMzRiNDA2Y2RmNjkyYjAzMTg2MWFhZjcwMzI2NDY0ZGEwYjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDYzYzNiM2IzYzNjNWU2NGYxMjIwYTJjNjhhY2RlODgzYzk5MWY4Mzc3MjY5NzhlZTYyNDJmZGFjZmUyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzZTQ1ZjMwNTYzN2Y5MDFhODNjNTBmZWZhZDEwOWYyOTRjZDVlMzZiMWFhMjE0Yjg3MmFjNzQyYWFlNjY0NWYifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L143-L160",
+          "version": "repo-lines-v1:sha256:fb3ecfb93e347446998913e686b73bb2a9be16f3637c5fc8c566d21ba9f26613:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNjY4MTQ2Mzk0YmY2NjQ0ZDJjYWExYzdkYWQ5ZGU1MWUzY2RiZWFhYjY1ZGFiNWYwYTE1ZWU4OGRkOTRmNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1MWE3ODZhMTkxMDIzZThiZGVkODk1ZTU2MmUxYWRiYzU2ZDEzNGExOGIyZmM3ZGEzYWUwYTM3ODJjYjQ1ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4MTFmOGFlYjQ5YWY2ZTVjYWY3NjdhYTMwMWI5YzU0MGVjMDJhN2UzZmJhNzBkNDJjMTdlM2ZiNGQ1MzJlMmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_584bd5cd15cd4d1c856b20b8d08ce418",
+      "statement": "run registers SIGINT/SIGTERM, installs configured logging, optionally initializes telemetry, then creates one shared OPA SDK before upstream transport, controllers, and HTTP server construction; listener startup is attempted only after these steps succeed.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L597-L648",
+          "version": "repo-lines-v1:sha256:ec886ec81ff25930997fba0da00be99f22e67cf048fc11cb24730c65537a1367:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmNjc2MmNkMjA1YTRkYzNjYjRlY2E5MjdlOTJmYzkwZjRmNmI4ODFlMDcxMjNhNTFkMGEwM2NhYjhiZTc5NTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4MzBkNTRhMGJmYjE5ZjFkZTRjYThhOTBiZjFjYmM5YTBhMzMzNDZlM2U0ZjFhMWU5MjYwOWNmZjc4ZGJiZjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM5ZWY5ODczMDcwOGU2OTA0MmMwOTRhZGJjMzY3NmJhZjUxYmQ5YjMxODNmMWE5YWM2NzNkODBjZTVjN2Y4M2UifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L672-L745",
+          "version": "repo-lines-v1:sha256:dbc25f702e98fddb0fd3952175d4538d8df821520f975828c343818cf7b51bea:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0NTc3MDk2N2QwYTNmY2U5MTA4OTU4MGRlNjRjNGFhMDRjMjRkMDIzZTQxZDM5MGUxOThjMWMxZGMyZTA3YjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZDBiODA0ODY1OWRkMDM1MzFlNDQyYzc1MDFlNWY5MDIzMTBhMjE1OWEzMTQ1MzMzNTgxMjBkZDg2YjU5NjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlNzJlYThmYmI5NzU4ZmI1NmUzYjJiMjVhODk2MTg1ODE0NmU4MDRlZjgxN2YyODg1NTJkNTFiNTdjY2Q4NjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_df2af9254dba4c108933cdd46784097f",
+      "statement": "OPA SDK startup opens its configuration and waits on the SDK Ready channel with a 30-second signal-derived context; sdk.New receives the parent context rather than the readiness context, and readiness timeout or cancellation stops the SDK before returning an error.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L922-L975",
+          "version": "repo-lines-v1:sha256:f91b0821d8cf988335cb375a6212e91c273b90b5ebd6366eeb824c67d40c3280:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YjI0M2U1MjhjMTk1MDJlNWEzZDVmZWI1MjUzNjVmOTMzNTFmY2VjNzEzMTdiNzNjNzZmOWJlMTU0MDZjYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NzliYzJhMGExYzJhNzVlODM4ZGI1MjQyNzRmYzk3OWIyYWFjNjE2NDJjZTU4ZmVhNmRlZjcwNDZlYzgxZWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxOThiYmYzOTUxODY2ZTJhODkwMmY4NWZjYTEwNWU4NmM4ZjM4Zjc1ZmUyNjg3YWQ3MmYyZjgxZjVmMDUwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2ZGNiZDU1YjQ4OGI4OThlNDQxODU1NGU0YTE2YjFiYWYxODgyMDQ1ZmQ0YTA3MzMxNzZmYWI3NjY2OTc1NDkifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1424-L1441",
+          "version": "repo-lines-v1:sha256:c263b10b667976dd59a798f9b33a4c0d832dc19f1da34fde4ccc307aa05d1815:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyMDkzN2NjNzMwZTVmMmJhYzU3NGFiZGEyZWQwOWMwZGExMjNhMjFkZjgxMDJjMTZlNWQxODkxZWRhMWUxMzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzYzhjODdlNTc4NGY3YmM2ZDRhNTJkNTQ5YTdkZjQ3MGY5MmExNGNiYTdkNzkxNWI5ZWFjZWM5M2Y2NjUxNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e5b09e7fa9a1421690662e1482315321",
+      "statement": "Controller construction reads and prepares local Rego and constructs Notation verifiers, so unreadable or invalid rule/trust-policy files can fail server construction; trust-store usability and registry verification can also fail later during admission.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L891",
+          "version": "repo-lines-v1:sha256:d3a31def649726c978ab913ef0dc7499572c5d06d670f1ac3360d3e0f71a5098:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3YTA5YjYxMjI5ODNmYjkzNWVmMTA2YThiZTI1ZTRmOTcxMGU5N2IyOWI1NWJmNjYzNjI1MzQzMWM0MGI4MjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1Y2M2MTJkOWIwMmRkZWVhMGM5MzMyMjVkM2JiNTlhNTQxYmU0YjExMWZkNTIzZmYwMDMyMGUzNmJkYmY3ZTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L38-L118",
+          "version": "repo-lines-v1:sha256:42f6f893c7c2cbc655dabdcf608d982eed5be0c7478bbbc0d1889ae2dd0d3469:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0YzI0ZTU2ZDgwNjFmZTEzZWQwYzIxNjQ0ZGZhZjkzZTlkMjQ1NWJkYzA5ZTMwY2VkZjg0MmQ3ZThjNGY1ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYjAyNGE2ZmU2MzQyZTBmNWI1ZjNkOThlZjM1NmE3MjliMjNjZDA4N2ZkNTIzMjQyOWFkYTViMTAxMWQ3ZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L61",
+          "version": "repo-lines-v1:sha256:f4da3744091c46ccb8de57aa4f0855a1e8dee3af9469b065b3adf18ad2653ad8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDQ0MjgxODlkZTlhZWNlYzQyY2ZlNTZhMjZlYzEyNjgyYWRjZWFhMjQ1N2U3MWY3MjdjOTg3M2UzNzI5YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNzlkYTEwZGI2NTA5YWY5YTM2YjY4MjE2MmNjNDNmMWViNzYzOGQzYzZjMGJlNzAwNGI0MjlkN2ZmYzdjZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlODMxZGJiNjMzMjJkMTBlMWRlMzE1ZDhmZTliYmRkZTdmZGQwZTQ0NTdiZDAxZmJkYWJiNWE5MDAzYTQwOTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9e4d05f841684802bf8e2e65d68343b0",
+      "statement": "The installed NACP handler has no dedicated readiness endpoint and the process has no live HCL reload path; the Starting NACP log is emitted before ListenAndServe or ListenAndServeTLS succeeds, so startup logs and passthrough responses alone do not prove policy readiness.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L133-L165",
+          "version": "repo-lines-v1:sha256:fa412c6eba02733f022a99e70d0076e570d2a7d17c5b09b6c17f9ee0e15cae2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiOGI3Y2ZmZWNhZmQ0MGMyZjQzZDI0NmRmYWFkODU2OTE4M2JmNjc2N2ViNjZlMmExZjEzZjNkOTNhOTJlN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4MDI0MzM2OWE1NDFiNGQyNmFmZTlhYTRkNzI0ZjlkMDYzYmM0OWM5ZTY1ZTYxMDg0ZTEyNzQ0OGVmYzVmNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1NDdhYmQ3N2Y1Mjk1MjVjNjI4YzU2Mzk2ZmUyOWFiZWEzZTdlNDc0Y2I5NDY1YzMxNGI4ZWU4NjNmMmE2ZjMifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L576-L668",
+          "version": "repo-lines-v1:sha256:a3610c05aa6ed2c0b1072655cf1e3df6ed6d29b47fa1bb9c6d5707c685f5de9d:eyJzZWxlY3RlZExpbmVDb3VudCI6OTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNWQ2NGY5NzFiMjRmNzAxZDM0Yzc3ZjEyNWFkOTNkNzBiN2I0MGEwMmMwMjM2YjA0NTM5M2UyNGJmNmI1ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmNWU4NDViMjdjODIwNWFhMDk3NmYwNGQ1ODRlMzM5NDUyN2I5Y2JkMDg0MGQ0NDYxZmNjMmQxYjZkOTAyNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L721-L745",
+          "version": "repo-lines-v1:sha256:767b19bf88d700a4f44b7176c3686b2b963a9b3df4ae5bd0bfd698773a216215:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMTY1OTUyNTk1ZDE5NmU4NGMwNGRkMGY1ODYyMThjM2U3NDMzN2MxYzQ1ODlhMDdmMzNiNzU2ZDYyZmY3NmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZDBiODA0ODY1OWRkMDM1MzFlNDQyYzc1MDFlNWY5MDIzMTBhMjE1OWEzMTQ1MzMzNTgxMjBkZDg2YjU5NjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5ODY0ZmI0ZDBjNWQxMWI5ODc1YzhmODUxMmFiYjAzOGJhNWFmNDQxZmY0ZTE3M2E4YmVkZmYyMjVkN2QxMDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlNzJlYThmYmI5NzU4ZmI1NmUzYjJiMjVhODk2MTg1ODE0NmU4MDRlZjgxN2YyODg1NTJkNTFiNTdjY2Q4NjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_42ecdc72ab134af6a5229096062b82e7",
+      "statement": "NACP caps recognized admission request bodies at 32 MiB, webhook response bodies at 10 MiB, webhook HTTP requests at 30 seconds, and ACL self-lookups at 30 seconds; outbound webhook and ACL calls also carry the incoming request context.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L198-L207",
+          "version": "repo-lines-v1:sha256:f6f2c95cae6ee73d77a7d59d7b5bd157db05898f69386c21988d148c4bee6fa3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMjI1NDI1ZWQ5MTM2M2FhYWU0MGY5YzdkMGJjZjYwMjVhNjlkMWNhMjc5MDFiNDQ2NzI0ODZlNDBjNThhNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZWZjNDk0MThkMjZkY2YxMjliMjJhNmFhMjExMDhjZWVjMzc2NzdhMzJkMDhlOWQ1ZmVlMzVkZGE2NmJiOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4MDVhMjUyYWMzYmM3OGQyODAyMDkxYjczMDMxYWNhNTJmZDIwNjQ5ZjU2OGY1OWEzNTFlN2Y1MTUyYWRkZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZiYzQxN2RiNWEyZGFmMGQ3OTMzMjgwZWFkMmM5NDgwM2Y2M2EwMWM4NThiZGZkYTZiYjExZGM3NTFkYmRkMzcifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L63-L66",
+          "version": "repo-lines-v1:sha256:cdb0b03a44b9f46865fad30156860dc235dcd2fad1f1664f72205139b121b44f:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzNmZTlmZDE5ZTQ4MTg0NzhkMWYxMTFjYTBhOWQ5NWM1NTE4ZDgxYjVjMjJjNzVkZTU0YTkwZjkyMWYwMTAyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQxMTBlMjFiMTgwM2JhNTA3Y2RlZTY0MzYxYThhNmViYTM0ZGU4NjNkZWJkZGM0OGU3OTE0YWJlYTBhZmNlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWZkMDQ0MTFkNzRhNTBmM2FkNWNlNzA2YjVmNzQ1ZGIzZjIwYmM3NzQ1ZmYzOGM2Zjc5Y2NlNjBiZGNiNmJjYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTcxN2FmZjdmYjNjNGMyYTE2NzU5N2U3MzlhYzgyMzFmNGNiYTlhNGEyZTQyNzQwZjMwY2E4YmY5YWQ2Y2UyMiJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L108",
+          "version": "repo-lines-v1:sha256:802bcae007307056b2c7826bb43c7a780abc27f843412bcd90fa66db9837345b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYWM3MGViMDRmNmIxOWY2ZTY4NGE4Zjg0ZGU5ZTFlMGI1Mjk5MDI4MWMxNjE2MDI1NTdhN2U3OTNiMDVhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3NTBlMGIwNTk2YjJiYTYyZjEyMTMzNDFlNTNlY2FkNjIzZDkxNGQzYTg2MmUxMjk5YzA3MWRiYzI4ZTQyNjIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L50-L64",
+          "version": "repo-lines-v1:sha256:c4b790febfd87033f86f895a7637d9019d8c253ab81bf13c913a8e74d06fa961:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYjU5MmIzMDA3ZDU5OGI3NWJkODQ0Y2Y3MGRiNjI3NmM3NDUyYThmYmYxYzNmNDY3ZTdkOGU2ZjAyZTQyNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNjRjM2VkZWUxZTFkZDk1ZjkwNjc3Mjk0M2JiZjU1NjMwZmQwYmQxOWVhMTliZTgxMDhhOWIzMjIwODI2MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MzU0YjU2NTY2MTI4YTJkMThjZTM1YTU4MGM4OWU2MjE2ZWU0OGEzZjAwYTM4NDI2MjAxNWI4ZTI0MDViZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYmM0MGYwNzg1MTBlMmVkNmY0OTI0MjFiYjRkYmQ4MWNlMTRlNzIyMDNmNjliMTAwOTMyODhjMTY5YTVmYzUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L45-L85",
+          "version": "repo-lines-v1:sha256:27559813ed27efecdb639ec0e3808a894856be9eaa689a038e0fdfa8ae636fe2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZDk4NmIwZGY3ZTljNDdhYTc4MmIwNjYwOTQ2OWJjOGVlY2E0NzYxMmI4MzhjZjgyOWRkYTRiY2RkZDMzMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNhZTcxN2NiZmJjNWNlY2RlMGQyM2M5MmY0YzU1NWE0MjZjYWJhMmQ1OTg1YWU4MTI4MjJlMjNiOTQyNzkyMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L47",
+          "version": "repo-lines-v1:sha256:97f6b5c2ae73117d386036fb21ee1d71758717c60b091616d5e305e8f1f37653:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwZjVlYzI0MzQwODlkNGZiYTIxNDgxMDc5MzMxMGQyZjA3ZGZiOTNiZjdiOWM2NWUzNGI0NmY1YmY2ZTY5ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OWY4OGNjMzM1NTI5ZTY3OTE5NTNmMmYxY2RlYjQ3YmQ4ODEyMjI2YzE0MTBmMzMzZTI1ZTg1NmUzYjRkODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOWQyYWUzZjExODQxZjZlYTBiMGFkNGI4Yjg2NGU0ZWJjMmFhY2M2YzNlY2ExYTJkMGExNzUyNWJkYWMxNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZDZmYmJmNTI4Nzg4NTNmZjlmYjg5NmJhODJiZmE5M2VhYzJhNzQwNzBmM2YxNWViOGQxNTIzNGQyYTQ5YTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7b5a860789047f18351593fdcfb2b2f",
+      "statement": "The HTTP server sets ReadHeaderTimeout to 15 seconds, ReadTimeout and WriteTimeout to 310 seconds, and IdleTimeout to 120 seconds; the Nomad transport uses 310 seconds for dial timeout, dialer keepalive, and TLS handshake, not an overall forwarding http.Client timeout.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L133-L144",
+          "version": "repo-lines-v1:sha256:2aba7f3b43c4d5484f2cc40e7cb3bb7cd0665fcd1ccb0426e4267fd16203e555:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiOGI3Y2ZmZWNhZmQ0MGMyZjQzZDI0NmRmYWFkODU2OTE4M2JmNjc2N2ViNjZlMmExZjEzZjNkOTNhOTJlN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4MmMzMDZhMWJjZDZhNjE3OTBmMDdlYjkwZDBkYmFmM2NhY2M0NGYyNmViMThjM2YzZGMyOWNlODZhMTI1OGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4MDI0MzM2OWE1NDFiNGQyNmFmZTlhYTRkNzI0ZjlkMDYzYmM0OWM5ZTY1ZTYxMDg0ZTEyNzQ0OGVmYzVmNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjMDg1YmM0MmFmNmEyNmRhN2ViYjljYjVhYjM0NDY2ZDYyNDYzM2I2YTdlNmFmM2QyY2E4YzU5YjZkNTIxMjUifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L63-L66",
+          "version": "repo-lines-v1:sha256:cdb0b03a44b9f46865fad30156860dc235dcd2fad1f1664f72205139b121b44f:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzNmZTlmZDE5ZTQ4MTg0NzhkMWYxMTFjYTBhOWQ5NWM1NTE4ZDgxYjVjMjJjNzVkZTU0YTkwZjkyMWYwMTAyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQxMTBlMjFiMTgwM2JhNTA3Y2RlZTY0MzYxYThhNmViYTM0ZGU4NjNkZWJkZGM0OGU3OTE0YWJlYTBhZmNlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWZkMDQ0MTFkNzRhNTBmM2FkNWNlNzA2YjVmNzQ1ZGIzZjIwYmM3NzQ1ZmYzOGM2Zjc5Y2NlNjBiZGNiNmJjYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTcxN2FmZjdmYjNjNGMyYTE2NzU5N2U3MzlhYzgyMzFmNGNiYTlhNGEyZTQyNzQwZjMwY2E4YmY5YWQ2Y2UyMiJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L680-L687",
+          "version": "repo-lines-v1:sha256:04fb0d46f255814badbde73607af4ca1e8428e93c5454b253566c96157ec0a58:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzg1OWQ2ZDYxNjVjNmNlNTNmMTk1YzRmOTYzNGRkMjJjNTdlOGMyNTU3NjdmZGI4YmNkMjE1ODIzZDdmZjg2OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM1OWY3MDM4MjNmN2QyMTc2YmNiOGU5YWZjNDhlYTYzNzIwMGY1ZDIyM2NiYjQ5N2IzOWEzN2U0YjMzYjYyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGQzYmRlNjAzODExMDI3ZGExNjAwYjQ3MTc4YzY2YjYwNGJmMDczNzI3N2M1ODM4YmU5MzRhMTQ5NDMzYmQxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjczYjhiN2UzYjRkNDM5OWIyZGZmMDg0N2Q5NTc0NjVhYzYyNjIyMWU1MzM4ODQ1MmQwNTE0NzU1NjcyYzZiNiJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L736-L745",
+          "version": "repo-lines-v1:sha256:53b5b6df0ea0e806cc999cd538937a6981e0b1ca72c89076c6535973c13c7871:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkYmEzMzIzMzk3ODcwMDZkNDc4NGNiMGViOWU1ZTZlM2QxYTE5YWFiMzZkYzNjNmQ0MGVjZWM5ODcwMDIxMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZDBiODA0ODY1OWRkMDM1MzFlNDQyYzc1MDFlNWY5MDIzMTBhMjE1OWEzMTQ1MzMzNTgxMjBkZDg2YjU5NjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyZjJmZjVmZWVjNjBmNTg3YzhmYWU0ZTg3ZjgwOWE2NjFjZmZlZDZiNDdhYWU1ZjZkNmEyNjUzYWE4OTUyZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlNzJlYThmYmI5NzU4ZmI1NmUzYjJiMjVhODk2MTg1ODE0NmU4MDRlZjgxN2YyODg1NTJkNTFiNTdjY2Q4NjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_06f6070b46774833ad2009bd3f78fc79",
+      "statement": "SIGINT/SIGTERM triggers HTTP shutdown with a fresh 30-second context, followed by deferred OPA stop with its own 10-second context and then telemetry cleanup with context.Background and no NACP deadline; this is not one generic 30-second shutdown budget.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L599-L628",
+          "version": "repo-lines-v1:sha256:ce51d344f3073b64077629b2dc339ff67548be326ca8211a25325c037598d258:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiZTZlNDNkMTQ4OTYyNTg2MDYzZWY5OWRmMDMxMGE2MzNmYmU5ZTM2NjEyMjc2ZjgzOTBhMWQyYWU5MzM3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0OTFhOGMxYjg0MjA2ZTRhNjZkYjFmYjE5MjRmODQyNGNlY2Y4MmFkZmQxYzM2YWFhZGIxMGVkNTE0ZWIxYjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjYjMxNGZmYjUwNjIzMWM3YjhlY2JjZDFjNzViZTgyNWMxNTVmZDViNGJkZTY4YmUwZjA2Y2U5MWJhOWYyY2IifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L649-L668",
+          "version": "repo-lines-v1:sha256:82c7adaede13ee7e84e743bd15da8125bd33ccbcb8caebb80cc4b57265e08e09:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5MzNkYzNhM2ExMTBhNDRlYTg2NDM5N2YyYjVkMDE4ZGIwN2Q0MWMwZmY1YTIxNTM4NmU1NWRkMDA4Yjk3NmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjYzMyNDhlZmZlZjg2YjZlN2ZjMTlhOTY1NDEwZGYxOTQwZTQyOWU1ZjVlMDgwMTMyN2RiMTQ2NWRhMTdiZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L972-L975",
+          "version": "repo-lines-v1:sha256:b87be95df48eb8375ea7459379a92acf69ddf4e5b116621491789cab99a9de84:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDdhZWQ1N2U1ZTdiYmRhMWI1YjhmZTk4Y2UwOWIyN2VjNjY1M2Q2ZDIxZGY3ZTIwZDAwZjJjZjRjZjg5YTliNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjY3OWJjMmEwYTFjMmE3NWU4MzhkYjUyNDI3NGZjOTc5YjJhYWM2MTY0MmNlNThmZWE2ZGVmNzA0NmVjODFlYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjI5NjQwNzljM2M1YzgxNTIwZWYzM2EyYjlkMmUxNWExYjg0ZDcyODBkYjg1OTBkY2Q2NTc0N2UzZTAxMmE0MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjZkY2JkNTViNDg4Yjg5OGU0NDE4NTU0ZTRhMTZiMWJhZjE4ODIwNDVmZDRhMDczMzE3NmZhYjc2NjY5NzU0OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9ed8cf0e05d04d5aa134f056a69fe538",
+      "statement": "http.ErrServerClosed is a normal return, HTTP drain failures propagate, telemetry cleanup errors are joined to run's result, and main exits status 1 for configuration/runtime errors; NACP stopped can be logged before deferred cleanup finishes.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L584-L594",
+          "version": "repo-lines-v1:sha256:ea4fac44a66620c40e2484e1e89b313d0aa50ab6ef14dc7c1cee4b04da6eb270:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5ODViMDM0NDdjN2I4ZjQ0YzkxNjdlZDk1ODU5ZDE3YTQ1MjhlYmI1ZGM5ODgxNTgxMWVhMzA0YWY4NjFiY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2N2EyMWVhNGMxMjgwMmVhNTgyZGNiNmVmYjJlY2Y5NjMxMmUwOTVlOGZhYWU0ZGY2ZmVjZWQyYmVjMWI3NDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhYWI4MjRmMzU3N2NhMzRmZGI4ZTUwYjU4N2NjMGU1M2QzM2U3ODM2YWE2ZDY0M2M0ZGNiYzM4ZTFiNWE2M2MifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L616-L618",
+          "version": "repo-lines-v1:sha256:4520fb46912f66810c7dec2afcfd8f6673e9d9c031e2f9908207a22b9efaa432:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTZiZWQyNTZkMzU0ZWFlMmQyNDA1MzY1YTAzN2VkYzE1YmFkZTk0OTg0NWRlNDIwOWIwM2NhYWE0NmJkYTIwYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjYyMDljNGVmODdkN2JmY2RjNDY1N2EwNjYyY2E5YWVkYzlkNGFkNWM0MmUyNWY0YWI5ZjFjZDA3Njk2OWQxZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2M5MDE5OGQwYWM4MmM1Y2EzMDQxOTQzNjIwNDZlOTU3MTY5YWZkZmZhNWUwYjU5ODU4MGY2Njk2N2NhMGJkNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2ZhYjhlNGQ5M2ZiN2Q4ODkzNmYxOTZiNWJhZTVmMWVlODYwNGM0Y2QyOWNkZDllMTRkYThhMzE5OWNkNzNlMiJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L649-L668",
+          "version": "repo-lines-v1:sha256:82c7adaede13ee7e84e743bd15da8125bd33ccbcb8caebb80cc4b57265e08e09:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5MzNkYzNhM2ExMTBhNDRlYTg2NDM5N2YyYjVkMDE4ZGIwN2Q0MWMwZmY1YTIxNTM4NmU1NWRkMDA4Yjk3NmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjYzMyNDhlZmZlZjg2YjZlN2ZjMTlhOTY1NDEwZGYxOTQwZTQyOWU1ZjVlMDgwMTMyN2RiMTQ2NWRhMTdiZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L25-L50",
+          "version": "repo-lines-v1:sha256:c533ac1d4befe7bbfa729085a7f44aeae4b9e9bc6b6c217ce7eb6fc9df9f1611:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwNjM1YWQ1ZjBiMDEwYmY2OTM1MGI3MDczMjMwZTFmNDI0ZTUxNWU3ZDNhNTE0OTRhNDZjMDBmN2ZjYWY4MmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmYWYzYzUzMTM2MmQ0OWY5NjY2ZTExZDAzMWRiNTgxOWQyYjk5NmY0OTJjZDQwNGQwN2I1OGI4ZmQ0MDYyNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5Mjc2OGZiMTEyODJhMjU2ZjFmNjY2MGUzYWM0MTE5M2UzMDZiYmNjNzQ0NjcxZjljZGQyMmZkODFlM2RlOWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cf02c82a7edd401ab77abda6eea073a1",
+      "statement": "Any controller requesting resolve_token enables identity lookup on actionable admission routes; empty tokens skip lookup, while failed GET /v1/acl/token/self transport/status/JSON handling returns HTTP 500 and aborts admission and forwarding.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L146-L159",
+          "version": "repo-lines-v1:sha256:4a70c9f4caeddd5d9d34980182b02e4c063a716a352b7449619172a61fb13b91:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MmViOWQ4Y2M5MDY1NjYyNGUzY2M5NmJjM2I0ZmQ0NThjODczYTUyN2FlYTU0NzA0MWRhMTdhMGYwNDc5NTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMzE0NTFkYjBiMWY4ZWUyNDgzNzRjZmI2NTg3Y2Q3ODQ4Mjk2MTA5OTExNzhkY2QwNDBkMzgwZGQ0ZTFlM2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1ZjQxNmVhMjMxOGJmNjU2ZTBlNzg5MGRiZmRlMWU5Mzg1OTM4YTM5ZWUwYWEwMzZhNzk1ZDk5OWFkMjQxZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxNWM5ZmQxNmEzNWQzMDI4NzMzZmY5NzUwNmQ1YmIyNTc2NzI3ZTk0YzViNGFjNTIzNDNkNTYyOTE5NmViZjAifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L217",
+          "version": "repo-lines-v1:sha256:eaaa8562a4bd29c041e657b223a81170a69bbb8f9a3592921f8f71f386414689:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZDJlYmI3NWYyY2JiOTY4NTk2YjgwYTkwMGRlYTA0NDQ3ZGJlMDJlOGI3MDZmYzk0NjVmZDc5M2I5ZDIxODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2MGJhZTAxODM4MGE2YjNhNzYzZWQ1N2QzYjE5NmI2YjhiMGUwNjJlN2YwMDRmOTMxYmRiZWU0MmViOGYzZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMjU1NjlmMjc0M2NkOTQ5Y2FhYzc5MWQzMWJhYWNiNjQ5YmUxMzM4NDJhOGJjYWY4YjlmYzMyYmIzMjMxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2MTNkZGRkNmE5N2E5OWYzMmFiYzhhNTk5YTFmNzBmY2FkZjc1ZDU3Nzk5MTg3YTE3NWMxM2RlMTg1Zjg2YzIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L537-L540",
+          "version": "repo-lines-v1:sha256:168367852761b023d2ac84a50d7bd7e19553e820767a46f6ed7970a7ad30c26c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTA2YjIxMGY4Y2ZmYTc1YWJlNmJhOGQ4ZjlmNjI4ZDg1N2Y5OWY3ZDQ3Mjk2ZWM3NTJkNjBlYjI0MDU4NjYxNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZjNWQ4ZWM3ZDUzYTkxOTMzMjU2NjNkYzBlN2NiZmJkODNlODdkZjc3ZTFjOTY2YjY2NTdmZTY1Nzg0MGUwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDAxY2YzNzY0NDc1ZWNjZGRjNGJlMjMxOGZiN2VmODI1OWNkZWZkMjFkNGY0ZjhlYmQ4YWFkNjYyNzRmZGJjNSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L698-L719",
+          "version": "repo-lines-v1:sha256:39c0a42282153e8667031c8462919c784599b2e66940f1bed6daa2d79252734d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNzA1MWE3Yjg3ZWI4YjA2ZjA1ZmE5NDBmNzUwMDAyNTlkNDg2MjM1M2JlNWM4ZTUyMzA3ZTlhNDNhOWZlNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYWMxOGEzYjU0OTg2OTA0YzI3NzhhNDBjZjVkZWM0ZmViYzU2MmNlNWRhOThlNTY3MmMxZWM2NzY5YWI2MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NDhjNGQwOTIyNTg1YTg4ZmM0NmIwYzIwMjUxNGVjMWQxMzI3YjAxN2I3ZWQ2OWNlYzgzYTA5OTAwNWRhMTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzNjFkOGE5ZmM5MDdhOWExYWNmNWEwOTU2MjliZGQ0YmQ2ZTFiMDEzNjcyNGQ4Zjk0NjY0ZGI5NGMyNTkxYWIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L789-L800",
+          "version": "repo-lines-v1:sha256:d115e7cb110eb37add1481e943950d1a643f9164127134c8663ec6849ca55e8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4OWYzZWQzZjc4YWE4ZmJhZDc1MTczNmNhNDVhY2RkMTNmYjJhNWY2Nzg2NzM0NjViN2ZhNGZhYWQwMTQ0NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3OGZhNzA2YTQ5NDVkNmI5ZGVkZjc4ZjUzYTI0NDU4NjgzM2YyNjU4NGExY2NjMjEzNjcxZTQ5YmRkODNkOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3NDVmODE1Yzk4NDI1ZDJiY2YxNWJjNDRmMjdlNzRjNDMzMzQyYTZmOTU3N2NiMGE5OTQ1M2IxYTYwZDRiNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlMGJiMTgxZjMxZWE2N2U3MzBmMDNkZmI3ZTRiYWU4YzVmMTQ5MmQ5YTgyNGMyNGFmZDdiYTU3Mzg3NWYxNTYifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L829-L840",
+          "version": "repo-lines-v1:sha256:1b5f1dc8b65838fdc950d1e04d882a19d9c7ef86afb82d47e2155f90cf4bbf59:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2OWQ1ZWRkMDA4NzNhNjQxMzczYzcyZGMzMGMwMDBjNjE4NTgwOGE1ODkxNmI5M2ZiMmQwMWJiMzJmMGFiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0MmU4MTg5MmM4MjUyZTFmZTRhMDZkYmNlYmE2NzJlYjExOTkzNDA0NGM2YmUxMzBlYmIzZmNiYWVlYzE4NTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2NmY3Y2JkOTFhYjUzNTcyMTRhNzY2MGRiMTVmZjVjZGJkYjljNzNlNmQ3MmQ5NWM3YzQ1YWM3MTkwMjViZGIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L124",
+          "version": "repo-lines-v1:sha256:0527bc4f2f1798aa8390609e23a760ec526098f1d4daeaf91b417d69f8cf7e95:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxNmUyMGM2YjIwOWJmODgxOTgxYTVhMThmMjM5NTU5YmU2MTVhNTk3NGMwNjdkOGM1ZjZjNTBjNTQ5M2ZiNjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bfe4e0829c6f4c15bdc84d920b9ab4bf",
+      "statement": "Resolved ACL policy context uses ACLTokenContext instead of the full token, omitting SecretID and ExpirationTTL and populating ResolveToken according to whether resolution was requested; existing consumers of removed fields require migration.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L78-L82",
+          "version": "repo-lines-v1:sha256:4d19548a6c2ffebb7d9b7383de5dd2024593e1b009cba1057bf86177b43bf5e1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWE4MzE0ZGI4YzdmNDZhYzQ5NGZlZDYwMzAxMTEwM2RhMmU1ZWYxOWNlYTA1ZDczZmVmMmUyOWEwMTNiYWIzMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjI1MjFkMGRkNGUzNDk3MWNlYjZiMWNjOWI3NTk0YjQwNmRmNWY2MWNiMzc2ZWQwYjUyZmMyOGJkOTgxNTkxNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTRiZmMyMjM2NzgzYmYxOTUwZmYzMzkyZmNjNDI4YzQzN2JiNjRmZmZmYTA2OGY5MDE5NzcwNzM4YzFiMzI4ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDM1Y2RjMDAzZTg2YjRjYzM4MmExMjcxYTZjMzc3MDc1OThkM2IxMmIzYThlM2ZmNzQyZTAwMGNlYTRiYjU4NiJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L211",
+          "version": "repo-lines-v1:sha256:c01268417c5a07dc7cd3b2a3250fc718fa8b4de04f28625296eeac2a4cf25e36:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZDJlYmI3NWYyY2JiOTY4NTk2YjgwYTkwMGRlYTA0NDQ3ZGJlMDJlOGI3MDZmYzk0NjVmZDc5M2I5ZDIxODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZWZjNDk0MThkMjZkY2YxMjliMjJhNmFhMjExMDhjZWVjMzc2NzdhMzJkMDhlOWQ1ZmVlMzVkZGE2NmJiOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMjU1NjlmMjc0M2NkOTQ5Y2FhYzc5MWQzMWJhYWNiNjQ5YmUxMzM4NDJhOGJjYWY4YjlmYzMyYmIzMjMxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZDdmN2QzOGEzY2VmYmMzNTY4NDEzZmJkM2EzYTE3YmFjZDVkOTI3OTMxNmVlMzExYWVmMDU4OWY2NjI1MjQifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L52-L88",
+          "version": "repo-lines-v1:sha256:cd9b99d5f08f5f95d14f080631ecd44062afcb8e434d6c01f94eb875296c9c14:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExODVmNDI5NDliZTY3MWJlYzNjY2M3YjE3ZTZlZWI5ZmVlYWVhNzE0NjkwYzU3MzZhYjAyN2I0ZjhiYWQxMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyNGI0NjE0M2U4NGJkN2QyZTAzNTEyMTkyYjlkZDAxN2NlY2NkNGU3NTM5MDE0YjZmNTIzODc4MTExZmE4N2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5ODY5M2ZjMjhjZmE2ODI1ZGI0ZTZiMWZiYTk3NTIxYTdmMzk1MmU1MThjOTQ5NjE3Mzg4M2U2NDIxNzUzYWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_490bce271b974c79b12e0edcc4a15cdf",
+      "statement": "Webhook handling rejects non-2xx, oversized, unreadable, or undecodable responses; validator errors and JSON-patch mutator errors become admission failures rather than being ignored.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L66-L85",
+          "version": "repo-lines-v1:sha256:dc554a7447635789d0050121d67a8e449525867802fa76aa1d902976739442f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNTYxYWY4NmNiMTA4Mzg4YjIzNTcyMGZiNWFmNjVhMWY4YWIzMzMxNDk0Yjk2NDU4OWNjZmVlYWFiZjFiYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwMjQ0NGU1NzM5ZjM0ZmVkODBhNjFkMjkzN2Q5NTFhZmNmYTE4OTgyYzAxYzFlNTU1ZjNhYTZkMDliYzhmNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyZDBjZmQzNTEwZWYzZDZkYTc2ZWJiNGVjM2VhNTYzY2NkY2FjM2RmNTQ5YjFlNTJlMjRjMjI3MGRlMWQxZmMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L70-L85",
+          "version": "repo-lines-v1:sha256:2f3bdeb8897dd2435d0f847bfb202a3add136a4abe014082abc181eff098e7a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDk0NzA2NTgwNWM4MTBiOTJlNGNkYTM0MTcyOWIyYWE2YzZiOWNkN2FkYTEyNTI1MDYzNjkwYzMxMmYxMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5YmZhNzAxNjdkZWU2YTEyY2RkOTYyZGZkYzE3MzMxYWFmZWRmZGJhMWVlYjBmMWYyZTI2N2ZhOGNiMjQwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L49-L60",
+          "version": "repo-lines-v1:sha256:9850ea514b36cf1d45a0c2266e8b072133ede6f1cef2f15a7884dd9b7beeb5dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0MDcyOGY3Mzc0YjI1MTcxY2Y1NjNiMmE5MmQzYTBkMjNkMWY2OGRkZTY5ZWJhNzNjOWQ5MDY4ZDM2OTE0NDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwODg3NWUyMDRmMGZiNzc2MTY1ZGZhZWJmZTMwNWFkNmMxZThhYzg1YzM0ZTMyMjYwYWNlOTA3Y2U0YjJjMWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE0NjJiOTZmOTJhMzhiMTE0OWJmNjNhZmI0YWI3ODAwODcxNmIxODFjNDg4OWEzOTdhNDZmNzA4Y2IyY2I4YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4ZGFlZjdiY2QzOTU5NTMzZTY3NzA3Mjc2YzRmYmZlMmE4OTgzYWUwM2Q0M2U0YTViMDE3M2JhOTkyMDJiYWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_22674e89881d4890b9fc9cb5b7577749",
+      "statement": "Admission decoding and register/plan controller errors use writeError's HTTP 500 rather than specialized body-limit status handling; the validate route can attach validator errors to the successful upstream validation response instead of aborting forwarding.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L155-L162",
+          "version": "repo-lines-v1:sha256:a484548bc038823e56325e3d39004a8504162832397950f6639bda76b2674bc5:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTA5NGM3YzlmNjVkYjk4NmM3MmU1YWJhZGMwNTI3MDMzODQyMTQzZGQ0YzdiZWYwNzgwMDQ2N2E3MjU4NTUyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDU0ZmU3MzI2ZWY4OGUxZGIxOGNmNmQwMzgyZmFkZGRkNDczNDFmMDlkM2NhN2E1YjMxMTMxNWVmNGQyZjc5YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjAxYjI4ZjA1NGIyZTBlMTRiMDhjYTljMTE2MTk3MWIwZWIzNmJhZDc5MTZmODFmYWY2ODJlY2JlZTliNTY5MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzM3MDlkMTI0ODI3MGEyNTA4MzE3NzUxNDk5NWNmYjJhOTBhODc4ZTUxYzUyMmI0MDVhNDc5OTk4YzBkOWYzZSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L321-L372",
+          "version": "repo-lines-v1:sha256:339e8ba9aff84fbe59271ca754481de4e131e76d40b96d701b95193faa29e8ef:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0MmIzOTgzOTgwNmUxNjkyOTdmYjQ2N2Q4ZmEzMzY1OTdiNTc3ZWFkMDY0ZjQ0MDFkNzUzMTk4N2ViN2Q5OTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMDhkY2JmYzAzODAxOThmNDNiMTE2MzFhZmYxMzgxOTNjNDJlZGRlNzMyODFjMzI2N2RiYzc4NDA5NDQxM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllYWQxNTJlNWNmNTY3YmJhMjkyMTA0ZTUzMTk0NDE4Y2RiZjllYTNlN2M3OTcwMTI4ZDExZWJkOGNmZWQ2MGYifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L540",
+          "version": "repo-lines-v1:sha256:e015d6c271667d0a009d9175d82e0e0a2ec60799fcbb90f4ead263757c6a1726:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZTk5YTA3MTBkZjgyYjk3YmU2YTMwZTQzNDY3YmFkZmQ0MzFkODgyNTkwZDJjMjlmZDZkZWVlN2Q2NmZiMmQ0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiODJjODRiOTZhMWU0ZWRmMDc2ZWUwNTFlYzRlODYyZmFiMzY0NjZjMTMyZjAwNzhhYTNlNWM3OWM5Yjc1ZDVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MDFjZjM3NjQ0NzVlY2NkZGM0YmUyMzE4ZmI3ZWY4MjU5Y2RlZmQyMWQ0ZjRmOGViZDhhYWQ2NjI3NGZkYmM1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_0243ec7040c54828b379ccccebca1a16",
+      "statement": "Warning and validation-error injection is limited to successful Nomad responses, preserving non-2xx upstream bodies; decoding or rewriting failures on eligible responses produce Preparing response failed and return a proxy response-modification error.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L168-L184",
+          "version": "repo-lines-v1:sha256:4a9ddb589805870d99bf4fca03ffe431e0261861248afc6ac80efad4923a19cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiNjU4MGRmYzgzZmQ3ZGE1OWU4MjgxZGFmODZhMWVmZTU3NDE5ODhiZTQ0ZTlkMTRkMGY3Y2ViMGI1NGJiYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzYjBjNzZjYjQwNTJmOWEyMzI2YWY3NjBkOGQxZjlmMDA5M2YwODE3NzBmOTFkM2QwNGU1YzI1Y2ViYTQwMDMifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L233-L264",
+          "version": "repo-lines-v1:sha256:2c4a3b35d19127d11877692da14eb738b8c815b67b9bde88690e0fa9c5cdfc26:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4YmQxOWM4MDA5N2EwMTJlMWE3Y2FjNWIwNTQ3MWNhZWI3MDIzMjhmNWVhYTY1YjQ3NDJiZWZlY2JjOWUyZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjMjYwMjAwOWJlMjM0MGYwNmQ1ZTU1ZWRhMTExZjM3MjMxYmY2YzkyNTQ0NWUyZTRhYmQ2OTkyMDJiM2ZjOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxNWZlZThiNTc1YmY4ZGI3MjFkNWQ0MDg1ZTUxMjU2NWNkYThlMWEwMzI3NjVkYWVmN2Q1MGQyZmRjNjc5ZmQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L288-L372",
+          "version": "repo-lines-v1:sha256:df886e4d39d9c18467b2903d6e76f8a332bf7f98920abc307a2d4cf2c41e0323:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNTEyMDkxMzE2OTFmNGJmNWFjMjVlZGJmYzM1YWNjY2NkYWU0MDA5YTRjODA2MzEzMTQ1OWVmN2ZlOTY5NGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliNmIxZTUzNWM2OGI5MWY4MDBhNmNhYzJlMDFmN2ZmMTIzNjE0YTA5MjNlMTQyZDVhOWUzY2RiNGU3MDk5MmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllYWQxNTJlNWNmNTY3YmJhMjkyMTA0ZTUzMTk0NDE4Y2RiZjllYTNlN2M3OTcwMTI4ZDExZWJkOGNmZWQ2MGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77debd185b0d4def985a4858cdbba19b",
+      "statement": "OPA bundle validators fail on non-object decisions and non-null errors/warnings values that are not lists of strings, while absent or null message fields are accepted; this stricter decision contract is an Unreleased upgrade risk.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L84-L86",
+          "version": "repo-lines-v1:sha256:0a87cfa9b2e67001761aff5cfb57f41d1626fe0d352f263ad03aafe44d7b0f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTVjYjZlNDNlNWQ5OGZjOTE4YTE2YzRiZDgxY2JiMGUxNTYyMTM4MTIyNjBkZWE0NmRmYzkwNDdiMzk2ZGMzOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU3MzhlYWE5M2UzZjdiYzE3NzJiYjBiYmY0MTJiZjQxM2YyZjY2ZmRjYmVmN2Y0NDg4Y2E1ZjI4MWJlNzg3MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWNkMWViZWQ1MjM3MmUyOTZiMTIzMzYwYWE0MWVlZjAxZmY5NzhkY2RiODExYjRjY2JhYTE1ZWU0YzAzZGZhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2VhMjNmNDY4ZGY4MmVmMDdiZWNhY2FjYWFhNTFmMWE0NTYxYjA1NTM1MWZiYzY3YTE5Zjg4NzIwNTBmYzkxMyJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L39-L90",
+          "version": "repo-lines-v1:sha256:facef3856f34fe6c581cb66fd7b5803c8d3a96febfd0cd23df006a1da03f8157:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNWYzYzMwMjMyYTc1MGE1MjU5NWJlY2FhYzg4NmIzMzkyYzcwZDE5NWE2YjNhNGMxNDJiMTBmMjNmMTA4ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiNzQ0MDM5YjY1NDA3MmZkMWE1ODlkODhmMzE4NjU4ZmE2OTAyZGEyMTdjMjVhOTJiNDExM2RlMTM2ZGJmNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkYTJmZDdmYjVhZDAwZjllOWYzYjM1NjM2NGFlZWJjNGNhODU1M2ZjYzE1Nzc2OGZmNjQ1OWM4MzYyOWRhMzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8becf65ad718457c87b98f96c8d8580c",
+      "statement": "Validators evaluate isolated job copies of the final mutator output; the Unreleased changelog identifies corrected mutation/validation ordering, route matching, token sanitization, startup validation, and webhook failure handling as compatibility/security changes.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L64-L135",
+          "version": "repo-lines-v1:sha256:e7796ca9a8be2824111ea485871c768bc6faf607baadf134cd292c9065963652:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxNDU5MGI0NmIwMDRjMzA3MDE4ZjRmYTBhNDEzMmRhMzI1NGY5YjQ4OTJlM2M5N2JhYzQ4MWY2NGU1ZWJhYzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3YTUyMjQ4YzVjOGIzOTlmYjEzZTE0MTJmZTFhN2YxODBjNGNlOTBjMzMzMjY0OTY1YTljNGRlZTQ0YmNlNjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxYTAwMDAwMjk5OGE0ZWNlY2ZlNDc0N2E3ODVlZTg3ZjE3NjU1ZDhjYmMzYjY3MDc4ZmMzNzhkNmIxYzg3YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2ZDEzZWIwNTY4NjgwZjE4MjI5MDJiZDgxYTBhZmJiZGFhY2VkNWZiYjBhN2U1NjRkOWE5MzI5ZTc2NDQzNzUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L124",
+          "version": "repo-lines-v1:sha256:8c489808d2cee337f79347576914e71036e0b8c61791430883fc39023986e88b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNDA4ZDUyYzJiYTFiZTc0MmVkZTczNjBlNGQ0MDJiMTljYWE3ODdkYTQ0NGYyYmU2NjFmZWZkNDViMzYyZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjYjM5ODk3ZWM1YTc5MGFiYTEwZWE0MmRmM2ZlNTFhMTdlZjdhNDk2MGVmMjUzYmE1MWM4MzVhNmFjMjU1NmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzMmQ0MGNkMDRlMzkxZDFkMWM5Mjc1MWFiYmZjOWVkMzFmNTkxOTMzZDVkMzI0YWZkN2MyMDI2YWFmMWRkNzgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L200-L248",
+          "version": "repo-lines-v1:sha256:a12c71c59e6703258d07b9e95ece6ae0db573422695d7de99da97caf8dffc01a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MWIxNGY3YTFmN2Q3ZWViYzBkYmRkNjE5MjE4YTFmYzFjMmQxMjQyMDI1Y2U5ZmZhNTI0MzlhZGI2MGU1YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNGFjZTA4NmE5NjU3OWU4N2QyNzdmOGIzZTI3NTllM2NhODhiZjhkNDcyZGM5Zjg4OWJiZTc3MjI3ZTkyNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0MjY1ZjQyZDNiN2ViNzcxZTdkMzZiNmVmMmM0MGRmOGYwNmRkOTk4MTQ2OTgzMzhiNzg1MWI4YWM5NTU2ODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhOGY5NDQ0MjdhMTM5MGJhNGYzZTNhNGIwZDA0ODg0ZWQ2NzkzMjJkNWYxZmVlMTJkMTljN2Q3MmMyZGE1MzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_071dbe5245384a9eb89ae41e6bbc5a37",
+      "statement": "The current Unreleased changelog calls for migration from log_level to telemetry.logging.level, rechecking custom Rego for OPA 1.19 assignment safety, and updating log consumers for slog/OTEL changes; it also records release-image CA provisioning and numeric non-root identity changes.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L138-L141",
+          "version": "repo-lines-v1:sha256:ee5c0b8b3cf548bc55769066919a1603335b1a2a54db90a53abc2d65219d63d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI1MDhmMmEzNGIwMzEwZWUzYzYzYjFkYTI5MTczY2EyMWRiNzI2YTBmNjMzMDA1MGZiMjZiMzlkOWU0YWFlNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEzNzM2NzkzNGQzZDU1Y2Y2OTYzMTkxNGUxYmViMDhhMGY2NjA0MzYxODY1NDRlZTEyNzhjY2ExZDNlZDkxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTA1MDI2Y2ViMTZhYmI5ZDFjODI0ZGIzM2Y5MmY1NDJiZWUwODNhZTU5ZGRlOTVlM2RkZWJhZmZmZDYwZTliNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmUxOWU3MWUxZDYyODAyYzJjZjZmMzk4MzMzYmQ4NjY3MzY3NzhlODAyZmRhNDE1MWQ4ZDliMWU0ZmQxNzQyYiJ9"
+        },
+        {
+          "resource": "repo://CHANGELOG.md#L64-L71",
+          "version": "repo-lines-v1:sha256:722d043a365266253cdd30c951d9e87cb601dc988e908168d93ed254586b93bd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE0NTkwYjQ2YjAwNGMzMDcwMThmNGZhMGE0MTMyZGEzMjU0ZjliNDg5MmUzYzk3YmFjNDgxZjY0ZTVlYmFjMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDI1YzU5YjgxOWQ3ZDk0ZTcwMzBjMTYwNmM4MjZkNjY2Y2IwOTEwNGVmNjE5NjFhOGI0MmYwNGY5ZjlmNWU3MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzFhMDAwMDAyOTk4YTRlY2VjZmU0NzQ3YTc4NWVlODdmMTc2NTVkOGNiYzNiNjcwNzhmYzM3OGQ2YjFjODdjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDdmOGI2YmQwODljODViOGMyMTM5MWQzZmU0MDY5MWY3ZjQxMzcyYjE4NjgwYjU3ZjU5NjI5OWFkYjlhMmEzZSJ9"
+        },
+        {
+          "resource": "repo://CHANGELOG.md#L99-L106",
+          "version": "repo-lines-v1:sha256:bf74d5d085a540b0f79ff26dbf069a31805f5b50bab63f13e8c84c991691bcde:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmE2OThiYTQ0Y2IyNWJhMjUwZTA5ZjE0ZTVkY2RkMThkMzIyM2ZjYjE2ODY2YmVlOWYxNTAyYmRhZTU4YmJjNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTMwNmQwMDU3NTZlYWI1Mjk0ODA1ZGNmYTEzMjA4NmRlNDBmOTI4ZGY1YTEwZDAxOWFjMTljZDUzYjUwNTk2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjRjOTkwNmY5ZDQyNmY5ZjI4MTRkNTQ0M2ZkNDIzZDY4YTYwNWM3ZWM1NDk0ZGNkNjQwMjkzMjY0ZWU0MzBhNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTAwMDgzOWIxZTQyODQ0MmQ0NDZmODE5ZDBkNmNlOWQ4NTY4NTYzYTk0YmYzMTIxZTM5N2ViZDEzNGE3MGZiNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9dda0951105c40689f7d2c1d5d8f1bbc",
+      "statement": "Focused regression tests cover explicit missing config paths, route matching, config validation/defaults, token sanitization, OPA SDK setup and readiness timeout, and generated TLS configurations; the shutdown test specifically exercises SIGINT with default and enabled telemetry, not every SIGTERM or drain failure scenario.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1057-L1078",
+          "version": "repo-lines-v1:sha256:923a40eea1e0e2b18a01d36e5f0c5e51188d5080b930b54ab1436b185084ff75:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3YWZjNDA1ZTQ1MmZmYjVlOGI4NzA4MDYwNTUyNWUxNzkwMmI2NDEwZjAwZjEwYTljN2Y5OGRlOGEzYzgxMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5NmRmZDE0OWFhZmZjYmMyYzRjYWJlZWFjYWU1YmI5MDc2MzU4NWIwNTdmNjYzNTMzN2YzMTU1NDBlMWM5Y2UifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1165-L1221",
+          "version": "repo-lines-v1:sha256:2225b31d8bf3a97929a0a320d7e488df509675e3fd0780440bd852f037b52e08:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYWIxZjU1MGQyOWNkNDAwOWQxNDI3ZWU5MzE3MDI5MmNmNDAzOWFmNjY3NjRlYWVmNmI0NWIxMThmMDMzNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU1Yzc2YTAwNWZhY2I5ZTc4ZGVmNTBjNjJmMjhjOGRiOGVjNTUwZWQxNGVmYTljMzc1Yjc5ZDkzMzZkODFhYjgifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_test.go#L1241-L1441",
+          "version": "repo-lines-v1:sha256:4b4448ae63bfb5197ffa9fdf08191235a7d87edc6db53a5ae5fd7f88497ff277:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2MmY1OGYwNmYxNzRmMWNiYjJjYTU2Mjg5ZjMzZjAyYTdhMWI2YjcxYTBmNTBhZTk0NzQzOWQ2YzJmYWY3Y2Y0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzNTRjOWJjOTMyODVjYzg1NGJiM2Q1Yjk4YTJjOTliOTZhZDY2NjdlNGVjZGVhMzZmNjQ3NzA2OTg3OGFkZTVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://cmd/nacp/tlshelper_test.go",
+          "version": "repo-file-v1:sha256:4799fde17ed0126d7c615d4c5e0aafca24e5ff8f21fb486f2fda132107b2dd62"
+        },
+        {
+          "resource": "repo://pkg/config/config_test.go#L324-L578",
+          "version": "repo-lines-v1:sha256:018d9fc955ac0d642e27d2e0eec999c01bd2e5488de83949e95f3ceb48703a32:eyJzZWxlY3RlZExpbmVDb3VudCI6MjU1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2ZjY4Y2M2ZDE1ODAyODczNGRkMDEwMmYzZTdjYTVlNTEyNzU5MDg1NGFlYzcyNTY3NzEzZDNiMjAyYzc3NTZhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1MWU1ZmE5MTUwNWE4ZGY3MTk5MjY3M2RjZjk3NjEzZTUwN2E3NDRhMTQ0MzBhOWI1Y2E1N2VmNWQ1Y2RhZjliIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5NDU5YzViZjNjYzZjZjc5YWUyMDJiOTM2ZTExMTg0ZmFhNmE5ZDI3YzY5YTI0OGUzNWZiMGFlYWM0NWI4YzJkIn0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-06T10:26:01.086Z"
+  }
+}

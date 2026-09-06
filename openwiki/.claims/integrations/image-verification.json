@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:cb89b5cf20fa6a6365a3edeac971231f926a93ffb0ec9ab6f6ab9ec57919e609",
+  "claims": [
+    {
+      "id": "claim_1737bdff776548afa28d41538d94240f",
+      "statement": "The direct NotationValidator checks only docker tasks with string Config[\"image\"] values, skips other tasks/image types, and stops at the first verification failure with one warning and nil error rather than rejecting admission.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/validator/notation_validator.go#L18-L39",
+          "version": "repo-lines-v1:sha256:e8d7c8ce6b31fde5ad3bd272cdd00553f001dc075500aaded01c774ec59d5094:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NGI3ZDIwMzI1Mzk1OTU1ZjQ5ODI1YTBjOWYxM2Q4NDRkNDNmY2NkYzIwY2MwNDI0OWI2NGZiMWFhMjBkM2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzYzY4ZWEwMDgxZmE3MzAwNWQ2YzM4OGEzMzkwOWI2MDVkODkxYWJkNGJhMWE4ODJhZDgyYWVhZGI4N2FlYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNGY2YjNlYmNlMjk5NzM5MjMwMzBiZGNhMzdjMjdhODFiNTAxZjczM2JhNDY0NWM3MTk1NjFkOTY2Y2M2ZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/notation_validator_test.go#L27-L139",
+          "version": "repo-lines-v1:sha256:62aa7ee39ff7c4297be75e9ee7798b0e892cd2e74f973897fd8fb3e958639bf4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5ZDQxMmE3MDlhYmM0MWE5NDZiZDU1ZGRkN2RiNjg3YzUyOWIzM2ExMDQzMjcwNTE2NjdiODA4NGFlNDY2M2MzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxNjMxYjZlMmNhMDdkOGJhZjBlYjQ0ZTc0OWRiZjQ5MGIzOTJlM2E1MzRlZjYxMDIyNzcxMTQ2Y2RmOWFmMWEyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhNzU3ZjI5ZDA4YWI3Nzg1NWZhYTk2ODg5MzgxNzljNWE1NmZlNDI2YWZhZTM0NmI5MTQ2NmZmZjM3MjAwNjVhIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f98a5d909af64ce0843d4f4c51a9fc4f",
+      "statement": "Admission runs mutators before validators and collects validator warnings separately from errors; registration and planning stop on admission errors, whereas the validation endpoint carries validator errors into the upstream validation response.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L321-L371",
+          "version": "repo-lines-v1:sha256:6e46bd2c1202a1db45be6ded976060f3a1fe290a03270ab786bbcb4cf3b83da0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0MmIzOTgzOTgwNmUxNjkyOTdmYjQ2N2Q4ZmEzMzY1OTdiNTc3ZWFkMDY0ZjQ0MDFkNzUzMTk4N2ViN2Q5OTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMDhkY2JmYzAzODAxOThmNDNiMTE2MzFhZmYxMzgxOTNjNDJlZGRlNzMyODFjMzI2N2RiYzc4NDA5NDQxM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3OTIyYzliOTJjNmU3ZGI5YzQ3NmIxZmZhNjczOTdkNzc1ZmJhYTkyNTJlMTYzYzJlOGYxNzQzMTU5NzEzZjIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L534",
+          "version": "repo-lines-v1:sha256:9057a51bfc23833f26323e0282b6b95998bbcb5f6f48f26a959a402c970a2f82:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZTk5YTA3MTBkZjgyYjk3YmU2YTMwZTQzNDY3YmFkZmQ0MzFkODgyNTkwZDJjMjlmZDZkZWVlN2Q2NmZiMmQ0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiODJjODRiOTZhMWU0ZWRmMDc2ZWUwNTFlYzRlODYyZmFiMzY0NjZjMTMyZjAwNzhhYTNlNWM3OWM5Yjc1ZDVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlNGI3Mzk5NjA0OWRlYzk3NTg4NzlhNTg3OGNiMmI3MDhmOWQ2M2I0Y2ZiOGMxNzgyNWZkMWIzN2UwN2M1YmNiIn0"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L125",
+          "version": "repo-lines-v1:sha256:3f703968344701bb018b76ab6491093d074dceef2061c4e48d226d933e1afba9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNDA4ZDUyYzJiYTFiZTc0MmVkZTczNjBlNGQ0MDJiMTljYWE3ODdkYTQ0NGYyYmU2NjFmZWZkNDViMzYyZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNjk1YmMzNWYzNjFkNTNjZWZkMTk2OTA3NjFkMDM2NDU2OWRiMjdiMzA0NTA4ODJlMDMwNzc3NGMzNThjN2UifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L186-L228",
+          "version": "repo-lines-v1:sha256:282af508d6cfce5421ee6c3fe427f46f7cf6747ac5aadf1aec73d65a6ce1c0bf:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwOTU4MjQ1ZjNiZWU5NDM1NWY4ODRjYmI0NTkzZWRjZDU0YTViMzEyYWJjNmU1NTA3ODQ0M2NiNDU3ZGQxYjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwYjBiMDc4N2VhYzQ4OThiYjNmMDRkODA1NzZhMmVhOGM5Zjg0ODBkNzU5OGYwYjViZGFlMTgxNTdmOTQ5ZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiZTBiYTE2ZTczMWQwM2Q0YTdlOGE2ZjFkNzg2ZDFkYjM5NDY5ZTJkNDAwMTNhYTliMmNhNmEyYjMwYTEwZDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2e45df4e8b94b3d9c9d8aad0f72cc3a",
+      "statement": "Image verification constructs an ORAS remote repository from the unchanged image reference, applies the configured PlainHTTP flag and auth client, wraps it for Notation, and calls notation.Verify with ArtifactReference and MaxSignatureAttempts; repository and verification errors propagate.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L88-L115",
+          "version": "repo-lines-v1:sha256:b22fc727e13d5a387b5061724fa0f6ca5b2261fd9ce83584676a65dd2f78c705:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2YmI1ZDVmODkxNGFlMjI3NzA0NTliMmE4NDE0MDc2ZjVjZTZmM2YwODI0ZjYyOTg5NDIxMWIwNWU4MjQ1OWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhNWUxNTZiZmRkMTc2N2ExZmQzMzkxNDMyZjlkMjliMWM3N2M3ZWU5ZDQ1NGMwZmY4NTRiYWNkMzlhMTIzZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3NDExN2M1NWYyMDI2OWM1N2IwYzI0YWIyOWQ2MjRmOTcwNmY4MTJjODNjOTdlNjU4MzFlYThjZmZkZTFkNmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d6f2ef2359a488c95fce8b8e6eff747",
+      "statement": "The image verifier returns only an error result, logging the resolved descriptor on success; neither it nor its direct and OPA adapters rewrites image tags to digests or requires digest-only references.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L88-L119",
+          "version": "repo-lines-v1:sha256:dac85214ab70b0ca48414459e36743e3bffdbd0e901cda489ce7ee2afb40f26c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2YmI1ZDVmODkxNGFlMjI3NzA0NTliMmE4NDE0MDc2ZjVjZTZmM2YwODI0ZjYyOTg5NDIxMWIwNWU4MjQ1OWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhNWUxNTZiZmRkMTc2N2ExZmQzMzkxNDMyZjlkMjliMWM3N2M3ZWU5ZDQ1NGMwZmY4NTRiYWNkMzlhMTIzZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L33-L49",
+          "version": "repo-lines-v1:sha256:e68ef16d2fbf0fe74d5491687147d093459e487588ac6044b8c9f255c4513778:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NjNmNWI1NGIzNGZhMDg5ZDlhM2EwN2U4NzA4ODc0NzU3NGY2NzA1YjE1Mjc2YzdiNjk0ZDI1ZjQ4MWIwODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyM2Q0MmUzMWFlZWMxNGQ3NmEyZGIwODVlOTZkMmQ3ODRkM2U1ZjQyZGMzYjlhZWRhZGFkYjUwZDY5Yjg4MmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxNjJhNWNlMGRmZGNjYmMzY2JmMjc3ODI5ZGYyMzNmMzhiNDk1NTZjOTI3MGMyODgzNDAxZmVhZmU5MmIxZGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxODIyYTE1M2EwYzAxYTE3Mjg2YjYwMjJmMGU2M2FlNzE5ZGVmMDZlYWFiM2IxY2ZkZDc3NDI4YzYxOWJhZmEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/notation_validator.go#L18-L39",
+          "version": "repo-lines-v1:sha256:e8d7c8ce6b31fde5ad3bd272cdd00553f001dc075500aaded01c774ec59d5094:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NGI3ZDIwMzI1Mzk1OTU1ZjQ5ODI1YTBjOWYxM2Q4NDRkNDNmY2NkYzIwY2MwNDI0OWI2NGZiMWFhMjBkM2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzYzY4ZWEwMDgxZmE3MzAwNWQ2YzM4OGEzMzkwOWI2MDVkODkxYWJkNGJhMWE4ODJhZDgyYWVhZGI4N2FlYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNGY2YjNlYmNlMjk5NzM5MjMwMzBiZGNhMzdjMjdhODFiNTAxZjczM2JhNDY0NWM3MTk1NjFkOTY2Y2M2ZGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb401ce597da4696bdbe186caa2607bc",
+      "statement": "The Notation adapter registers both COSE and JWS signature packages.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L9-L10",
+          "version": "repo-lines-v1:sha256:7bbf157e7a8a5e8bcd37e51bc16f178cebf8c8c976521c38e46fdca5782051d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDk5M2RkODAwYmQzNjA3MGIxOGUxMmRjMzBiODM3ZmIxZDMwNWMxZGJjOWY4MWI3OGRkZGRmOWE3NTA1OTA4NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjcwOGY5ODFkYmY0OTRkZTUzYTQyMTFlZTIzOGQ1OGNkM2IxNmEyOTUzOGNhNWQ1YjliYzE3MGYwOTczNTYyMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTRiZWYzYzAyYzgwMGMyNmVjNDhhMGJmNWY1NjgzMjk3NzQxMDVhYjMzYzg0NWZmOGU3ZDcyNTg0MDhmOWRiZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDYxMDc4MTFiYTQ1OGU3MjJhNTJjOGVjN2EzYTI2MjQxNWM2NjFkZmZhNTgxMDNlNDQ3MGY3ZDBkYzRlZjg4OCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_40d288cab25042d6af1c7dfdde88b3f1",
+      "statement": "Controller construction loads the trust policy once, creates and retains the Notation verifier and auth client, and each VerifyImage call creates a remote repository; the adapter has an authentication cache but no verification-result cache or per-request policy reload.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L843-L892",
+          "version": "repo-lines-v1:sha256:58f9790863f588a5bf7436b7801e175cf623380644673acdd11f712fad92f12c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYTBlODFhM2M1OWM2ZDc1YWM2YzMwZjQyNWMyYzM5YTY1NDNiNjk3NjM4NTQxMTU4OTczZGRmM2JhMDA1MjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkNzJmMTNmYzIwMGI5ZTQzYmZmM2ZjMjJjNDU5YTIxNDhiMjFhYjI5ODM1OTM3NmEzOGFmNDJmM2I2YmFjNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyMDFlYmQ5NWUxMDA5OTE0M2U0NzBmYzZkMDBhNTI4OTY4NTM3NDg3YmRhMjRlZGZjY2MwOTQ4YjRkMGJkN2YifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L28-L119",
+          "version": "repo-lines-v1:sha256:f381c31d8f0e6bc0a4ef8073aae51a417cbfd682ff3b3a85da0757772781e995:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNmE3YjBhNGQzYmMyOTk4YjA3NjVhMzA5MjVlMDc5ZTczNTRhM2M5OTVjZDQxZjliOTMyNzEyZWE2NzMxNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliZDNjOWMzNzgwNjRlMTkxNzNkYWY2ODBhZjRjZTE2NmM4ZGFkNWJmN2FiZTVmMGM4ZjM2YWQxNGVjN2M0YWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9cb74c73775449aca17032b47b9f065b",
+      "statement": "buildVerifier reads and JSON-unmarshals trust_policy_file, creates an X509TrustStore rooted at trust_store_dir, and constructs the Notation verifier; policy loading and verifier/client construction errors are returned rather than disabling verification.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L874-L892",
+          "version": "repo-lines-v1:sha256:39752c38f61d5b4e5470ebaa7519140b3836c69f258743cf50eb0c412f70e206:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwMjhkOTJlNDdhMWY4YjllMzY2YjAyNWE2NjFiNmRjYmJhOTFiNGIxY2FlMTkyYzNkZmUxOGZhZTFhMWQ1MGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJiMDQ4NDQwODI1MjE5NmI3MmEzOTIwOTNhYjRjMmMzN2JiODBhN2QwODcyOTk5MWRhZDZiMjAxY2Q2MjYyOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyMDFlYmQ5NWUxMDA5OTE0M2U0NzBmYzZkMDBhNTI4OTY4NTM3NDg3YmRhMjRlZGZjY2MwOTQ4YjRkMGJkN2YifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L36-L82",
+          "version": "repo-lines-v1:sha256:f9967010489bb020390b88cb7af10c44aab2954238fa9a7ecf8ab8a28d2508dc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NjZiNjcxNjk5MDZjZWZmNTA2OTQ2NTM1ZDNiZDNhM2I2NzJjOTllNjM0Y2Q4YWVlYjc2NjE0YjhiN2JkMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0NThhMWY1NmQ2OTkxZDVlN2UwODA5MzkwYzQ0M2U0NjVhNmUzMGU3NzE0YzRiMjExZTUwMTJlYzY4MGU4M2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_58cb7269987941e199442969b57ac084",
+      "statement": "trust_store_dir is the root above truststore/x509: the integration fixture maps ca:valid-trust-store to truststore/x509/ca/valid-trust-store/NotationExample.pem under that root.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L169-L195",
+          "version": "repo-lines-v1:sha256:cddb600842f5049f38174eb3d1e433f6e82dc54ab9a8a929965eebc2fe7fba5e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1YWRiOWI1ZmZjNzAwMTQ4ZTM2YmM4OWI2NjljZDRkZDc5YWIwZDI3NDIxMzFiNGM5MmQ0MjZlODU1ZTQyYmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiYmZlY2I0YjY3NjE0MjJhZjE2ZGIzYmI5MjZmN2VhOTg0OGY4ZTljMjQ2MmY3MzgyMDgyZmExMjhjZDQ4MTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkYWI4MWQ4MDRmMjM2NzNmOGRmMTBkMDM4ZWQyMTAyZTBiNWY5ZTc1YmE5YTlmZTRkZGFmNjJiYmFhZGIzZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxYzdjMmE2ODVkNzFjODFmMjM3OWViZTQyMWU0NjRmOGZmNWU0YmRjZGQ3NTNiM2M1MzZjZmExMDk1OWNkMWIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L432-L453",
+          "version": "repo-lines-v1:sha256:c48c10461e72fcd7a32b147453e3c865d5c702daad541fb884d0e58b211ccbef:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyNTdhYzU4Zjk3MDAyYTgwM2M5YjdkN2I1MDg2MGJkZDBjOWE3OWFiNGU1ODlkZmM0NWJhMmI5MzQyYTM0ZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2YjllYjVlYzcyZjlmZGQ5YjIyMDMxOTdjNGYyNzRiYzQwZWMwZTA0YWE4NjA5NjRhMWNmMDFiNzNlOGQzODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f12577d032524b9ab305936dcdbb977c",
+      "statement": "The Notation demo uses a strict policy with wildcard registry scopes and identities, a ca:wabbit-networks.io trust store, a generated test certificate, user-specific filesystem paths, and plain HTTP registry access, so its trust material and environment settings are demonstration values rather than a production-ready setup.",
+      "evidence": [
+        {
+          "resource": "repo://example/notation/notation.conf.hcl",
+          "version": "repo-file-v1:sha256:cdb8fb311e04ef7959a813b3a6729eea3fc52a84a9aa32ec63b8b9b29b9097ee"
+        },
+        {
+          "resource": "repo://example/notation/prepare_demo.sh",
+          "version": "repo-file-v1:sha256:76b307fd68cd2f86095568b5e2b8aa3ca77c10dfc34449774018ccb967736de2"
+        },
+        {
+          "resource": "repo://example/notation/trustpolicy.json",
+          "version": "repo-file-v1:sha256:13011c623e9791814eaa4ea86b7182afb55c0866e99e90ecb1efe6181953dcb9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b0bb6cda3d544942a4ce796f0b7e8b57",
+      "statement": "Registry authentication uses credential_store_file through ORAS credentials.NewFileStore and credentials.Credential, with retry.DefaultClient and auth.DefaultCache; NACP passes the configured path directly rather than implementing Docker credential-file discovery.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L880-L892",
+          "version": "repo-lines-v1:sha256:f1c133363bc9f968fdb00a31740489b8c265dbe2764e3715ffab5cca97b987b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiOWVmYmM4OTU4MjQ1NTZlNGRmYjJjMWM5Yzk0NGM5ZGMwMzk5MmNjZWI2MjRiZDFkMjZlY2M5ZmQwZTFiZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2OGQ2NDJiMmQxZTcwZTdlMjgyNWY2MTQ1OGMyZTU1NjA0NDhlY2M2MzQ1ZTY0M2QwNDM5ZmM0N2EzMzdkZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyMDFlYmQ5NWUxMDA5OTE0M2U0NzBmYzZkMDBhNTI4OTY4NTM3NDg3YmRhMjRlZGZjY2MwOTQ4YjRkMGJkN2YifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L51-L82",
+          "version": "repo-lines-v1:sha256:65190abd51b6647138c2677b6bed87ecd2d5ce2469e26acbbb373c043bc216cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZjQ0MTkyYjA4YzA2ZmJkNTVkOTliNDQ1ZjcyZWFmMjJlNDNjYTk0YTYwZTU5MTQ2MTlmMmZjYmIwMGFhZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4Yjc4ZTA0M2ZiOWU2MjY5NTVmOGQ4ZWIzZjEwMzk1MmMwYzkzZWQ4NWZiNDA5ZjkzOTIyMGU0ZWUyMWI2NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_566673d307e745b486257bb653686bd8",
+      "statement": "The registry integration test covers unauthenticated and htpasswd-protected registries, supplying a Docker-style auths JSON file keyed by registry address with base64 username:password credentials for the authenticated case.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L121-L178",
+          "version": "repo-lines-v1:sha256:fd7e77491bfbda5d3df90d344fc2a8e1cadb7a531302b5faba5da612d1673d31:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYjAxMDQzODc0NTVjMWI4MjNmODBlNDg4NzAzM2RlOTUwZjA5YzNkNjdmZjYxN2Q5NjNmYjc2MTFhZmY3YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3ZTFjN2VhM2M3MDYyNDk5ZTcyMzQ1N2UzZTA2MzAyMmEzM2MwOWEwMDhlZGU3OGRhMmU4NTBhMGIwOWRjMjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L198-L241",
+          "version": "repo-lines-v1:sha256:872a991c661fae8e34feb4e0b3bbf14590889824d038a387331bb9daa1f34770:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlZTZlMjRmNzNkMGFmNDU5MTE5NDcyMDYxZmM0MzIyZGJmZDZlYjk3YmYyZDJkZmRjMGViYjNmNjA3MjhmYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3MDkwNzFiMGUzZDEzN2MyYzMzMjA4YmMzNjc1NzE3YzJjOWEyMzk1NjEwM2I1Y2JhMWY4MDhhYmYxNzEzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NTNkODVlNDlhNjNlOWMwMDM3NTExNTI0NzYwNzIyODgwMGE5ZTExYWRjZTBhMzc1NzMzZWJmNzc5ZTQzOGYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L60-L75",
+          "version": "repo-lines-v1:sha256:8b8351c1f46fd8fe6262531ee963735255534b83786562891c99e951214ccc7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxNTk4MzZhMWQxOWVlOTI3Y2ZhZGE2ZjM1ZDQ4ZmUwNGVhMjc0NGEyZGIzNjdmMzlhMzFmNTY5NjhlZDA0OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ2YTQ5NzBjNmYzMjU1ZmQwNGU0YzE4NjJhYzI2OTkwMGM1MzM2NWUyNWJkM2Q3ZTNjZDFkN2M1NjU1ZGZkZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0ZjU5MmRkOGQ5ODJjZTAzNDFiMWFlNTEyZTEwNmZhMjAwYTlmYTllZWVlNTU3YzM1MmFmZTJhZDdmMzJlMWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_de703b2fa3024917b74b715e8d832e62",
+      "statement": "Registry credentials are independent of Nomad ACL resolution: resolve_token uses X-Nomad-Token and /v1/acl/token/self to populate sanitized admission context, while the image verifier receives an image string and Go context and uses its separately configured ORAS credential client, not task Docker auth.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L187-L217",
+          "version": "repo-lines-v1:sha256:d2df5360647384a52ebf5be9a77d8293fe779f3ae187263beb6f4e46a7eaed6d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExM2UwYzkzMjFhZjA0MGE0MWQzMzk4ZGIyOTExNzkzNTRlYWMzMzg1Y2NjMTdhNDllMWRlNDMyZWI0MjczYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2MGJhZTAxODM4MGE2YjNhNzYzZWQ1N2QzYjE5NmI2YjhiMGUwNjJlN2YwMDRmOTMxYmRiZWU0MmViOGYzZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2MTNkZGRkNmE5N2E5OWYzMmFiYzhhNTk5YTFmNzBmY2FkZjc1ZDU3Nzk5MTg3YTE3NWMxM2RlMTg1Zjg2YzIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L124",
+          "version": "repo-lines-v1:sha256:0527bc4f2f1798aa8390609e23a760ec526098f1d4daeaf91b417d69f8cf7e95:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxNmUyMGM2YjIwOWJmODgxOTgxYTVhMThmMjM5NTU5YmU2MTVhNTk3NGMwNjdkOGM1ZjZjNTBjNTQ5M2ZiNjIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L51-L119",
+          "version": "repo-lines-v1:sha256:9a20ba6e90223a3a17af75376c0932256472c7472d7279f122afb724f819f0db:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZjQ0MTkyYjA4YzA2ZmJkNTVkOTliNDQ1ZjcyZWFmMjJlNDNjYTk0YTYwZTU5MTQ2MTlmMmZjYmIwMGFhZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4Yjc4ZTA0M2ZiOWU2MjY5NTVmOGQ4ZWIzZjEwMzk1MmMwYzkzZWQ4NWZiNDA5ZjkzOTIyMGU0ZWUyMWI2NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/notation_validator.go#L27-L31",
+          "version": "repo-lines-v1:sha256:fb818179a801bc6e175fb509500e606734552e83ccb518dc4d502059c7c4cc3c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODNiZmY0Mzg1Mjc2YmExODNiM2ZkZGY1MTdjNjAzYmY4N2MxNTVmZTAzM2FiYTMxNzAwMjRmYjFjYzZhZjg2ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjQ1NDJiNmM3ZTBmMDNmMWMwYmI3ZDQxOTZjNDExMWYzODk2MDlhOGFhZDM1ZmYzZWIyODZkZWU2MzA5NmNlMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzk1YmQzMjNlN2JmN2MxNzZiZDU1YTIxYjc4YWY0OGFmZDQxYTViZDkyM2RjY2NlMThlOTkyMTEwYTA2YjU5NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGU0MWQ3MThjM2ZjM2I5ZGFhZGRlYjc2OTRkOGZiN2QyYTlkMmQ3NTIyMjA1ZjgyMDNhNjExOGYzNTBhYzE1ZCJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L52-L88",
+          "version": "repo-lines-v1:sha256:cd9b99d5f08f5f95d14f080631ecd44062afcb8e434d6c01f94eb875296c9c14:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExODVmNDI5NDliZTY3MWJlYzNjY2M3YjE3ZTZlZWI5ZmVlYWVhNzE0NjkwYzU3MzZhYjAyN2I0ZjhiYWQxMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyNGI0NjE0M2U4NGJkN2QyZTAzNTEyMTkyYjlkZDAxN2NlY2NkNGU3NTM5MDE0YjZmNTIzODc4MTExZmE4N2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5ODY5M2ZjMjhjZmE2ODI1ZGI0ZTZiMWZiYTk3NTIxYTdmMzk1MmU1MThjOTQ5NjE3Mzg4M2U2NDIxNzUzYWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4da6db0b134342859d0adbf69038132e",
+      "statement": "The effective HCL wiring is asymmetric: direct Notation and embedded OPA validators use validator-level notation, but embedded opa_json_patch mutators use opa_rule.notation; nested OPA validator notation is defaulted and validated by the config layer but not read by createValidator.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L891",
+          "version": "repo-lines-v1:sha256:d3a31def649726c978ab913ef0dc7499572c5d06d670f1ac3360d3e0f71a5098:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3YTA5YjYxMjI5ODNmYjkzNWVmMTA2YThiZTI1ZTRmOTcxMGU5N2IyOWI1NWJmNjYzNjI1MzQzMWM0MGI4MjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1Y2M2MTJkOWIwMmRkZWVhMGM5MzMyMjVkM2JiNTlhNTQxYmU0YjExMWZkNTIzZmYwMDMyMGUzNmJkYmY3ZTUifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L206-L216",
+          "version": "repo-lines-v1:sha256:030c6ff05ecff7eeac3f6bb16b97acaabf46b68dc74d465acc6e74343e625551:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4ZjZmNDA5NjY1ZDkwOGRlYmEyMTJlOWM1OTQyZmViY2JiZDgyYmExYzdmMWE4MjQ3ZjczMjkzMjUxMzQwMDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2NmIwMzA2ZjIwNjViYjFjNTcxMTFkYTg5ZjFkNDc5Yzc4ZmY4NTU2YTQ4NDQyYjE2NzlmZmEwN2JlNDljMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc1Yzg3OWI4NWNhOTllM2E2YWY4NGYzZjA5NzJlMTg1Mzc4MzVmMTRhZTQ2YzNjODA4NDJjOGZhNGViYTBhZWIifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L24-L50",
+          "version": "repo-lines-v1:sha256:bf997a8617343878fbc8835fdb634e66484dd012be82369123f99dbccb4a14ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmNzg5OTAyOTU0MjZhOWRiOTgxZjIzNGFkNGMzNWNiZDU0NTU2YjY1NmNhYjJiNGE1ZWM3NTY0YzQ0MGY3MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzMWUzYzdjNGNhZTFiMWEwMGJkNzM3MjM1Y2Q2MWExNTllNzJmNWI3MjA0MDg3ZjBiN2Y0MThiMTRiYTRiNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5ZmRiNDkyMWQ3YjQ4MzU5MTgwZDFmZmJiMTZmNDYwMmZiNGY4OGE4OGI5ODk1ZThjMGJhYmY0ZTMzYzkwMmUifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L324-L355",
+          "version": "repo-lines-v1:sha256:17aee2b13cd5b7fa513cf1a5421994bd8f3cffb3758600b26a9c5b8cc5fba9fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1YjIzMTQ4ZjdjZjYyMTcwYzE1NTFiN2NiOGVlODQzNTAxZmUzNDgzZmZjMTdjZGM0MmU0NzEyYTI5NjY0YzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI4MjczYTc2ZGMzYzM0OTY4NjI3ZDU4ODY2Zjg5NWY0NDExZjA0OWY5NGZlMmZkODQzYjA3MWU4OTJmMmY0MzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6daaceaa8dec4708912d5b5ae2070e2d",
+      "statement": "The embedded OPA builtin notation_verify_image is registered only when a verifier is injected; policies using it without a verifier fail query preparation, and the bundle-backed controller factory branches do not inject this verifier.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L858",
+          "version": "repo-lines-v1:sha256:753ea3dd5c931bfa0b0d2978851a228ed83e73680f4ec2a957041f3c6c67e243:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYWU3ODdmNWQ3ZGFjY2ZkMzhlNmI1N2E3ODZlZWY2ZjE0MTUwOWU0YTI0YmM0ZmY1Y2NhODgwYWQ3MGU3ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0YmI0YWUzYmVjMGU0OGY4NWFiODliZjk4YWIzMjQ4MGJhMTE3OGY2MmVmNjA0MDI1NTBhYTMxMWU4ZDk5YmUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L23-L61",
+          "version": "repo-lines-v1:sha256:f4da3744091c46ccb8de57aa4f0855a1e8dee3af9469b065b3adf18ad2653ad8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDQ0MjgxODlkZTlhZWNlYzQyY2ZlNTZhMjZlYzEyNjgyYWRjZWFhMjQ1N2U3MWY3MjdjOTg3M2UzNzI5YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljOWJiNmZmNmJjMGE2MDlkMmUzYzFmMDg2ZDMxYmFlZTNjYjAwNGVlZGZkNjA3NmFmOGI2MzY5NzBhY2Q2ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNzlkYTEwZGI2NTA5YWY5YTM2YjY4MjE2MmNjNDNmMWViNzYzOGQzYzZjMGJlNzAwNGI0MjlkN2ZmYzdjZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlODMxZGJiNjMzMjJkMTBlMWRlMzE1ZDhmZTliYmRkZTdmZGQwZTQ0NTdiZDAxZmJkYWJiNWE5MDAzYTQwOTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L172-L185",
+          "version": "repo-lines-v1:sha256:c55620d2d0781d70fc444b4038714a362fbb73036a49b01046fcda142a378da1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3MDk5ZDE5MWU0YWFlYjA2NTZlNzIwMGRjZDdlMDc2OGI4ZDA2NDc5Y2E5MWFhMTM2ZGU1YzQ5NzUxYzI2ZTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e95a7af137084db2ab4e180c7b1741de",
+      "statement": "Notation configuration requires trust_policy_file and trust_store_dir; credential_store_file and repo_plain_http are optional, and repo_plain_http defaults to false and directly controls ORAS PlainHTTP rather than trust-policy verification.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L92-L106",
+          "version": "repo-lines-v1:sha256:a3d0842b3930f9d1750b57436291ce90462144e112aa0d63af0887ebb9b055d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyZmVmZTkzMTVjZDFlYTg3MzA3NDM1YmI3MmJhYTFjMjgxYTk4MzNhMjM4NjA4NWE4M2NmNjJjNTYyNTM3NTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzZjU2OWUwN2RkYzYwNmFkMWI3ZTgzYzBlNTI1ZWYzMjVhNTRkODg1ZDlhOTU2ZGFhYzgwM2UxNWI2NTVlODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4OWZhYzE0ZmM5ODI0YTJjYjNlNWRmY2NlYjAzYzQ5ODA5MGFjYTM4NDRiMWUyNzJkZmQ1MTRmNTYyODJmZjcifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L106-L112",
+          "version": "repo-lines-v1:sha256:afad1f4093fe410d5bd51c5080acc3761c40f7737187ce77f953e06073611096:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUwMmE0YTk5ZGU1YzBhYzNhZTRhYjllZjVlNWMwYTBiYTk2OTA0ZDYyMGZmODJhZWQ5NmYwNzk3NzdlNTc1MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjU5NWQ0M2M2NzljNGIwNzlkZTY0YWNiYWM4ZWRjYzk0Y2M4NTYwNDUzYmM5MTI0YzlhYWI3Y2E3NmNiYTE5YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDRmNGEzMWZmYjU2ZGQyOTYyYjE5MzQ0NjRlOGZhNmIxNDkwNTU2ZmZlNDYyNjE2MjUwYWUwNTBmMjczYjJhMyJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L384-L391",
+          "version": "repo-lines-v1:sha256:56cc6c2e298153e2f800a4e4dc61d6c2ed9b9b898f4be161e23f5cbb402776fd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDg1MTJkM2UwY2E5MGQ4MjBlMTE4MmNiZWI0YzY5MDcwYjFhZWNmY2Q4NGNkODEwZDhiNmJiOTE3ZjRiNDRmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWRhMWQ3OTE0ODA5ZTM0OTlkNDU3M2U4YmZlNTgyNmFlMDgyZWEyZTJhMTRkYjdjYzE0MTcyNTc3YzZhNzM1YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTYzMWI2ZTJjYTA3ZDhiYWYwZWI0NGU3NDlkYmY0OTBiMzkyZTNhNTM0ZWY2MTAyMjc3MTE0NmNkZjlhZjFhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZmYTExNzcyZThhYTdhODg3NTA2ZDkwMWIwZmUwZmYxYzNhNTg4NGE1MGYyYTJmNjdlYjcxZjU4NTU0YzczYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a293588c49e94e02b65e1e102433ac2f",
+      "statement": "LoadConfig defaults zero or omitted max_sig_attempts to 50, configuration validation requires it to be positive, and the value is passed to Notation as MaxSignatureAttempts rather than used as an HTTP retry count.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation.go#L103-L106",
+          "version": "repo-lines-v1:sha256:d86b12685512c8a2a748eb7c37a3dad00dc67f50bd3c1ddc02f1cf0e553220c6:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTJiZGFjNzM3ODgzN2FiNDZhNjVmOGYwM2U5MWQwOTk0ZWNmMTk3YjdiNTdmZWU2NjNmZDE1Y2JmYTJlNWM4MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2U3MjQyMWQwNWVlZWYzOTJlMmU1YjExY2Q4MzY1ZjkyOGU3YWZlNmQ0MzYyNWMwYjI5ZGEyNzIyNWU4OGU1YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjg5ZmFjMTRmYzk4MjRhMmNiM2U1ZGZjY2ViMDNjNDk4MDkwYWNhMzg0NGIxZTI3MmRmZDUxNGY1NjI4MmZmNyJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L196-L236",
+          "version": "repo-lines-v1:sha256:edfe9b00ec4e2c4217c6608785140ccbec8fc6f11a885b310748049a40f229d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyNTNjZmNkMzJiZDMwNmVlNmY4ODljOGNhZjUyNTM2MmFkNGEyODE5ZmNkNmUxNDJkNzQwZWRmYWE5MjdkY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIwNDllOWE0ZWY0ODZjN2U2OTE3ZTJiMjNiNTAzNjIwZTc3Y2M3YTdjYjhlN2I5YjZlYjY4ODA2YzZlMGU3ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxMmZhOTY1N2FiMDEzOGI5NjJhY2E4OWRjOGQzY2YyMjE0NTBiNWU2NGJjZWRiY2M2N2JhMzg4ZWQ5MjkxMGIifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L384-L391",
+          "version": "repo-lines-v1:sha256:56cc6c2e298153e2f800a4e4dc61d6c2ed9b9b898f4be161e23f5cbb402776fd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDg1MTJkM2UwY2E5MGQ4MjBlMTE4MmNiZWI0YzY5MDcwYjFhZWNmY2Q4NGNkODEwZDhiNmJiOTE3ZjRiNDRmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWRhMWQ3OTE0ODA5ZTM0OTlkNDU3M2U4YmZlNTgyNmFlMDgyZWEyZTJhMTRkYjdjYzE0MTcyNTc3YzZhNzM1YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTYzMWI2ZTJjYTA3ZDhiYWYwZWI0NGU3NDlkYmY0OTBiMzkyZTNhNTM0ZWY2MTAyMjc3MTE0NmNkZjlhZjFhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZmYTExNzcyZThhYTdhODg3NTA2ZDkwMWIwZmUwZmYxYzNhNTg4NGE1MGYyYTJmNjdlYjcxZjU4NTU0YzczYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7d2f217958ea4c84b22bc6b50072af7d",
+      "statement": "The embedded notation_verify_image builtin is declared string-to-boolean and maps VerifyImage errors to false without propagating their diagnostics as builtin errors; Rego determines whether failed verification becomes an admission error, independently of Notation's strict verification level.",
+      "evidence": [
+        {
+          "resource": "repo://example/notation/notation.rego",
+          "version": "repo-file-v1:sha256:fb31c75c5f1c21556b43e111f0882044c876b09c8fe123509f022b8e5dde8090"
+        },
+        {
+          "resource": "repo://example/notation/trustpolicy.json",
+          "version": "repo-file-v1:sha256:13011c623e9791814eaa4ea86b7182afb55c0866e99e90ecb1efe6181953dcb9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L33-L49",
+          "version": "repo-lines-v1:sha256:e68ef16d2fbf0fe74d5491687147d093459e487588ac6044b8c9f255c4513778:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NjNmNWI1NGIzNGZhMDg5ZDlhM2EwN2U4NzA4ODc0NzU3NGY2NzA1YjE1Mjc2YzdiNjk0ZDI1ZjQ4MWIwODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyM2Q0MmUzMWFlZWMxNGQ3NmEyZGIwODVlOTZkMmQ3ODRkM2U1ZjQyZGMzYjlhZWRhZGFkYjUwZDY5Yjg4MmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxNjJhNWNlMGRmZGNjYmMzY2JmMjc3ODI5ZGYyMzNmMzhiNDk1NTZjOTI3MGMyODgzNDAxZmVhZmU5MmIxZGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxODIyYTE1M2EwYzAxYTE3Mjg2YjYwMjJmMGU2M2FlNzE5ZGVmMDZlYWFiM2IxY2ZkZDc3NDI4YzYxOWJhZmEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L20-L59",
+          "version": "repo-lines-v1:sha256:2416cfb775859a9b932ba6d295a8a2170a650f7addc5a77466310cfefe956ed3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkM2MwOWIzZWI0MThmMmYwY2ZhODc0MjM4Nzk5MmRmMjdhYjM0YTBlMDVjODc5NjdhNDY0Y2Y4NzQyZDAzNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmYzM4ZWZkNjYyMGU5ZTI0ZjMzYjdjOWEwYmFlMjMxODlhZTIzMWMzNDgxZGExODA3ZWJmZTdkMGM1N2IwZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZThlYWU2OThhNzNhODU5NjAxM2YxYzFkY2E5ODM5OTcyMzNjOTBiMWFjMWRmZDI2MmJiMzRmOTI1ZDRjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTlkY2JkNzVkMzIyZTA0OTRmYWJmZDRkYmQzZDEyYjU2OWRkMWI4ZDk5YWRlNzNkNDI5ZmE0MTBiM2QzM2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b9d731bc7f89408ca1438cb3c7582b4a",
+      "statement": "The current strict enforcement example selects Docker images from input.job.TaskGroups, emits an errors-set message when notation_verify_image is false, and binds errors = data.image_verification.errors in validator HCL; it does not constitute a separate missing-image or other-driver rejection rule.",
+      "evidence": [
+        {
+          "resource": "repo://example/notation/notation.conf.hcl",
+          "version": "repo-file-v1:sha256:cdb8fb311e04ef7959a813b3a6729eea3fc52a84a9aa32ec63b8b9b29b9097ee"
+        },
+        {
+          "resource": "repo://example/notation/notation.rego",
+          "version": "repo-file-v1:sha256:fb31c75c5f1c21556b43e111f0882044c876b09c8fe123509f022b8e5dde8090"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/types/opa_payload.go#L8-L11",
+          "version": "repo-lines-v1:sha256:7b6ea98b58dbe2cc3cbcfb6728a0c31ab72e301cecf81697fd2f20b0f17a0773:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmRkZmIzZTFjOTljNTlhYTQ3NmVhMDkwNGZlN2Q1MTkyYmFmN2U0MDNkODA1NWVmOTdhY2ExOWRmZTBlNTNhYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTllZmZjZTJkMmE4YTFkODJiMWIyNjA2ZDllOGYwZjBlY2U2ZjZjMWJjZGMxMjUwZWM3YmZiZTJjYjYzMGU1YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1871e14660f04e2f8e71757c99f82936",
+      "statement": "OpaValidator converts nonempty errors bindings into validation errors and warnings bindings into warnings; missing or wrong-type bindings read as empty, while an entirely empty query result set causes an evaluation error.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa.go#L64-L93",
+          "version": "repo-lines-v1:sha256:093d8c4d94a9669cd7306f158b551b56c5953fda1391fb5cd64665f3af1ba029:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1M2RmNmUwMTJiOTY4MjRkYWQwODM5M2Q0YWRkOWE1NzI5YWVhMjI0ZTc0M2IyMmVlOTk0ZGUyM2NmNTcwMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNGU0MmY3MDQwMTdiZmYxMWViODYxODQ1ZDMyYTA0MjRhNjc4OGJhMWU3NDQyOGFiMTI2MDJjOGEzZmEyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyNThjNjU2YjZkY2FhNjAwOGM3YTU1N2ZlOThmNzU1ZDUzMjNkZmZhNmQ2ZGQyZmYxNWIzMDI2ZDRkMGM1NzEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L51-L94",
+          "version": "repo-lines-v1:sha256:59cc3c3342e4312c873d9e68255d0c6df4e74a30d32f70bf4a517d30c5dba95c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2NTNiYjJmN2Q3ZGI5M2MzYzM0N2I1M2JhNzBkMzQyZmUyN2U0M2VmNzBiYzQ4M2UyYzAzYmYzMDdhNTJkZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiYjFhYTUwNzU0ZDlmOTMzYjE1MDI0ODhhMGM1ZDhjMjVkYWQzMjRkODg1Y2U4N2I5MDllMjJiMWU3ZTRiYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTQzOWY5MTk3MGI2ZWIyMWM1ZWQxZGRkNjY1YzgwMGI2Yjg4M2JkNGYzZjUyYmE3NzM2ZDY2ZTIyNDM5MmIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L20-L59",
+          "version": "repo-lines-v1:sha256:2416cfb775859a9b932ba6d295a8a2170a650f7addc5a77466310cfefe956ed3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkM2MwOWIzZWI0MThmMmYwY2ZhODc0MjM4Nzk5MmRmMjdhYjM0YTBlMDVjODc5NjdhNDY0Y2Y4NzQyZDAzNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmYzM4ZWZkNjYyMGU5ZTI0ZjMzYjdjOWEwYmFlMjMxODlhZTIzMWMzNDgxZGExODA3ZWJmZTdkMGM1N2IwZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZThlYWU2OThhNzNhODU5NjAxM2YxYzFkY2E5ODM5OTcyMzNjOTBiMWFjMWRmZDI2MmJiMzRmOTI1ZDRjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTlkY2JkNzVkMzIyZTA0OTRmYWJmZDRkYmQzZDEyYjU2OWRkMWI4ZDk5YWRlNzNkNDI5ZmE0MTBiM2QzM2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_af13550d3e8841ab8e0c40357643526a",
+      "statement": "The Notation demo obtains an image reference from Docker RepoDigests, submits it through the proxy, signs that reference with notation sign, and resubmits; the registry integration test also signs and verifies a repository digest.",
+      "evidence": [
+        {
+          "resource": "repo://example/notation/readme.md#L25-L44",
+          "version": "repo-lines-v1:sha256:5e364c81b2f8317407886c3011a5849f8d98a8e31afebf3687e480eeda5e8ccb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkZDBlNjZkMTE3MDJkZTZjNmI2MWFjMDUxOTc3NTQzMjIxZjYwNTllNGVjNzc3ZGY1YzMyMWM4MWRiOWQ2Y2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ZTZhZjJjM2MzYjVmYzYwZTg2Mjk1NzYxZmE5ZmY0YzNjM2U0NzM3ZTI3MDVmZGQyY2VkYmZiODA1ZTU3ZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L145-L177",
+          "version": "repo-lines-v1:sha256:638ee2779c7299b19553a11609b2f8b3f244ad734ce31992c6c8c3bc5d3b4bb2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhMjJiNmYxNjFhZTRmY2E4NDAzM2ExYmMzYThjYzY4MjNlODJkNGViNjY0M2Y2NWFhYjczZDg3NzdiZTU1MmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5NGNhZjNiMmJiYTNkMmIyYzlkNzYwMGFlOTY0ZTY1MDMwZjU4Mzg1Mjk4ODM0NDY5N2VjZDJjZDE2YzY0OGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMmIwNDk4ODM3YjkzYzhkZDU4ZmRjMmFjOGRhYjk2OTFmNmU2MmZjNTYxNTA1Mzg0ZThkOTY4ZTMyNDcxODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlOTcxYWZjZTFlNzllNmQyY2VhNjZiZjhmMzNhNjAxMDVlYzU3ZWFiNGQyOWZlN2ViNjFlMWQzZTExMzg2NjAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L367-L421",
+          "version": "repo-lines-v1:sha256:fc7cc4b66f1d9502d7ec8c6c3b83e6a64c2f787561673cdb48116d042405edb8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiMWY5OTVhMGJjM2Y0ZDJhZTU5ZWZmMzlhMjVmZTE3MzIyMjIyZWVkZWNmNTVkZjgzNTkzNzAwOTE0ZTZiYjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4NTE3MTA0NTViNzU4ZmFlOTU3OTgyYjRhNDcyYzU4MDA2NDg4NzdmYWZkYzI1ZTVmOTllOGU3OGY0YmFjYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkMjhjZDhiYjFkZWM5MGJlNTllNGU1ODJhMzJmM2MwOGUyYmIyYTY3YWQ2OGE2NWFlZTg0ZGMwMTc3ODU4YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwMDBjZTgxZjBlMjNiODk4OGRkNjE5MjdlZjQ5YjlkMzc1NDNiNDhhZWVhYTJlNjkyMDI1ZWQ5OWZmYWRiYzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f54369f092842aeacfe4dc503dd1c17",
+      "statement": "The HashiTalk digest policy is a separate @sha256:[a-f0-9]{64}$ suffix check, and both talk policies use the older input.TaskGroups shape rather than the current input.job.TaskGroups envelope; the talk's Notation configuration is commented out and requires adaptation before reuse.",
+      "evidence": [
+        {
+          "resource": "repo://misc/hashitalk_secure2024/digest/digest.rego",
+          "version": "repo-file-v1:sha256:9279f2c26e20657b24032d4e121bbcd32899b25df217c9ec793eca220a8ca6d5"
+        },
+        {
+          "resource": "repo://misc/hashitalk_secure2024/digest/digest_test.rego",
+          "version": "repo-file-v1:sha256:4845129c5bfe528525f50a6bdaba475fdf35049c0bdca3fcfe0ce08a76c91bc3"
+        },
+        {
+          "resource": "repo://misc/hashitalk_secure2024/nacp.conf.hcl",
+          "version": "repo-file-v1:sha256:0c7ae50728f0a5a1ae6d817c226d32b00088e92a61259644ff27ef5ef3cc6550"
+        },
+        {
+          "resource": "repo://misc/hashitalk_secure2024/notation/notation.rego",
+          "version": "repo-file-v1:sha256:f203653c3e6b077210b5b8f97e5127dd967eabbdca8beb6f7f42f5d18023f869"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/types/opa_payload.go",
+          "version": "repo-file-v1:sha256:3afce8fafda8c7caf93eda21270a9cb005215816eb0fd0a721aba3f1a5c6f262"
+        }
+      ]
+    },
+    {
+      "id": "claim_fb571107de454f0eb1b00168cc90c101",
+      "statement": "Fast tests inject fake image verifiers to exercise direct warning-only behavior, valid/invalid OPA policy outcomes, and missing-builtin query preparation failure; the example Rego tests mock the builtin, so these tests do not validate actual registry authentication or signature trust.",
+      "evidence": [
+        {
+          "resource": "repo://example/notation/notation_test.rego",
+          "version": "repo-file-v1:sha256:d5e7c8a8dbf4cf5e1522f26192ec70c339b11552c496fe35a3f491efebf5e1e5"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/opa/opa_test.go#L96-L185",
+          "version": "repo-lines-v1:sha256:4f206adf0e9746ed920f22bbb05207e02676c073674153cc2291681d07e2d6ca:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViZTdmNDlkZWQ1ZDZhOGU5Y2EyYzQ0ZmNhOGNjMTA1YjM4Y2FjODc4ZTdhYTcyZWQ2NTczODYxYjc4OTUxNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/notation_validator_test.go#L15-L139",
+          "version": "repo-lines-v1:sha256:360dfb90f913b63ce45cf62a63a6b73695e57cef696d84620fcfedf690118143:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1YmU3ZjQ5ZGVkNWQ2YThlOWNhMmM0NGZjYThjYzEwNWIzOGNhYzg3OGU3YWE3MmVkNjU3Mzg2MWI3ODk1MTRmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiNDEyNDFiOWNkYTIwZDM5MzM4MDVhMDJjOTVmMTJhNmNhOGZhNzU4ZGNiYjNmMjA5OWE5OGE5OTQ0ZWJhZDEyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhNzU3ZjI5ZDA4YWI3Nzg1NWZhYTk2ODg5MzgxNzljNWE1NmZlNDI2YWZhZTM0NmI5MTQ2NmZmZjM3MjAwNjVhIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_daa205fcafc2497a949e2c439455a5c8",
+      "statement": "The notation_test.go suite is integration-tagged, including its policy-loader test, and uses Docker/Testcontainers to launch registries, build and push an Alpine-based image, generate an RSA self-signed certificate, push a COSE signature, install the CA PEM, and verify a digest under a strict trust policy.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L1-L41",
+          "version": "repo-lines-v1:sha256:538170045f8732657a62c4458b5f29a6f1853e803b0e5ad001806554be309395:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMTQwMzJlYWIyZDJkOThlYTYyOWM5ODVlYzZjNmVkNTFjYzcxZjVkMjM1Y2Q1NmFjNjJkMmE4MzM2YzA1N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWQ5ZmJkZmRjNDdiOGJkZDAwMWQwNjNlMjkwZWMyYWNhNjRmYWE4MTI4OWRmNjMzMmE2MGVmZWNmN2MxM2IifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L198-L268",
+          "version": "repo-lines-v1:sha256:28162db14c11926dc25d32217d9ef2524b7e0e038642256435ffb48f050b04a8:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlZTZlMjRmNzNkMGFmNDU5MTE5NDcyMDYxZmM0MzIyZGJmZDZlYjk3YmYyZDJkZmRjMGViYjNmNjA3MjhmYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3MDkwNzFiMGUzZDEzN2MyYzMzMjA4YmMzNjc1NzE3YzJjOWEyMzk1NjEwM2I1Y2JhMWY4MDhhYmYxNzEzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwYTA2MDAwNTAxOGViZWQ3MjlhZThiZmY5YWYzZjE5MzZlMTE1MmEzMGYwOGQ5MTM0MzE3NjIxNDA3ZjU4NjAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L290-L453",
+          "version": "repo-lines-v1:sha256:ba1d2d3a301a91b308b5b15daaa6d91b949544f094299ed3afa54f354d4adabe:eyJzZWxlY3RlZExpbmVDb3VudCI6MTY0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlMGIxYTk1NjVhYTcwZWZiZThmY2Q2ZGNiZTc2OTQwMTZhY2JiODY0M2VjNDVkZTcyNzI1N2IzNzJlYjAyM2ZmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L77-L195",
+          "version": "repo-lines-v1:sha256:f98504e141a5ea9f2a84f5d366864c67cd8d8cc5e8ef8864fda74222392612cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiYzBmMjZmOWY5NjIyNWNkYjc5OTgxNTkxYjU3NTRmOWQzZGM3MjYwNGUyYzAyOTExNjkwODIwMjc3MWRjMmZlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI3YmJmZWNiNGI2NzYxNDIyYWYxNmRiM2JiOTI2ZjdlYTk4NDhmOGU5YzI0NjJmNzM4MjA4MmZhMTI4Y2Q0ODE5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5NTA2MGUyZTcxMTFjYjM4MTE4ZDZlODFkYmM3ZDFmNjdmYmE3ZGEwNzkxMDVhZThmNDhjNzY0NjI0Njg4NDJmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzMWM3YzJhNjg1ZDcxYzgxZjIzNzllYmU0MjFlNDY0ZjhmZjVlNGJkY2RkNzUzYjNjNTM2Y2ZhMTA5NTljZDFiIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f235300eec5d4d3ebe5bcb2343d49162",
+      "statement": "The recent Testcontainers migration moved the integration fixture to split Moby API/client modules and go-archive, using Moby network.Port/network.PortMap and client image option types; ordinary tests exclude the integration-tagged fixture, so dependency and registry setup changes need tagged-build coverage.",
+      "evidence": [
+        {
+          "resource": "repo://go.mod#L5-L41",
+          "version": "repo-lines-v1:sha256:18eb8ba2c80e4f7ffabb35d3924fdaffe7918e3d9b0dd5a4115e01d1aba80fbb:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzODVjZWQ5ZjY4YWYxNTkyYmU2YjMxYzQ4MmQ2NDZjMGMwYzdmZDkxM2UwNWIyNzM4Yjk0ZDlmM2U5NWZkNTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhZDNmMzhjZTZlY2E0OGFhZDBmN2E3MGRhODJkNWU2ZjMwOWRlZGFiNzAwMTM3MmJkMjZhZGEwNjY4YzY0MzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjljNzY5OWUwODdjMzhmNjc2ZDA1ZjdkNzE2ZTU3MDkyZmY1ODNiMjU5OGRiMjg1MDE0NDM2MzIwZTk1NTNkMDAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L1-L40",
+          "version": "repo-lines-v1:sha256:c7be5eb6903c381fe8e1dcaf21506ce06f90a99304fa73d8fabc71528094904b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMTQwMzJlYWIyZDJkOThlYTYyOWM5ODVlYzZjNmVkNTFjYzcxZjVkMjM1Y2Q1NmFjNjJkMmE4MzM2YzA1N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiN2M3ODJjN2M5NTBiMTliNDljMWJiOWRiN2I0ZjNhM2M4YmZhZTc1YTY1ODI5MjM1Y2JlZjZmMWVjODA4Y2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjMTEzZWM3ODhhNjMyMzJmZTMzN2Q1YTNiNTcwMjlhODk5NDdkMTRkNzZlMGY5YjA0MmYxNzY5YzkyZmI2ZmQifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L198-L225",
+          "version": "repo-lines-v1:sha256:494ab628452d40ec71263645b06b22d3f7f7b3f54e14118a40c22b3c2df4a63a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlZTZlMjRmNzNkMGFmNDU5MTE5NDcyMDYxZmM0MzIyZGJmZDZlYjk3YmYyZDJkZmRjMGViYjNmNjA3MjhmYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3MDkwNzFiMGUzZDEzN2MyYzMzMjA4YmMzNjc1NzE3YzJjOWEyMzk1NjEwM2I1Y2JhMWY4MDhhYmYxNzEzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5MWE2N2RiMWFiY2MxYmY3ZGM0NDlhZmJkYWQ2MDM0OGZmOTY0YjMyMGU2NmU3ZmE1NzZiN2E1Zjk2MmEwZDcifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/notation/notation_test.go#L320-L365",
+          "version": "repo-lines-v1:sha256:6329f22ee942b6e75e507f0a37173baa65fc4872c6993acecf912abef246056f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2OTUxY2JmMmZkODM3ODZmYTcwZTg2YTUxNTRiMWYxMDFlOGUxODFlMDQ4Mjc0MTM4YWE3NjlmOGNhNWU5ZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0ODgwMWNmZTM3NDUxYzg0MzBjZDhlMmMzZmE2NzY4MTAwZGZmNTVlZDRkYjE0NmMxODI2OWFlOWE4MjViZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNzNkZmU0N2EyMjhkMmQ1MTIwZmNmZGE3OTViMmIzYWJlZGI4ZGVkMjNhZjkxMTVkZWI4YzQ3M2NmYzIxODgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwOTNhN2ViYmFiMzBhYjMyMDEzZTQ0NjcwYmM5ZjcxMTc3OTFlMmUwZmUyZWE2ZTEwMTg2NDkxZmY4ZmViNGMifQ"
+        },
+        {
+          "resource": "repo://update_and_nomad_dep_removal.md#L14-L23",
+          "version": "repo-lines-v1:sha256:38b7b134be25a9ea3aa2811d64033323ea3c099495feb6ec9e483606c161ad49:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3M2YxYjE4OWZhNmRiOThhMzQ5ZmJjOWZjMjMyYzZjNzUyMjI2NTIwZTllNWU5OGQ4Y2UwZDg4YzY3ODdiNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhYzE5MTFkMjgxOWZkOWMyNTdkYTdhNTZiM2QzZmE3OWZhZTJkYzQyNWNmNDBkOWI5NTYwNjIzNjBhMWJkNGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiOWFmZWRiYjQ3MTJjYjUzNDk4ZDNhN2NkMTVlNDNjZWVjZjM2NTkwMzgyMDc5M2RkYTAzMmQyNzFhZGQ5YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2MWNiNzNlNGIyODNlZTI0MGUzYjAxYTVmMDM1NzhiMzk1OTQ2MGYzNWRjZjYwMDM0M2JiOGFiN2UwYTNkNWEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-06T10:26:01.086Z"
+  }
+}

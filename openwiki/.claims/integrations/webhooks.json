@@ -1,0 +1,466 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c835284fea227430f29e7877bc881e82e0ac8ad54142c38d2e492eeebe5e8b68",
+  "claims": [
+    {
+      "id": "claim_9f657766c4e641019a78afee24bbda13",
+      "statement": "CLI configuration selects WebhookValidator for validator type webhook and JsonPatchWebhookMutator for mutator type json_patch_webhook; the exported full-job WebhookMutator is not selected by createMutator and has no supported HCL type.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L803-L873",
+          "version": "repo-lines-v1:sha256:ee2d1d52126facffafca4616a6d79c443cf44de9d0dbf47ba274fcd277369f6a:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzJjZGY3NzY0NThiMmEwMjk3YmI0M2UwZmU5MmYyOTYwMzVlYTY1YjQ3YzE3NzU2YTFlNWMzYjM4ZmRiYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YjliM2FhZmNhOTQ4ZWIxOTlkMmNjMDRhYWE3ZmZlNDgwZjdmNzU2NzU0MzJjYWZiNDRkZmFiNDUzYjcyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkOTY4MWI5MTM3NzYyNjA0ZDNkZTM1M2FhMWNkYmE2ZWNjODAzYTg4NGYwODUyOWQ5MmJlODQ3NmMzZGU4MmMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go",
+          "version": "repo-file-v1:sha256:885a3e765dd883a46f2e8eaaa68ce35b05f5070e6c9b23de66af62a008c7fae7"
+        }
+      ]
+    },
+    {
+      "id": "claim_26a82a7f223645abb33b0c2bce0b31ca",
+      "statement": "Webhook configuration requires a webhook block, an absolute HTTP(S) URL with a host, and a nonblank method accepted by http.NewRequest, without a POST-only restriction; configured adapter constructors validate endpoints but defer method syntax errors to invocation.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L32-L53",
+          "version": "repo-lines-v1:sha256:432e904ef017dbcd5b318b25d340bd7fe63965389e19dd9cb15793345c12caf2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiZmRiZWU4ZTc2YmY5NTMyMDNmOGVjZWQzODZjZTdlZDJkODdkNzczYzYzMTI1YTk5YWU5NzNlMTVjY2FhNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg0YjI0OTg4MWJhNzc1Zjg1NjZlYzRmYzRmNTJhZGFkYTgyNDdjODRlYTQ1NjRmMWI5NjRlODlmMmEzNjVjM2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3YTVmNTJhZGM4MzU5ZTBkMDAzZWQ1ZjEyMDRjZmNjOWU1YTAxMWE1N2Y5YzRkNTdhODI4MGVjMzY1YjhlYjEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L38",
+          "version": "repo-lines-v1:sha256:7a97afff6d4f63d9cc0e201eecb8e014e9053e8d09c5d5a6c9bac59b76a371b7:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTBmNWVjMjQzNDA4OWQ0ZmJhMjE0ODEwNzkzMzEwZDJmMDdkZmI5M2JmN2I5YzY1ZTM0YjQ2ZjViZjZlNjk4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA5ZDJhZTNmMTE4NDFmNmVhMGIwYWQ0YjhiODY0ZTRlYmMyYWFjYzZjM2VjYTFhMmQwYTE3NTI1YmRhYzE1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjdhNWY1MmFkYzgzNTllMGQwMDNlZDVmMTIwNGNmY2M5ZTVhMDExYTU3ZjljNGQ1N2E4MjgwZWMzNjViOGViMSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L77-L88",
+          "version": "repo-lines-v1:sha256:82089618f93d6308ec1e454f2568fe370a126657a6f96eb4c8c1857a3e13f52b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjYmMxMDg1NjdiMWZkOTlmMDIzNTE3OGU4MDM4MTA5MWExMzI1NGE5ZWNlMTQ2OTdhODEyNDY5ODRmN2IxMGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2YTViMmEzMTU5ZWM2NmM3Y2MzNDBiZDAyODliYjkwYWRmMTk0ZGI3OWI4YmQ3YmI0NTBhOTRmNzNmM2NlNDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L368-L402",
+          "version": "repo-lines-v1:sha256:8e447b5816c8c6403e2a1e0838dec5ec244a8ff10fa7da1973d76a98c0ff46b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3ZjU2YTQzNjQzNzA1ZGQ2NWZiNTg1YTIzMDcwNTIxNzUzZTRiNzhmNjM4YThiMzIyZTU1YjI0NTUwYmY2YzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_acbc811e36234cffa2394c62bce8e971",
+      "statement": "Configuration validates controller names as nonblank and unique within each kind, runs validation on load and server build, and exposes only endpoint and method in the Webhook configuration block.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L672-L675",
+          "version": "repo-lines-v1:sha256:a92aca0e25ea58507bc3478de5f7142c8e53412e45467d382ba95739e9df883d:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjQ1NzcwOTY3ZDBhM2ZjZTkxMDg5NTgwZGU2NGM0YWEwNGMyNGQwMjNlNDFkMzkwZTE5OGMxYzFkYzJlMDdiNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZjNWQ4ZWM3ZDUzYTkxOTMzMjU2NjNkYzBlN2NiZmJkODNlODdkZjc3ZTFjOTY2YjY2NTdmZTY1Nzg0MGUwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmUyNGY0YWJiZmQ1ZGJhNWZhNWMyZjI3MWMzOTQ3NTA1Y2Y4OGFjMGU2MjIzMmY1NTZkMjc0MDlmOGFkZWZjYiJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L20-L23",
+          "version": "repo-lines-v1:sha256:5e11d072a42c20aa639091a196d044281cdc872f71b85ac88d11a760f7ba898e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmIyZDM3Y2U5MGQ3M2I0NDFlZDM4YzJjMGMzNzAwOTk2ZmU2YmMwYmMzNzUzZmYwY2Q1ZTkwZmRjOWNhZDY1MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWY2NzVhZTgxNmE2ZDljMTlhMWMwNGEwMzMwMGE5NDU4MTAzYjdmYWEzZDQ0NWU3N2Y5NWUxZmFiZTZjNjMzZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTkxN2Y5Yjk1MDBhOWNhNjkzNmJlYjVhODIxMjkzMmU4OWNiZDJjNjg4N2JhYzhiZWE1MDhiMWEwMzU1YWYyNCJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L226-L228",
+          "version": "repo-lines-v1:sha256:bc8a8058c5c47bc9934ecc4e54aa46a5850484165963044d578eeed67b05299b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjRhM2ZiNDJlMWVkOGY3M2UyYjcwNGZiYjRmOGNkZmY2NjA3NTlhNTBhYjc0MDlmYTQ3MWViNDI3YzVkNzY5MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGQ4NzkwZGVhMTNmNzAzNTEyNmZkYzZlOGY4NTI1ODQ0MzgyNTRlMmIwMTIxNDM1MmE3MDgwODgzZTJmMDgyYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjczZmE0MzM0NzkwMzgxMjAzOTlkMGFlZTU1ZmZhMjJmNzNiOTVhNDM5OTJkNzVjOWM2MWU2ZWNjZTk2ODYzNCJ9"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L280-L344",
+          "version": "repo-lines-v1:sha256:7c7d705ba372a2788e30d26e7b1a9e1fe965304218c47b8d6d4050bd0dd35c48:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhODdjZTVkOTg0NmEyZjA5ZWU2MzE2ZGViYmMxZTdiMjFkNDlhZmM1Y2JlNjYwM2UxOTk1MzAyN2ExOGFhMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlODI4M2ExMmM3YTFmZTY0NzM1NTE2NTAzYjhmYzYxZjZiYjdhMzQzNjJhMmIyZTkyOGViOTlmMjdhZDEwZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MzFiNmUyY2EwN2Q4YmFmMGViNDRlNzQ5ZGJmNDkwYjM5MmUzYTUzNGVmNjEwMjI3NzExNDZjZGY5YWYxYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ea4e03a43cb48e69eb0d1e0b3d70b26",
+      "statement": "All three webhook adapters serialize the shared Payload containing the entire current api.Job under job and optional RequestContext under context, rather than sending an AdmissionReview, bare job, or Nomad registration envelope.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L50",
+          "version": "repo-lines-v1:sha256:67fbcadc8617321a73813b2858e6b45a5dcd0bb9df2c9560591a948c682136db:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzNiYjQ5NGFkOGQ4Nzc0NTQzZTg2MmFlMWE2Zjg1ZjM0N2Q5MzQ0YjIxZGQ3YjM2MWEwNzJhOWYyODVjNGJhNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTNiNTkyYjMwMDdkNTk4Yjc1YmQ4NDRjZjcwZGI2Mjc2Yzc0NTJhOGZiZjFjM2Y0NjdlN2Q4ZTZmMDJlNDI2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDRkNjNjM2IzYjNjM2M1ZTY0ZjEyMjBhMmM2OGFjZGU4ODNjOTkxZjgzNzcyNjk3OGVlNjI0MmZkYWNmZTI1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYyZGM3NWE0N2NmZGE3Zjk1MDRiYzYwNzg4ZmYwMjkwZDMzZDJhMDM1NWE5YTA3NTNkMjkwYTk4MmUxMjJkZSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L24-L29",
+          "version": "repo-lines-v1:sha256:7148c98f22473d2ca506c818b354760327439f635b40cb93c878501e5eeeff27:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmEwNzA5MjIyYTg4YTJlNWQyMDEyMGIwYmI4NzljOTdlMTM3M2QzNDhkOTBlZjU1NzdjMjhiMWZmYjY4M2ZiMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFhZjk1MWQyOWM4NDA3YWFlZGUyMmRmYjNjNmRlOTdkMjMxZTE0YzE5MGQ0YTc0N2QxNDFmYmQ2YjQ4ZDU2NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTAwNjZjOWYwOWVkZWFjOTQxM2JmNmIwYmZjOTAxZTljZjM2OTljYThjNDAyMzdiYTExODMxZWU4ZmI0ZTA0NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYyZGM3NWE0N2NmZGE3Zjk1MDRiYzYwNzg4ZmYwMjkwZDMzZDJhMDM1NWE5YTA3NTNkMjkwYTk4MmUxMjJkZSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/types/opa_payload.go",
+          "version": "repo-file-v1:sha256:3afce8fafda8c7caf93eda21270a9cb005215816eb0fd0a721aba3f1a5c6f262"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L35",
+          "version": "repo-lines-v1:sha256:9295e633c89b65ee784b18a6ed2c997476c2cad3aec2c5ba9deab3d336c3e9e3:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTBmNWVjMjQzNDA4OWQ0ZmJhMjE0ODEwNzkzMzEwZDJmMDdkZmI5M2JmN2I5YzY1ZTM0YjQ2ZjViZjZlNjk4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODgyZmViYjU4MDRmOTJlYjE3OTk4M2UxZDU5ZjU0NjkyODY5NjU0OTY5YzhkMTY4ZTc5NTk3NTRiYzMwMTVkYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA5ZDJhZTNmMTE4NDFmNmVhMGIwYWQ0YjhiODY0ZTRlYmMyYWFjYzZjM2VjYTFhMmQwYTE3NTI1YmRhYzE1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzc1MGUwYjA1OTZiMmJhNjJmMTIxMzM0MWU1M2VjYWQ2MjNkOTE0ZDNhODYyZTEyOTljMDcxZGJjMjhlNDI2MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3942eaace2e64dbbb886502a96b49eae",
+      "statement": "All webhook adapters use the configured method and endpoint, set Content-Type and Accept to application/json, and attach X-Forwarded-For and NACP-Client-IP for nonempty context ClientIP and NACP-Accessor-ID for nonempty AccessorID.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L50-L57",
+          "version": "repo-lines-v1:sha256:dc5ed9f701f4b08b18ae3e819b0b1bfab88d2179b1e491a04c36b880ea5be091:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTNiNTkyYjMwMDdkNTk4Yjc1YmQ4NDRjZjcwZGI2Mjc2Yzc0NTJhOGZiZjFjM2Y0NjdlN2Q4ZTZmMDJlNDI2YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDIyMjZmNTNhMTAzNTU4MjlkOTIxNTJlZjVlZWNiMzViOWQ0ZWQ3ODRiNTIyOGI0YjgzZmE5OTc4NGNjYThjZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjgzNTRiNTY1NjYxMjhhMmQxOGNlMzVhNTgwYzg5ZTYyMTZlZTQ4YTNmMDBhMzg0MjYyMDE1YjhlMjQwNWJlNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTdjZTM3MmEwMWQ5ZTBkNDBkYjU0NzdmNzRhZGFjYmM3NTViNWNmYzAyMjA2MTMwNDRjNjUzM2I1MjkwNzkyOCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L29-L39",
+          "version": "repo-lines-v1:sha256:c205320ebcc93a0ce999e78fcff22ff5d22a6a2c16493c4d1169260e835f40e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhYWY5NTFkMjljODQwN2FhZWRlMjJkZmIzYzZkZTk3ZDIzMWUxNGMxOTBkNGE3NDdkMTQxZmJkNmI0OGQ1NjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyMjI2ZjUzYTEwMzU1ODI5ZDkyMTUyZWY1ZWVjYjM1YjlkNGVkNzg0YjUyMjhiNGI4M2ZhOTk3ODRjY2E4Y2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0NjJiM2UxY2Y5MjBlNDZiNGZmMGUxYjE2ZTM5YTQ3ZTE2MDUyMDc2YTI4NGUzZWM1ZGE1ZDYyZDVjNGFlODgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L18-L29",
+          "version": "repo-lines-v1:sha256:a12fe11015fd7836df15321e3094bb0ae2fb4ef7832d7c5fffb81ec04abca52a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZjRjNjg1MGZmYWQ0YzBiNTExNTM4Y2IxY2Q4NmYzYWY4OWI3ZDg4NWZiY2NhOTJlZTAyOWY1OGQ0MzI3ODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjYjg2YTA3OGExM2U2MTM0Zjg2NWE4ZWNmNGYxOGIwMTI2MTI0MzQwYjliMGJiOGZlMWM2N2RlOWZiMmI0YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNDUzZmNiYjg2ODI0NGExNTI1MTY5Y2JmOTkyNzc5ZWM5MTM1Mzk1OTVkZDZmOTI0MjFhYzdkZGQ4ZmIwYjcifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L35-L42",
+          "version": "repo-lines-v1:sha256:9579225c8602cce39a5270ec64d1b5548c682ccb3160a14c2dccb8dbc7efbf02:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODgyZmViYjU4MDRmOTJlYjE3OTk4M2UxZDU5ZjU0NjkyODY5NjU0OTY5YzhkMTY4ZTc5NTk3NTRiYzMwMTVkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDIyMjZmNTNhMTAzNTU4MjlkOTIxNTJlZjVlZWNiMzViOWQ0ZWQ3ODRiNTIyOGI0YjgzZmE5OTc4NGNjYThjZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzc1MGUwYjA1OTZiMmJhNjJmMTIxMzM0MWU1M2VjYWQ2MjNkOTE0ZDNhODYyZTEyOTljMDcxZGJjMjhlNDI2MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGI1YmRhMGM3OGNjZGVmNTY2YWNkOWQ3MWNiNjBkYmQ0ZTdlOGI5ODVlYmVkOTIxZWE0Y2Q4ODcxODg2ZjMzMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_960a90c999494e32be1c8230676d3d41",
+      "statement": "The proxy derives context ClientIP from the first incoming X-Forwarded-For entry or RemoteAddr, without independently authenticating the forwarded value.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L196",
+          "version": "repo-lines-v1:sha256:79a0b14e083af52d387fe614d20dc815e80af63e4c1c831ce23a63378e9f3590:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTVkMmViYjc1ZjJjYmI5Njg1OTZiODBhOTAwZGVhMDQ0NDdkYmUwMmU4YjcwNmZjOTQ2NWZkNzkzYjlkMjE4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjdjZGE4MmRhNjA2MjM4ZTA1ZTYyMzk5NTY5YzVlZTAzOTkzNDE5NjQ4YWU1ZDQzYTJiZjhjZDYzNDdmODI2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmQyNTU2OWYyNzQzY2Q5NDljYWFjNzkxZDMxYmFhY2I2NDliZTEzMzg0MmE4YmNhZjhiOWZjMzJiYjMyMzE0NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQzMjM4YjUyNjVhNzZjMTgwYjg3N2NlZWViMmMzMThkYTA4YTY4NjI4N2M5NmI5NWQwYWRiNjkwODE5MmI2MCJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L69-L83",
+          "version": "repo-lines-v1:sha256:a911f43a5fa8befe6278a6794553206b08dd97c11fb4526cea90abf21fd75450:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMTI5ZjI0MDA4NGQ5YmFmOTc2MzNlMzlkNzQ0ZTQ5NDkwOTZlMTZhNmMxNmY3M2QyMTkzZDlhNjVkMTZhYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlN2RiNzA0ZDdmMzU4ZDNjOGNhOWE3NDk2OWVhMWI2NDU5MDE5NjYzY2YzM2Q2OTgyOGQ2NzI2YzNmMTk4ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxZjU4MjQ3NmUxNzNiNjQ5NTVjMWZiYzJkMTZmMGJlZmVjYWVjNjVjZjM0ODdjY2QwNDM5NDc5MWNiMjE2YTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c966a6e41fb04f6185a36e1bcc9abfbd",
+      "statement": "resolve_token requested by any controller enables pipeline-wide token resolution on actionable admission requests using Nomad /v1/acl/token/self; missing tokens can leave tokenInfo absent even when resolveToken is true.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L218",
+          "version": "repo-lines-v1:sha256:a1e618738d4f644cac16da756be0026650d3834b136cb83396410564cc80000b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZDJlYmI3NWYyY2JiOTY4NTk2YjgwYTkwMGRlYTA0NDQ3ZGJlMDJlOGI3MDZmYzk0NjVmZDc5M2I5ZDIxODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMjU1NjlmMjc0M2NkOTQ5Y2FhYzc5MWQzMWJhYWNiNjQ5YmUxMzM4NDJhOGJjYWY4YjlmYzMyYmIzMjMxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmOTIyMzg1MDhhMjg4ZmQ2ZDM0M2Q2YmE5YjY2ZmYxZWZkN2IyM2NmZDFlN2Y3MGZjYjNmMzM3OTMyZTg1YjIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L698-L719",
+          "version": "repo-lines-v1:sha256:39c0a42282153e8667031c8462919c784599b2e66940f1bed6daa2d79252734d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNzA1MWE3Yjg3ZWI4YjA2ZjA1ZmE5NDBmNzUwMDAyNTlkNDg2MjM1M2JlNWM4ZTUyMzA3ZTlhNDNhOWZlNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYWMxOGEzYjU0OTg2OTA0YzI3NzhhNDBjZjVkZWM0ZmViYzU2MmNlNWRhOThlNTY3MmMxZWM2NzY5YWI2MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NDhjNGQwOTIyNTg1YTg4ZmM0NmIwYzIwMjUxNGVjMWQxMzI3YjAxN2I3ZWQ2OWNlYzgzYTA5OTAwNWRhMTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzNjFkOGE5ZmM5MDdhOWExYWNmNWEwOTU2MjliZGQ0YmQ2ZTFiMDEzNjcyNGQ4Zjk0NjY0ZGI5NGMyNTkxYWIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L789-L800",
+          "version": "repo-lines-v1:sha256:d115e7cb110eb37add1481e943950d1a643f9164127134c8663ec6849ca55e8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4OWYzZWQzZjc4YWE4ZmJhZDc1MTczNmNhNDVhY2RkMTNmYjJhNWY2Nzg2NzM0NjViN2ZhNGZhYWQwMTQ0NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3OGZhNzA2YTQ5NDVkNmI5ZGVkZjc4ZjUzYTI0NDU4NjgzM2YyNjU4NGExY2NjMjEzNjcxZTQ5YmRkODNkOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3NDVmODE1Yzk4NDI1ZDJiY2YxNWJjNDRmMjdlNzRjNDMzMzQyYTZmOTU3N2NiMGE5OTQ1M2IxYTYwZDRiNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlMGJiMTgxZjMxZWE2N2U3MzBmMDNkZmI3ZTRiYWU4YzVmMTQ5MmQ5YTgyNGMyNGFmZDdiYTU3Mzg3NWYxNTYifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L829-L840",
+          "version": "repo-lines-v1:sha256:1b5f1dc8b65838fdc950d1e04d882a19d9c7ef86afb82d47e2155f90cf4bbf59:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2OWQ1ZWRkMDA4NzNhNjQxMzczYzcyZGMzMGMwMDBjNjE4NTgwOGE1ODkxNmI5M2ZiMmQwMWJiMzJmMGFiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0MmU4MTg5MmM4MjUyZTFmZTRhMDZkYmNlYmE2NzJlYjExOTkzNDA0NGM2YmUxMzBlYmIzZmNiYWVlYzE4NTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2NmY3Y2JkOTFhYjUzNTcyMTRhNzY2MGRiMTVmZjVjZGJkYjljNzNlNmQ3MmQ5NWM3YzQ1YWM3MTkwMjViZGIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L123",
+          "version": "repo-lines-v1:sha256:f5514ef795d021597723b1ed7586ff76d97590131b930f80c8d5477943968c36:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4ZTg5ODg4OGUxNzk5MWM1ZmM5OGQzMzM1MGEzMWI3NDkwM2JkNzI5ZGNiMGVkYTk0N2M4OWY4NTZkNDVjYmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYxZWNmZWRhNjY2ODM3NjJhNGVhMmI5MTE3Y2MyMDJiZGFhYmEyYWYyYjY2ZWQwNjUxYTRhYmZjOTY4ODU1YmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_af6882212573480f91469f75748f5fa7",
+      "statement": "Webhook identity context contains a sanitized ACLTokenContext without SecretID, and fresh webhook requests do not forward the incoming X-Nomad-Token; this does not sanitize the full job content sent to the policy service.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L202-L211",
+          "version": "repo-lines-v1:sha256:c4645cd5c457bb668df4572ac5be9a12e5dcfaa150a074c88227185683f46e75:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhM2I2NmE4ZmMzZTI2NmY0YzI1NGI5YTJkMGY3OTJlOGRkOTM4YThlNTM0YzM2OWE3MWZkYzkyZjk3YmM0Y2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZWZjNDk0MThkMjZkY2YxMjliMjJhNmFhMjExMDhjZWVjMzc2NzdhMzJkMDhlOWQ1ZmVlMzVkZGE2NmJiOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkNjk3Yzc4N2E4YWNlNWIxNjExMGQ0MjYyMTZjZTIxYzU2ZGE2MTVmYTM0OTQ4ZWY5OGIwNGU4ZTgyYzRkNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZDdmN2QzOGEzY2VmYmMzNTY4NDEzZmJkM2EzYTE3YmFjZDVkOTI3OTMxNmVlMzExYWVmMDU4OWY2NjI1MjQifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L60",
+          "version": "repo-lines-v1:sha256:1e1ce097a0938db81ab186af39e977e9e917d91ba718368535727e6c387c8b86:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYmI0OTRhZDhkODc3NDU0M2U4NjJhZTFhNmY4NWYzNDdkOTM0NGIyMWRkN2IzNjFhMDcyYTlmMjg1YzRiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2NmQ2NDg4YzBlODE3ODMxODIyYzAwNWVmNGFjZGY1YzAzZjMxMTdmMGRhZGYxYzk0OWM3MzQzMDMzMzg2YzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDYzYzNiM2IzYzNjNWU2NGYxMjIwYTJjNjhhY2RlODgzYzk5MWY4Mzc3MjY5NzhlZTYyNDJmZGFjZmUyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L24-L42",
+          "version": "repo-lines-v1:sha256:48e8aa9db5c9b96e9b1bfb6b7c51121f14f9fed3fee56d657f304d1f5ea29c5b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMDcwOTIyMmE4OGEyZTVkMjAxMjBiMGJiODc5Yzk3ZTEzNzNkMzQ4ZDkwZWY1NTc3YzI4YjFmZmI2ODNmYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYWM3MGViMDRmNmIxOWY2ZTY4NGE4Zjg0ZGU5ZTFlMGI1Mjk5MDI4MWMxNjE2MDI1NTdhN2U3OTNiMDVhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwMDY2YzlmMDllZGVhYzk0MTNiZjZiMGJmYzkwMWU5Y2YzNjk5Y2E4YzQwMjM3YmExMTgzMWVlOGZiNGUwNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L43",
+          "version": "repo-lines-v1:sha256:af7636bd9cbf7700a6a387eab74ffc83142e64444cdd6158706cbe83a35c6d1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwZjVlYzI0MzQwODlkNGZiYTIxNDgxMDc5MzMxMGQyZjA3ZGZiOTNiZjdiOWM2NWUzNGI0NmY1YmY2ZTY5ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzNmRjOGZlYTRhNjllZDk5MmI5ODczZmMyY2ZhYzk5MzE1MDQyNDkzMDFkMGIwZGEzYjZhZDk1NTYzZmViNjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOWQyYWUzZjExODQxZjZlYTBiMGFkNGI4Yjg2NGU0ZWJjMmFhY2M2YzNlY2ExYTJkMGExNzUyNWJkYWMxNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3NTBlMGIwNTk2YjJiYTYyZjEyMTMzNDFlNTNlY2FkNjIzZDkxNGQzYTg2MmUxMjk5YzA3MWRiYzI4ZTQyNjIifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L52-L88",
+          "version": "repo-lines-v1:sha256:cd9b99d5f08f5f95d14f080631ecd44062afcb8e434d6c01f94eb875296c9c14:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExODVmNDI5NDliZTY3MWJlYzNjY2M3YjE3ZTZlZWI5ZmVlYWVhNzE0NjkwYzU3MzZhYjAyN2I0ZjhiYWQxMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyNGI0NjE0M2U4NGJkN2QyZTAzNTEyMTkyYjlkZDAxN2NlY2NkNGU3NTM5MDE0YjZmNTIzODc4MTExZmE4N2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5ODY5M2ZjMjhjZmE2ODI1ZGI0ZTZiMWZiYTk3NTIxYTdmMzk1MmU1MThjOTQ5NjE3Mzg4M2U2NDIxNzUzYWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_68741bb1517b42478da3a6cedc417709",
+      "statement": "Admission mutators run sequentially before validators, feeding each result into the next mutator and stopping on errors; validators receive copies of the final job and accumulate errors across sequential invocations.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L228",
+          "version": "repo-lines-v1:sha256:927d640a1a689e7b9416064a29fbb29451911b05cadb73ead52922878bd7e3e0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2ZTQwOGQ1MmMyYmExYmU3NDJlZGU3MzYwZTRkNDAyYjE5Y2FhNzg3ZGE0NDRmMmJlNjYxZmVmZDQ1YjM2MmU2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMGIwYjA3ODdlYWM0ODk4YmIzZjA0ZDgwNTc2YTJlYThjOWY4NDgwZDc1OThmMGI1YmRhZTE4MTU3Zjk0OWZlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8d71bf0ba46e474aba2d04b53f873b3c",
+      "statement": "Original request context is passed through admission controller spans into NewRequestWithContext for each webhook, allowing cancellation and deadlines to terminate outgoing work.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L467",
+          "version": "repo-lines-v1:sha256:5517b443cb40f1d28cd16841367ce39791c4341196c342fbee70260cabdf859f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOTlhMDcxMGRmODJiOTdiZTZhMzBlNDM0NjdiYWRmZDQzMWQ4ODI1OTBkMmMyOWZkNmRlZWU3ZDY2ZmIyZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkZGU1NzM5M2RlNzc0MDMwNGU4NDYzZmRhMGUyYzNiOTA2N2M0Y2Q1ZmMxM2I4YmUxZjViM2YyNjU1Njg5ZjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MmM4NGI5NmExZTRlZGYwNzZlZTA1MWVjNGU4NjJmYWIzNjQ2NmMxMzJmMDA3OGFhM2U1Yzc5YzliNzVkNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2M2RiYjc5MDg4YzliOGVmMGI5ZTllODU2ZmU1MDgwNmU5MjFkOGY3YzgwOWQ4YjYzYjFjYzlhZGI2Yjg1MGMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L108-L118",
+          "version": "repo-lines-v1:sha256:1403185c1f00e416f513c6eb5a8841bf5a0fc66dcfaf4b8d236787e6e0969455:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2NThmZjdkN2E3ZGI1NDhhNDI2NWI5ZThmMTJmZmExMjk2NmFjMDRiOTZlY2IwNzAyYTljMWFhNDZiMTQwMzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3YWIxYmMyZTA2NGFkZjZlMGFkOGZlYTk0NDMzY2VmZWNiOTk5MWU2MzU3YjZkOTk0M2E3NWNkMjIwMWM1MDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwYmY1OTU4MmNkNmY2NDhhYmYzNDhkNjdjNzQ2MTVhYmNjMDExNTdjMjgzNjBkNDg1ODFkMTlhYmFiZDkzNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlZDE2YjM5MjllNWU4NWRmNjE0MzhiYjg5ZmEzMzY5Zjg1MDI0MzFhMWY5NjFhODMyYjc0NTBkMzY4MDEyNjAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L133-L154",
+          "version": "repo-lines-v1:sha256:7cb0a3c04178ba42561b756c90e9ab9bfa4add47d3a690c5db97e72d8f0ced00:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3NDM4OTYwMGE0ZTdkMDRiMzQ0MDkzYTgxNGM5ODc1ZjdkMjU3YjdiMjlkMjgyMDkyYjdiM2E3ODlkNWUwZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzOTNlMDMxZTVkMGM0NWQyZmYzNzMyN2MxNDhkNDhmNGVmOTJiOWNiYjI2MTczODliZTAyZDM1ZTQ5ZWFkZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwYmY1OTU4MmNkNmY2NDhhYmYzNDhkNjdjNzQ2MTVhYmNjMDExNTdjMjgzNjBkNDg1ODFkMTlhYmFiZDkzNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5NTBjZTRlMDllNmRiNzZmMDBkY2RhZjZkMmJiNWY2Y2I1N2ZhNjI2NzQ5Njc1OTQ2YWQxMWExMTBjMzI4ZjkifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L193-L215",
+          "version": "repo-lines-v1:sha256:5b7c96bef275f969ffeae704c585eed020f6c77927f2b58ba9a6c9615050518f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmYmEyNjM5OTdkN2Q2ZjBhMTI1M2VlYWY2NTljYTA4ZWNiNWFlNWRkMzFkZDRmM2RhMGNhYTRmMzhiOGNiNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1Mjc5OTBlOGM4NzMzOTM2MjYzNmI1NjliOTY0ZmQzZmRmODQzNDM2YzI3NmQ4YWI3YTU0YzU3MmQ0OGVlMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmNTcxZjg2NDI2NzRhMjhlMzBkZTc4OTg3ZTUxNGFmMWRjYjlhOGIzOGRlYjliMmQ4NTZkM2I3YjUxMGEwMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2NDM5ZTEzNmQyNDY3NzI4ZjhmNmE4NDdmZDA0OGU5Y2I3MGM2NDFiMzQ2YmNlMjUyOTk2NWNhMjlhN2JkZDIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L50-L60",
+          "version": "repo-lines-v1:sha256:e9c2a0d609d1387f6d679ae0a2dcdbcd746673f4c8b4c0c278b9d5441a06ed77:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYjU5MmIzMDA3ZDU5OGI3NWJkODQ0Y2Y3MGRiNjI3NmM3NDUyYThmYmYxYzNmNDY3ZTdkOGU2ZjAyZTQyNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2NmQ2NDg4YzBlODE3ODMxODIyYzAwNWVmNGFjZGY1YzAzZjMxMTdmMGRhZGYxYzk0OWM3MzQzMDMzMzg2YzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MzU0YjU2NTY2MTI4YTJkMThjZTM1YTU4MGM4OWU2MjE2ZWU0OGEzZjAwYTM4NDI2MjAxNWI4ZTI0MDViZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L29-L42",
+          "version": "repo-lines-v1:sha256:75506c77e0877cb2ae443a2d8d89d4969feb260969341f6186aadc9e6a526da8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhYWY5NTFkMjljODQwN2FhZWRlMjJkZmIzYzZkZTk3ZDIzMWUxNGMxOTBkNGE3NDdkMTQxZmJkNmI0OGQ1NjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYWM3MGViMDRmNmIxOWY2ZTY4NGE4Zjg0ZGU5ZTFlMGI1Mjk5MDI4MWMxNjE2MDI1NTdhN2U3OTNiMDVhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmMmRjNzVhNDdjZmRhN2Y5NTA0YmM2MDc4OGZmMDI5MGQzM2QyYTAzNTVhOWEwNzUzZDI5MGE5ODJlMTIyZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L35-L43",
+          "version": "repo-lines-v1:sha256:1797d998827dd13862eee499ae72b0c10da083e2b5fa3d2ad672b91ae6db623e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODgyZmViYjU4MDRmOTJlYjE3OTk4M2UxZDU5ZjU0NjkyODY5NjU0OTY5YzhkMTY4ZTc5NTk3NTRiYzMwMTVkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzM2ZGM4ZmVhNGE2OWVkOTkyYjk4NzNmYzJjZmFjOTkzMTUwNDI0OTMwMWQwYjBkYTNiNmFkOTU1NjNmZWI2NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzc1MGUwYjA1OTZiMmJhNjJmMTIxMzM0MWU1M2VjYWQ2MjNkOTE0ZDNhODYyZTEyOTljMDcxZGJjMjhlNDI2MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzc1MGUwYjA1OTZiMmJhNjJmMTIxMzM0MWU1M2VjYWQ2MjNkOTE0ZDNhODYyZTEyOTljMDcxZGJjMjhlNDI2MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e58a860d7a464c41acf9191b61d15076",
+      "statement": "WebhookValidator decodes errors and warnings string arrays: empty or omitted arrays accept, warnings without errors are returned, and nonempty errors become a multierror with nil warnings even if warnings coexist.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L25-L72",
+          "version": "repo-lines-v1:sha256:9c9871f94ffbc3c981eea8637e420b0d752f00915e4bc3e69595a115be8e6d32:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNjJkOTY0MjNmY2E3YTVkMWI3OTY2OWM1ZTg2Y2U1OWJjNDVkMTI2ODgzNjlmZjM3MGUxNTZhZGU4NDJjZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzYTI5MjhjMDcyZGY4ODUwNTE0MDRiMDVhOGVmZGNkMWRlOTIxY2I2ZTMzYjUzMTQyMTI5MzdjOGIxYjk0NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjOGQwOTY4Yzk4MTlmMjE0MDAyZjU0NzBhMzVhNmRkOWNmOGRmMTE1OTllMWVmNDZmNzAxNDAxNTBmMjljMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNjZkY2ExN2Y1ZGRlY2FmOGU1MzNlYzc4YmEzMjM1N2Y1NTI3YWIwNmYwNzI3NWQxMzkwYTc4YWJlZTgwNTMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator_test.go#L35-L78",
+          "version": "repo-lines-v1:sha256:54d758fe78d56951d8e2e625a827f2d4cdf7e07a1cd258fc151ed0cab0672b17:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3MDM2NTMyODg3MDQyZmQ1ZDFiNDY2MDMwMjY4YzI1ZjcxODg4ZWFjNzExMzIyN2YzMmMxZWE3ZTYzNmEwMTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwOWQ5ODFkMGI0Yjk4NmQwYjY2ZDdjZTJkMjBiMWQwMmQ4ZGUxZTg4ODdlYWVmNWYyMGYzZGY1MzI5NjdmMzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_afea4582903549f28c6141c124698260",
+      "statement": "JsonPatchWebhookMutator expects a patch/warnings/errors envelope, converts warnings first, and rejects nonempty policy errors before applying a patch by returning nil job, false mutation flag, warnings and an aggregated error; a regression test guards policy-error rejection.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L26-L30",
+          "version": "repo-lines-v1:sha256:a7c21dc333db5226badfd96a7464d74146f40fbaf223bfac20452116e02e3889:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzY3NTBiYjJlNGQ5YjBhZmQwODgwZDAxYmUxNDdiOGQwNjBjYTMxMzdkZTM2NTQ1ZTAyNWQwYmZiNjliMGI5MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGJjNzllMjdiYzg1NTllNzM0MDg5MmI1ZGQ2NTc0YjE3ZjgyNDZkOTlmZTAyZTVjMjg1ODI0MDhiNzc4MmFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2U4Yzc3YzY4YTFiN2NhYTNiYzhkNDZlNjE1OGQzMjk1ZTMzMzY0NmMyYjQ2MDgzNDA5MWVkZTNiMjExOWQzNCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L66-L91",
+          "version": "repo-lines-v1:sha256:0a1818acee68c90e03e17728ce649b7482f072729180d3befccfbb48cecee41c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNTYxYWY4NmNiMTA4Mzg4YjIzNTcyMGZiNWFmNjVhMWY4YWIzMzMxNDk0Yjk2NDU4OWNjZmVlYWFiZjFiYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNzY0MGZlMGI3NWQ2YTkxMWI2ZTk4MmEyYTNkMzRiNDA2Y2RmNjkyYjAzMTg2MWFhZjcwMzI2NDY0ZGEwYjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwMjQ0NGU1NzM5ZjM0ZmVkODBhNjFkMjkzN2Q5NTFhZmNmYTE4OTgyYzAxYzFlNTU1ZjNhYTZkMDliYzhmNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzZTQ1ZjMwNTYzN2Y5MDFhODNjNTBmZWZhZDEwOWYyOTRjZDVlMzZiMWFhMjE0Yjg3MmFjNzQyYWFlNjY0NWYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook_test.go#L87-L96",
+          "version": "repo-lines-v1:sha256:9d9ccb5ddb6d05be44ea3e63e1179d1f053ea0a78321fe12d06e6776df3b8a37:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxZjYyNzQ4MWNiNzIyMmEyYmJlNWFkOWE1N2YyZjQyNWE5MjNiZGI2YmI2MmEyNmUxYmRjMWMzYzRiMTE2MGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4ZGFlNWQ4MWEzODk1ZTNlM2M0N2YyNWFhODg0Yzc2ZDZiMzZmNDlmZjU2NDUyZDE4ZDNiZGI0ZGU2NTIyOGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e2ea11df512a469e8f081327be732698",
+      "statement": "JSON-Patch operations apply to the serialized job rather than the Payload wrapper, and PatchJob decodes/applies operations and unmarshals the result into api.Job; mutated is based on nonempty operations rather than semantic inequality, and an omitted or empty patch is a no-op.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L87-L91",
+          "version": "repo-lines-v1:sha256:e98ff2adcc2fd5808ca7e502e3badc13cf3ce69349cf66f427dc753c7805696c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNThjYWIxYzAyNDhmNzk4NjAzZjA5ZWM2OGE3MjFjOTc2ZWRkMmZhOGM3ZDE3NmRjYzBkM2FhOTNhOWQzZjViNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTM3NjQwZmUwYjc1ZDZhOTExYjZlOTgyYTJhM2QzNGI0MDZjZGY2OTJiMDMxODYxYWFmNzAzMjY0NjRkYTBiMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzOTE5MDg0NDljYjVmMjkzODI2YWUxNWJhMDRkYzc3ZjNiYzk5ZTBlNzkzYWE3YmI3NGUxYmQxNzY0MTQyNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzNlNDVmMzA1NjM3ZjkwMWE4M2M1MGZlZmFkMTA5ZjI5NGNkNWUzNmIxYWEyMTRiODcyYWM3NDJhYWU2NjQ1ZiJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook_test.go#L38-L68",
+          "version": "repo-lines-v1:sha256:7a828a4033ea943a191d2273da92bad72737ce7982d5d748dd3a1f32f0f27912:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YmM3NTExYjIyYjUzOGRmMTQyODMzNzUxZDRhMDM3NDFiYjI4MzkzYjQzZjE5ZjhkNjZkNDkxZGFmNTJkOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYWQ3Y2MyZGZhZmMyMTc1ZmEyZDk3MDRlMDIwMmY5NDA4M2E5ZGE2OWE1ODViMGIxOGM0OGJlYTIzNjI3NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0MDk3NTZhZjk0ZDI2NmI4MWU4ZmE0ZjQ4YTY3MzJjMzA0N2YwMDAwM2MzZDhmNTI3NzkyYjJkMWQ0NmZhMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc2MWU1YjJkYjFjMjZlOGQwZGU0YTBjN2QyNDc0NDFmZjlkYWJiYzZhMTJiZGNjNTRiZjdjNTI3MzMyMTQzMjEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go#L11-L37",
+          "version": "repo-lines-v1:sha256:86a06ed2466c8306bc4625c2c29b765f183bc28c3752077a86d7991b080cec92:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZTU2OWIyYmI3NWNkOGY4MTAzYTczNjBjNjA5MGJmNjBmMjY0MTk1YjY3MGU1YjE3MjRmNDVlYTgwMmFhY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ZWRhYjgwYzUzYzIzM2NhYmE2ZGY4NjUyOGU5MWEwMzFhY2IwYWNkMTI0N2YxZmZiZDQ2Y2JmMzMxY2M0YWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ODNjZDg1YjRjODgwNTEwYzA5M2JkNGExZTQ1MTRhNzZkNjBhNDIyMWM1NjY4MDUzMmIzMjgzOTllY2Q5ZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a7d0f90975ca48a8be063debcc609a1f",
+      "statement": "Patch decoding, application, or result decoding failures return nil job, false mutated, nil warnings and an error; AdmissionMutators also drops warnings when any mutator returns an error, including warnings retained by the patch adapter on policy denial.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L152-L181",
+          "version": "repo-lines-v1:sha256:1c6827a18b432df5b8d6e180fdeb2143039c202ffa03e30491af278d889b45d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5ZjIyYzMyMThkZTU2MjU0OWZjNTIzY2NmNzU2MTM5MjA2ZTk4OGQ2MTg0YmM3MjM0MTQ0MzUwZTA5NzMyYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZWZjNDk0MThkMjZkY2YxMjliMjJhNmFhMjExMDhjZWVjMzc2NzdhMzJkMDhlOWQ1ZmVlMzVkZGE2NmJiOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyOGNmOTU4YWYwNTQ4MTE0YjU5MDNmYTg3MzJlN2UxMGFmYjVkM2I3OGY5ZWI5ZDAzZjk1ZWE1Nzc1OGFhOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZlOTRiNzgxMDUzZGUyYjI0MWExMzQ4ZDY1Mjg0OGVlYWFlZGY1ZWFiYmQ2ZTAzMWY4MTdlZWYyYTkwOWRhNDgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L79-L91",
+          "version": "repo-lines-v1:sha256:045f91ad0ab6ef1f3dbf0b06452d1a45f93485e8c1e5f3e6899a5bef4beef8de:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhNWU1NWE5ZWRiNTQ2MjQwNDEwOTkwMDA4NjBkYTUzODdjODFjODg5ODJlNGJkYjY2MWFkMjUzMzYxOTBhNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNzY0MGZlMGI3NWQ2YTkxMWI2ZTk4MmEyYTNkMzRiNDA2Y2RmNjkyYjAzMTg2MWFhZjcwMzI2NDY0ZGEwYjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyZjJmZjVmZWVjNjBmNTg3YzhmYWU0ZTg3ZjgwOWE2NjFjZmZlZDZiNDdhYWU1ZjZkNmEyNjUzYWE4OTUyZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzZTQ1ZjMwNTYzN2Y5MDFhODNjNTBmZWZhZDEwOWYyOTRjZDVlMzZiMWFhMjE0Yjg3MmFjNzQyYWFlNjY0NWYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go",
+          "version": "repo-file-v1:sha256:8837c8b1d36622e39a19a63341fe081c13e833656298f298ebaea038df21a919"
+        }
+      ]
+    },
+    {
+      "id": "claim_16337d20d51b4d74b5c9f575c44500bd",
+      "statement": "The full-job WebhookMutator takes a URL pointer without parsing validation, decodes a bare replacement api.Job response rather than a policy envelope, reports mutation with reflect.DeepEqual, and returns no warnings.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L24-L65",
+          "version": "repo-lines-v1:sha256:892c6a8226cbcc017e2965e04f2b7c98c55416e02a8b3b270cb44d908d3c0166:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMDcwOTIyMmE4OGEyZTVkMjAxMjBiMGJiODc5Yzk3ZTEzNzNkMzQ4ZDkwZWY1NTc3YzI4YjFmZmI2ODNmYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwMDY2YzlmMDllZGVhYzk0MTNiZjZiMGJmYzkwMWU5Y2YzNjk5Y2E4YzQwMjM3YmExMTgzMWVlOGZiNGUwNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7a07b53fa3684db4bf484b41bba991dc",
+      "statement": "Each webhook invocation creates a client with a 30-second timeout using a shared package-level instrumented transport over http.DefaultTransport; otelhttp installs otelhttptrace beneath transport spans, and webhook clients do not use the separately configured Nomad backend TLS transport.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L680-L695",
+          "version": "repo-lines-v1:sha256:f4825e97bfde91a27045e5f0432a74ce3320798054d1d20614be442d6e317aef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4NTlkNmQ2MTY1YzZjZTUzZjE5NWM0Zjk2MzRkZDIyYzU3ZThjMjU1NzY3ZmRiOGJjZDIxNTgyM2Q3ZmY4NjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlYTkzZjY5NGU1YTk1MjM1NWM1NGY4MThjN2ZiMDYxOWI4ZmRjMDA1OTI5Yjk1ZTg0YTA2N2E3YTE0MjNmOTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkM2JkZTYwMzgxMTAyN2RhMTYwMGI0NzE3OGM2NmI2MDRiZjA3MzcyNzdjNTgzOGJlOTM0YTE0OTQzM2JkMTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjZTVkYWMzZjcwNDYwMGU4ZWFlM2VmM2I3MDNlNjYzNmJlNjEzMjVlNDNlYTA3MGE3ZmMwMjEwYzc5OWYxNGYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L59-L60",
+          "version": "repo-lines-v1:sha256:ff4f078ffa9b7c6d4c9fa61889fc520b86693aa0333c515ab26c2d5e2c93ee96:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2I3NmFhYzQ1NWJhY2UyNTQwYzg3NTdlZWQwZTA2ZDVmY2ZiNGQ3OGE5OGRkNmZiNmQ4MWE0Yjk2OGQ1ODFiZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY2ZDY0ODhjMGU4MTc4MzE4MjJjMDA1ZWY0YWNkZjVjMDNmMzExN2YwZGFkZjFjOTQ5YzczNDMwMzMzODZjOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODQ5ZTcyMzk5NzZmM2Y2YjU4ZmEzZWVhZWNlMzVkMGVkNjU0ZjRhZDIxZDViNmQ4NzQyYTZjY2EzZDliMjYzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYyZGM3NWE0N2NmZGE3Zjk1MDRiYzYwNzg4ZmYwMjkwZDMzZDJhMDM1NWE5YTA3NTNkMjkwYTk4MmUxMjJkZSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L41-L42",
+          "version": "repo-lines-v1:sha256:8505e3429d703e73a8d936e27f1af34725908923bd64ef60e59f36d6e00fea0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmU1MDE5NjQ1ZTBhZTMxNjZkN2E3OTU3ZjVhYmI0ZTM4OTllZGYxNzM2ZWI5YTY0MTE0MGE4NGU1Y2NhNWViMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjFhYzcwZWIwNGY2YjE5ZjZlNjg0YThmODRkZTllMWUwYjUyOTkwMjgxYzE2MTYwMjU1N2E3ZTc5M2IwNWExMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODQ5ZTcyMzk5NzZmM2Y2YjU4ZmEzZWVhZWNlMzVkMGVkNjU0ZjRhZDIxZDViNmQ4NzQyYTZjY2EzZDliMjYzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYyZGM3NWE0N2NmZGE3Zjk1MDRiYzYwNzg4ZmYwMjkwZDMzZDJhMDM1NWE5YTA3NTNkMjkwYTk4MmUxMjJkZSJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L31-L57",
+          "version": "repo-lines-v1:sha256:b04c2a15ef379558753cbea835547d3ffd66bcf74a5303d2ca086c2c1667d158:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkMDdkNzliYzU0ZTA4NWNmMTk1MzY0ZTE2OWQ2YzhjMTUxNjNlYWQwNzQ2YTE5ZDk4MTdkYzM4MWJjZWZjNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkNmM1MTFjYWY4OTA2MGVmY2RhNWVjZGMzNDRkNTcxNDM0ZTFhZmIyMDVkNWZkYTczM2VlZDI4ZWZkZDBiNDgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L43-L47",
+          "version": "repo-lines-v1:sha256:445662c9dd26b67bd65f08bc7d38334bbdb67e5bb924b35714535f13d5802894:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzM2ZGM4ZmVhNGE2OWVkOTkyYjk4NzNmYzJjZmFjOTkzMTUwNDI0OTMwMWQwYjBkYTNiNmFkOTU1NjNmZWI2NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5Zjg4Y2MzMzU1MjllNjc5MTk1M2YyZjFjZGViNDdiZDg4MTIyMjZjMTQxMGYzMzNlMjVlODU2ZTNiNGQ4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2IwOThiODZlNzM3ZDJiZDgyZjNiYjk0YzcyZWE3YTJkNzQ4M2FhZDRlZjg3NWJlYjBjYzc3OTA3MWJhYWQ5OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZkNmZiYmY1Mjg3ODg1M2ZmOWZiODk2YmE4MmJmYTkzZWFjMmE3NDA3MGYzZjE1ZWI4ZDE1MjM0ZDJhNDlhMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ed23bbc920914e1195f7de34a3f78fbb",
+      "statement": "All webhook adapters return request construction, marshaling, and transport errors without an adapter-level retry loop, and defer response body closure after successful Client.Do on all subsequent result paths.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L91",
+          "version": "repo-lines-v1:sha256:b02d04e947b8cc8889a8f19a1676b8dfd4fb8dbb5c95a0f56648034625ab757d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYmI0OTRhZDhkODc3NDU0M2U4NjJhZTFhNmY4NWYzNDdkOTM0NGIyMWRkN2IzNjFhMDcyYTlmMjg1YzRiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNzY0MGZlMGI3NWQ2YTkxMWI2ZTk4MmEyYTNkMzRiNDA2Y2RmNjkyYjAzMTg2MWFhZjcwMzI2NDY0ZGEwYjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDYzYzNiM2IzYzNjNWU2NGYxMjIwYTJjNjhhY2RlODgzYzk5MWY4Mzc3MjY5NzhlZTYyNDJmZGFjZmUyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzZTQ1ZjMwNTYzN2Y5MDFhODNjNTBmZWZhZDEwOWYyOTRjZDVlMzZiMWFhMjE0Yjg3MmFjNzQyYWFlNjY0NWYifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L24-L53",
+          "version": "repo-lines-v1:sha256:523a5964ca4f90d41a74e858060f17ac9b1f95b3c928df6cb4d852c6d5e49d14:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMDcwOTIyMmE4OGEyZTVkMjAxMjBiMGJiODc5Yzk3ZTEzNzNkMzQ4ZDkwZWY1NTc3YzI4YjFmZmI2ODNmYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzZDUyOTNiNTI5MzQ0N2Q3YjVmOWI0MDBkMzFmODBjNTRhODhiYjhmNDE4YmY0MjFmZGU1Zjc3NDRjZjVmMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwMDY2YzlmMDllZGVhYzk0MTNiZjZiMGJmYzkwMWU5Y2YzNjk5Y2E4YzQwMjM3YmExMTgzMWVlOGZiNGUwNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2MDM5YzU2N2NlMWFiNTQ4MTVhYWZmOGZiYjRhZmFmOWVmYmQwNTNiMWEyY2Y3NjI0YTAwODQ1OTNlMDJjNWIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L72",
+          "version": "repo-lines-v1:sha256:ce9db1953d55098b7d7375c4c9d67cca1c28ad0da4944d29f2efa602a690e793:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwZjVlYzI0MzQwODlkNGZiYTIxNDgxMDc5MzMxMGQyZjA3ZGZiOTNiZjdiOWM2NWUzNGI0NmY1YmY2ZTY5ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzYTI5MjhjMDcyZGY4ODUwNTE0MDRiMDVhOGVmZGNkMWRlOTIxY2I2ZTMzYjUzMTQyMTI5MzdjOGIxYjk0NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOWQyYWUzZjExODQxZjZlYTBiMGFkNGI4Yjg2NGU0ZWJjMmFhY2M2YzNlY2ExYTJkMGExNzUyNWJkYWMxNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNjZkY2ExN2Y1ZGRlY2FmOGU1MzNlYzc4YmEzMjM1N2Y1NTI3YWIwNmYwNzI3NWQxMzkwYTc4YWJlZTgwNTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_87a70ecbf2f9448cbe4aeb594f416303",
+      "statement": "DecodeJSONResponse reads at most 10 MiB plus one byte, reports read errors before rejecting responses over 10 MiB, then rejects statuses outside 200–299 before JSON unmarshaling.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L45-L48",
+          "version": "repo-lines-v1:sha256:8510b004f8437ffa32ba7dd6b3ac4ab722690d84a31447619705ef03586705a2:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDBkOTg2YjBkZjdlOWM0N2FhNzgyYjA2NjA5NDY5YmM4ZWVjYTQ3NjEyYjgzOGNmODI5ZGRhNGJjZGRkMzMyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2FlNzE3Y2JmYmM1Y2VjZGUwZDIzYzkyZjRjNTU1YTQyNmNhYmEyZDU5ODVhZTgxMjgyMmUyM2I5NDI3OTIyMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2Q5MTIzZDk0Nzc5YTJmMzYwZjk2MDY5YmYzNzgxNmU0NDcxZTFlNTRmNzUzNGY4NTAxNDEzOWUwZmY5ODczOCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L70-L85",
+          "version": "repo-lines-v1:sha256:2f3bdeb8897dd2435d0f847bfb202a3add136a4abe014082abc181eff098e7a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDk0NzA2NTgwNWM4MTBiOTJlNGNkYTM0MTcyOWIyYWE2YzZiOWNkN2FkYTEyNTI1MDYzNjkwYzMxMmYxMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5YmZhNzAxNjdkZWU2YTEyY2RkOTYyZGZkYzE3MzMxYWFmZWRmZGJhMWVlYjBmMWYyZTI2N2ZhOGNiMjQwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae37c33ad65f407dbfcd03e41af7b497",
+      "statement": "Webhook response decoding uses json.Unmarshal without checking Content-Type or rejecting unknown object fields; empty bodies, malformed JSON, trailing non-whitespace data and incompatible field types fail, so an empty 204 response is not a valid policy result.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L26-L30",
+          "version": "repo-lines-v1:sha256:a7c21dc333db5226badfd96a7464d74146f40fbaf223bfac20452116e02e3889:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzY3NTBiYjJlNGQ5YjBhZmQwODgwZDAxYmUxNDdiOGQwNjBjYTMxMzdkZTM2NTQ1ZTAyNWQwYmZiNjliMGI5MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGJjNzllMjdiYzg1NTllNzM0MDg5MmI1ZGQ2NTc0YjE3ZjgyNDZkOTlmZTAyZTVjMjg1ODI0MDhiNzc4MmFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2U4Yzc3YzY4YTFiN2NhYTNiYzhkNDZlNjE1OGQzMjk1ZTMzMzY0NmMyYjQ2MDgzNDA5MWVkZTNiMjExOWQzNCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L70-L85",
+          "version": "repo-lines-v1:sha256:2f3bdeb8897dd2435d0f847bfb202a3add136a4abe014082abc181eff098e7a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDk0NzA2NTgwNWM4MTBiOTJlNGNkYTM0MTcyOWIyYWE2YzZiOWNkN2FkYTEyNTI1MDYzNjkwYzMxMmYxMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5YmZhNzAxNjdkZWU2YTEyY2RkOTYyZGZkYzE3MzMxYWFmZWRmZGJhMWVlYjBmMWYyZTI2N2ZhOGNiMjQwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L25-L28",
+          "version": "repo-lines-v1:sha256:b50d4062aa2e4053c8926f532024c70c110e4b8fc71ed268ee87e47a51792ec9:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE2MmQ5NjQyM2ZjYTdhNWQxYjc5NjY5YzVlODZjZTU5YmM0NWQxMjY4ODM2OWZmMzcwZTE1NmFkZTg0MmNlYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGM4ZDA5NjhjOTgxOWYyMTQwMDJmNTQ3MGEzNWE2ZGQ5Y2Y4ZGYxMTU5OWUxZWY0NmY3MDE0MDE1MGYyOWMxMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDQzMWNjMTZhNTFmZGY1MTM3YmU0ZGI2MWFkZmI4MzNhZjVhM2VlYzRjOTAzMzg2MWQ3Y2ZlYzQyYzFlMjNjNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f63ee0f322c54dc2acfb0dac2920705c",
+      "statement": "Webhook clients install no custom redirect policy, so status validation applies to the response delivered by Go's client rather than necessarily the initial response.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L52-L57",
+          "version": "repo-lines-v1:sha256:d3203b18b253a3ff71a6c4e7c71baae5665965068dd0cecee8bb6dcbea92c694:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI0YzMyNGE2NzcyMzcwZjdjZDc5ZDI2N2JhMDZhOGE0MTExZDBmNGEwNWU1MjJlNTBhZjQwMGZjZGY4ODc5NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Q5MTIzZDk0Nzc5YTJmMzYwZjk2MDY5YmYzNzgxNmU0NDcxZTFlNTRmNzUzNGY4NTAxNDEzOWUwZmY5ODczOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWQ2YzUxMWNhZjg5MDYwZWZjZGE1ZWNkYzM0NGQ1NzE0MzRlMWFmYjIwNWQ1ZmRhNzMzZWVkMjhlZmRkMGI0OCJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L78-L82",
+          "version": "repo-lines-v1:sha256:4e71c0ad07c85e63cf2c90dda30b6bd58a5e3f83212fec992ab28729aee63197:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTgxMGY5YzBlYTU2MDcxY2QwNDc5YjcwMGZjNDRmZDljMmUwMTU2MWJjZWZlNDI5YzJjZDYyOTkxMWYyYjRjOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjZlZDc3MzA5YmU4YzI3NmJjNTg4YjQwN2JlMjJmN2E4NjI0ZGYxMTMyZTRmOWEwNDA3MzYyMWZlYjZmYWJjMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNhOGIyYmYxNzdlN2MzMjNlMDdlMTE1NmIxMzRkODZhNzZkMTZkMTNlYmNjNzM1NWMxZjM2NjZjYzE2NjNkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODI5OGMzYmI1ZjFlZGVkYmE4NDM5MWNiMDljMTE5NDI5MzllNzI2MWUyZWM0NjlmM2QzNDg0ZmQ2Y2Q3ZmM1ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_096fe0f6deeb4f0fa6948917222333e1",
+      "statement": "Common request, transport and response decoding failures return nil warnings and an error from WebhookValidator, and nil job, false mutated, nil warnings and an error from both webhook mutators.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L69",
+          "version": "repo-lines-v1:sha256:18763e081c2804b900c7455568f9d90b6be09e3a597101348215bec1a8a5b6c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYmI0OTRhZDhkODc3NDU0M2U4NjJhZTFhNmY4NWYzNDdkOTM0NGIyMWRkN2IzNjFhMDcyYTlmMjg1YzRiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDYzYzNiM2IzYzNjNWU2NGYxMjIwYTJjNjhhY2RlODgzYzk5MWY4Mzc3MjY5NzhlZTYyNDJmZGFjZmUyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxYjY1NmU1MDE5N2U4Y2I2N2U1OWQ5NDhkYmI5NjljMzQxMzU5MjdlNGU5YmQ1MWYyY2M5MDcxNmMzNWRlNzUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator.go#L24-L51",
+          "version": "repo-lines-v1:sha256:90e8c44b1d16c088c1c24dc9bfc648eaf262f877ae25394223e74dcbaca29fc3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMDcwOTIyMmE4OGEyZTVkMjAxMjBiMGJiODc5Yzk3ZTEzNzNkMzQ4ZDkwZWY1NTc3YzI4YjFmZmI2ODNmYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwMDY2YzlmMDllZGVhYzk0MTNiZjZiMGJmYzkwMWU5Y2YzNjk5Y2E4YzQwMjM3YmExMTgzMWVlOGZiNGUwNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ3NGMzYWQzYTA3Mzc2YWU2ZGI0M2UyMmNkNDU1MDcyOWQ3NjY5ZGY0OTE5ZGRjZGE2YzE1MTI3ODZlMzM3OGMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L52",
+          "version": "repo-lines-v1:sha256:68c9e060c3d5627dc5ee1d9244a6ba1bb5f383d954c35b8b3871f206e4316998:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwZjVlYzI0MzQwODlkNGZiYTIxNDgxMDc5MzMxMGQyZjA3ZGZiOTNiZjdiOWM2NWUzNGI0NmY1YmY2ZTY5ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOWQyYWUzZjExODQxZjZlYTBiMGFkNGI4Yjg2NGU0ZWJjMmFhY2M2YzNlY2ExYTJkMGExNzUyNWJkYWMxNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1OTI0ZTVjNTZmNzA1OTM2NGI3ZjdmN2I5OTBlM2MzMWY3MDRiZDk2N2NmMDQ4ZTk2ZjRkNzg4N2VlZDc1ZmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e35ca6123f84abebf0495a0c12d1daa",
+      "statement": "Registration and planning admission failures reach the proxy HTTP 500 error path without forwarding; validation mutation failures also return immediately, but validator errors are stored and merged into Error and ValidationErrors on successful Nomad validation responses rather than always producing an immediate HTTP rejection.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L146-L162",
+          "version": "repo-lines-v1:sha256:6c6672394a48b83f531c00bf4a5ccff701f057e2b65b429ad4e8769f72574d89:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MmViOWQ4Y2M5MDY1NjYyNGUzY2M5NmJjM2I0ZmQ0NThjODczYTUyN2FlYTU0NzA0MWRhMTdhMGYwNDc5NTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1NGZlNzMyNmVmODhlMWRiMThjZjZkMDM4MmZhZGRkZDQ3MzQxZjA5ZDNjYTdhNWIzMTEzMTVlZjRkMmY3OWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1ZjQxNmVhMjMxOGJmNjU2ZTBlNzg5MGRiZmRlMWU5Mzg1OTM4YTM5ZWUwYWEwMzZhNzk1ZDk5OWFkMjQxZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczNzA5ZDEyNDgyNzBhMjUwODMxNzc1MTQ5OTVjZmIyYTkwYTg3OGU1MWM1MjJiNDA1YTQ3OTk5OGMwZDlmM2UifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L321-L371",
+          "version": "repo-lines-v1:sha256:6e46bd2c1202a1db45be6ded976060f3a1fe290a03270ab786bbcb4cf3b83da0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0MmIzOTgzOTgwNmUxNjkyOTdmYjQ2N2Q4ZmEzMzY1OTdiNTc3ZWFkMDY0ZjQ0MDFkNzUzMTk4N2ViN2Q5OTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMDhkY2JmYzAzODAxOThmNDNiMTE2MzFhZmYxMzgxOTNjNDJlZGRlNzMyODFjMzI2N2RiYzc4NDA5NDQxM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3OTIyYzliOTJjNmU3ZGI5YzQ3NmIxZmZhNjczOTdkNzc1ZmJhYTkyNTJlMTYzYzJlOGYxNzQzMTU5NzEzZjIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L470",
+          "version": "repo-lines-v1:sha256:eaaff7d4b7a04127fddfba967c8230c07e973201176a811c49bf010217592717:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOTlhMDcxMGRmODJiOTdiZTZhMzBlNDM0NjdiYWRmZDQzMWQ4ODI1OTBkMmMyOWZkNmRlZWU3ZDY2ZmIyZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MmM4NGI5NmExZTRlZGYwNzZlZTA1MWVjNGU4NjJmYWIzNjQ2NmMxMzJmMDA3OGFhM2U1Yzc5YzliNzVkNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlN2MxMGZhZDk5MGVhNDViNzM1MzM0NDc5NTVlZjJkZmVlZWYwMGU1OGNkNTM2MmE3NGZlMTZiZDM5YjlhMjcifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L490-L540",
+          "version": "repo-lines-v1:sha256:14ad35515b1c91061781f7db029a528009dc82b2f58bb196bcf2d57e99dba367:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0Mjc1OTkxYzBiYzg3NTIwODI4NzFjMjU4YmI2MTZlNzQ2N2YyOWVjODczNWU3MTk1NGQ1ZDM4M2MxZjIwOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjMjYwMjAwOWJlMjM0MGYwNmQ1ZTU1ZWRhMTExZjM3MjMxYmY2YzkyNTQ0NWUyZTRhYmQ2OTkyMDJiM2ZjOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwMWNmMzc2NDQ3NWVjY2RkYzRiZTIzMThmYjdlZjgyNTljZGVmZDIxZDRmNGY4ZWJkOGFhZDY2Mjc0ZmRiYzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1d8e426eed94910aee3cc8d2b5fd6c5",
+      "statement": "The demo uses service-discovered HTTP webhook endpoints marked testing-oriented, and MockHooks serves empty warnings/errors on /validate and an additional empty patch on /mutate.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/MockHooks.java#L16-L34",
+          "version": "repo-lines-v1:sha256:41a3a76476994141784b52a7ff5629dbaedf276849e3aa72edbf65769901de44:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1OTM3YmFhOTZhMjlkZmFjMjQ1N2I1ZjgzMzMyYTMxMzdlNDFmMTU3MzUzZjA0N2Q5MDdkYzJhNDZhMDFlZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5YzEzNTkwNjY1NjMyM2QxYzVlYTQxNjU0ZWU2NmFmYjU4NWFjZGNmYWVhY2ExMjFkNWUzMGJmMTkzZWVkZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2YmUwNmU1OGNlNzU0Y2U0NGQ1NzU2NTEyYWQ4ZjcyMDg1MWY0NDdiM2YxMjM5NDI5Mjk5NjFhMzhlYTA5YmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlMjViMGZjYTU2OTA0MGEwOGQyM2ZmMGY3ZDlkMjZmOTdmZDIwM2NlMWZhOWNiNjM4ZTQ0NmNiMzcwZTkzNDAifQ"
+        },
+        {
+          "resource": "repo://example/demo/nacp.conf#L46-L77",
+          "version": "repo-lines-v1:sha256:ff983f0e34f485dcdee182fe4750e7471fa6cc747a6bfed200b9e607b86c947b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4NTk4NzNlMGJhNTA0ZTVlMTAxZTk0Y2M2OGYyY2I3N2Q4NDFlOTQ1YTYyMGM5ZjE1NmJhOWUxMmU3MzJmZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjM2VkZjJlYzRlOGRiYWVjYTg5OTJmYmMwMWE3NzdiNmQ5NTFlMTYzZDEzMWU5NmRmMTUzY2NkNThkZmRiYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyNDIxMDU5YWQ1NzYxOWQ2MDhlM2UxNzEyMWJlODVkMjMzMzRkOWE4YmM5NzU1ZDRmNTdiODkyMDcyOWMwMmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjYzZjZGU4YjVmNGYxOWY3MjhkNDRhYmI2MTNmYTNiYWRhNTk5ZDY5NzNjYzI5ZmIzZDQ4ODBjZTY5NmFjZDUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4246468e455549d1b8e4a29bf4d14a96",
+      "statement": "httptest adapter tests exercise validator payload decoding, methods, paths, headers and results, JSON-Patch no-ops, patches, invalid operations, policy rejection and status errors, and full-job replacement and context headers; remoteutil contract tests cover endpoint parsing, headers, transport type, size, status, malformed JSON and read failures.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook_test.go",
+          "version": "repo-file-v1:sha256:e27c5456681a69f2d385460308b36558af5c14e5bb88a459804e195b3b18fe7a"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/webhook_mutator_test.go",
+          "version": "repo-file-v1:sha256:1a89c336bb69d3c7ff907dc4bbca1fb489ab6001d9282b6a3707b774e2a13c3e"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil_test.go",
+          "version": "repo-file-v1:sha256:aef378a7026c19b7a440c2aebd7c2a688ce75e787a2f401febda6e4c2b9a96ca"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator_test.go",
+          "version": "repo-file-v1:sha256:a536bd8a1d87b27d15b8ca698719f1dd73b16a5354ac8b909c501373ad33f35f"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-06T10:26:01.086Z"
+  }
+}

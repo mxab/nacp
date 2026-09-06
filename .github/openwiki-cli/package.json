@@ -5,6 +5,6 @@
   "description": "Pinned installer for the OpenWiki CLI used by .github/workflows/openwiki-update.yml",
   "packageManager": "pnpm@11.8.0",
   "dependencies": {
-    "openwiki": "0.3.0"
+    "openwiki": "0.5.0"
   }
 }

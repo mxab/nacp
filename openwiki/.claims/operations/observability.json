@@ -1,0 +1,532 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:5f10ad1145b492c4764bc3b065536537b39b470be4e7ae9227f628edd5d57748",
+  "claims": [
+    {
+      "id": "claim_dab84aa1ddda447eb0adac46b809b4d5",
+      "statement": "NACP defaults to INFO text logging on stdout with JSON logging and all three OTLP signals disabled; HCL loading starts from defaults and only stdout/stderr are accepted as local output destinations.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/config/config.go#L114-L229",
+          "version": "repo-lines-v1:sha256:3979d82b1d18caa14c3ae10b809e6b7a99f29dd4fb11585a942bc613a60e4bd1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNDA1MWFlNmUyZDM1MzFjNDIyMjVhYTVkMGEwZjE0NWY5Y2I1YTE4YTc1N2JmNDM0M2M0Y2ZjMmVmN2M3OTc1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1MmRjMTJkMTIwNGVlN2ExNDUyN2E1M2VlMDQ1ZmI2MGJjMDI3M2RjZDRjMWMyMWRiOTM4NTgxNjFmMTUwNGM2IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxOThiN2U2NmFiMjZjMmUxNGU2OTE0MDlmNWFlNTA5MzQ3M2Y3YTM1YWJiODI5NzM0ZDdhYzAzNWMxZjZkMjY5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5M2FiNTVkMmMyMTE5YzBkNjc1NTIxNThmN2EyODliMjE4MDMzM2E0NGM4YTY0YmQzMWIzY2ZiYzA0ZDU3ZmY2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_226dc7b5b2274b68984961370221818a",
+      "statement": "Text, JSON, and OTLP log handlers are independent fanout destinations, so enabling JSON does not disable default text output; the demo intentionally enables text stdout and JSON stderr alongside OTLP.",
+      "evidence": [
+        {
+          "resource": "repo://example/demo/nacp.conf#L1-L21",
+          "version": "repo-lines-v1:sha256:495756436b719c4a3843ad893ec37553dfe4c4eb189b0a7a7d65d359057113e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMGZjY2Q5MDVjN2ZkY2U2YmI0MTViMTkwOWJhNzRlZWI3OTEyN2Y4N2Q3N2E4YTNkZjQyOThlYTVjY2FkNDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExZTM4NjAwYTc4MGQ0NjlhNDdjMGMwN2I1NDFjZWFiYTA0ZTQ4N2NiMjA4MmU5MDEzN2VmY2Y5NzY0ZjYzOTUifQ"
+        },
+        {
+          "resource": "repo://pkg/logutil/logutil.go#L100-L143",
+          "version": "repo-lines-v1:sha256:2f5c1ba6a156744e4cc0311ad06426a10da40cfe4b0cc4268cbde70add5a0437:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiYmJmMzg5MTViMjczNjUyYWM5M2E3NWU2MzU3Yzk4ZDFlYjRkNTZmNzdmMmViZGNmNjYwMWQ1NDk4NDk4MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzOWUxNGM0ODc1ZDQ2ZDRmOTVkODUxZWVhNzZmMjZhNTZjZjJhODMwN2IzMzQ0OGM5NzNhNjAzN2E5NWQ2YzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e5b7172106a74b4da137c509b698e5f2",
+      "statement": "A shared Leveler maps DEBUG, INFO, WARN, and ERROR to both slog and minimum OTLP severity and updates both variables on Set; unknown levels panic, and logger names are passed to the OTLP bridge as scopes rather than automatically attached to local records.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/logutil/logutil.go#L29-L143",
+          "version": "repo-lines-v1:sha256:cb6b134e3168dc03e2a9db17472392e726ab1b0d5c237f16246848cf1b8f91df:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxOGFjNzk1MWQzNjQ1ZTQwMTEzMGJiYzdhYmI4ZjMwODIyYjZiODgwMzE1ZGY0YmU0NjY1YmQ5ZTc5YjY5NTEyIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5OTcxMmI3MzgwZTJhYjEzOGE5Zjg4OTk2MDQzOWRiMjgwNTZkMmQ2ZGUwY2M1YjA3MjZkZWM5OWU5ZjgzNjU0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L184-L194",
+          "version": "repo-lines-v1:sha256:6ca6aa275a8f069f00fd459c53784d206f421a5f2ab0daa24b621f943071fd9e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0NDA0NzJmNzdhNjVlN2ZhOTIyZGQxOTY0OWZkMjUwOTkwYWQ1OWY1ZjM5ZTI5MTVmMDJmOTJjNGQ0NDk2NjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlY2Y3M2RlYTY1ZDYzZGIxYmYzNjc4YjA4ZWU5Mjk3NGM2NjE1NTI0NGQwMjM0NGVjZTQxMjY0YzdkZDA3MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7a2db242c2ea443f80a0b013b7312c6e",
+      "statement": "The bootstrap logger is INFO-and-above stdout text unless -bootstrap-json-logger selects JSON; run replaces it with configured logging, and log_level has moved to telemetry.logging.level.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L64-L71",
+          "version": "repo-lines-v1:sha256:722d043a365266253cdd30c951d9e87cb601dc988e908168d93ed254586b93bd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE0NTkwYjQ2YjAwNGMzMDcwMThmNGZhMGE0MTMyZGEzMjU0ZjliNDg5MmUzYzk3YmFjNDgxZjY0ZTVlYmFjMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDI1YzU5YjgxOWQ3ZDk0ZTcwMzBjMTYwNmM4MjZkNjY2Y2IwOTEwNGVmNjE5NjFhOGI0MmYwNGY5ZjlmNWU3MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzFhMDAwMDAyOTk4YTRlY2VjZmU0NzQ3YTc4NWVlODdmMTc2NTVkOGNiYzNiNjcwNzhmYzM3OGQ2YjFjODdjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDdmOGI2YmQwODljODViOGMyMTM5MWQzZmU0MDY5MWY3ZjQxMzcyYjE4NjgwYjU3ZjU5NjI5OWFkYjlhMmEzZSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L563-L610",
+          "version": "repo-lines-v1:sha256:13426b0b9757750535aa4685fcf92ffceeda87fbe2fee4c0202f37214d77a84a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhNmM4NGY5MzQ0YTUyMGVhMDk2YzJiOTEyMTQ0ZWQxNDVhNjEyY2NmMWE1ODY2Zjg5MzBlYzgzZTg2MjIwNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxZGUzMDFiYzg2ZTUzNTE3MWUyMzAyMTk5MDkwODQ2NjQzYjllOWEzNjY4Njg2NmI3YjI1MDhjNmE4NTg3ODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmODFiOWVjZjhlNGFhMDFmMzQxNzVjMDU1NWE0MDU4ZTk0NDRhZjRkNWJkOWI1YmVkNjJiMGZkMmQ2ZGYyN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0MWFjNzEzNzg0YzAyMjE0YjMxNmZmZTVmMDQ1YzRmYzNiYTYzZjI3M2M5ZThjZjdkNDExOWJmY2ExMDNlMjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_827475620f674a6c99ec597008a452cd",
+      "statement": "SetupOTelSDK independently enables OTLP HTTP log, metric, and trace exporters without NACP-specific exporter options, delegating configuration to standard exporter environment handling; the collector helper configures OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_INSECURE, and OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L5-L23",
+          "version": "repo-lines-v1:sha256:42d4e6392055980c5fa75e7c68edd146afbd1ebabc51e7bb155df2adb6dc2de6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhZjg2N2MwY2VjMGUwNDljNzg1ZjRhNGQ3ZTk4MWUzZWJhNWYxOWU2YmQyNTExNzQ3ZjBkYWM5MDQxYmZiNTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzNjlkZGI4MjE3MDFmZDk1YzczNjk3YWE0M2MwNzU3NzMwMDljMzcxMWZjNDZhODg0NWMyOGZiM2JmNTdiYTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhODliOWY3ZDZjMTk0MTE2ZDFhNzdjODNjMWE0OGIxNTQyNjhhOGI1ZDc4ZDM2MjVjNmEzZGExNTEyMjhiYmMifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L84-L139",
+          "version": "repo-lines-v1:sha256:0cc80191c042711c4f08a238127d030991f61b4f881ad3f13814832af2ec3d05:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYTUzYWE0ZTU2ZDg0MWM5ZGRlMzRiOGMzMGY5ZWI1MjMwNGUwZjBlYzdlMWQ2Y2I5NDg5ODkxZTliYzFkMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ZDFmOTk1NTg3ZTJhMzAzNDg0MjY4MjljM2QzZDUxNjM4NWQ3Mjc0OTFiOTdkNjhkZjM2OTYwYTdhZmM4OWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyOWExMzBhYmQxYzJmYWFjZTcxMjM4YzVhNzhkYjc5NDU2OWQ3MDJlMTI5OTUxNGFhMDdiNGYyYTgxMDI3NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlNDRmYzgwOWI5YmIzOWZjYTExYzk1YmFjMzczZmQ3N2I1YjVkNTg1NGRlMzJlNWI0NDAwZWQ1YTRiZDgxYTEifQ"
+        },
+        {
+          "resource": "repo://testutil/otel.go#L53-L99",
+          "version": "repo-lines-v1:sha256:bcc057207d4471d1d4b45ce9510d3b2d5139e1d1feac93ec3ddef3fd57f2a43f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjYmJkNTlkOWEyZTRjNzI0YWQzZmE1MTNkYjE3ZjdmZmIwMWU2MmNhY2U5YjExMzI4MmI3OTQwZTQwYjYyMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3YTliNWU5MDE5YzhkYjg3ODNlYzljM2ZlYmIwYTJjOTg2MmY2MWEwNWMzMDhmZTg5NWU0YTliZWQwM2VkYjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNjU5NzA4NjNkNTgxM2JmOTcwYjAyZTM0YjU1YTIxMDIyZmY5MWZiYjM3NjAwYmM5ZjZhNzY2NzkwZWVkMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczY2U3ZjE2MWQ2NTQ1MGM2Nzk4Y2NmMzdlNTQ1ZjMzODFiZGUzM2U2ZTVmNWY1NTljNmEzMmM3MDA1NTk0ZTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_735b2dd60b2540baa07b4e817c7ba650",
+      "statement": "Production telemetry uses an explicit resource with service.name=nacp and service.version from the executable version variable, defaulting to dev; SetupOTelSDK uses NewWithAttributes rather than environment resource detection.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L48-L50",
+          "version": "repo-lines-v1:sha256:a2d4f165730dc08fa15aee818ba371122f505d70f7860a6ebfb593180ef6c9c9:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTE0NTZkMzlmNmZhYTEyOGZkZDk3NTc1ZjRkMTAyOTYxYTFkNjI1NjY2NzNkYTRlM2JlOTgwYzAzYTdlOWQzMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWNiODZhMDc4YTEzZTYxMzRmODY1YThlY2Y0ZjE4YjAxMjYxMjQzNDBiOWIwYmI4ZmUxYzY3ZGU5ZmIyYjRjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODY2OTE3NzI2MzEwMzc0MWVlNGU0ZWIzYmQxZjkwYWJkNjNlNzg5NmFhYmZmOTUwYzg2ZjYzZTVkODgzNjEyNSJ9"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L607-L618",
+          "version": "repo-lines-v1:sha256:daf22c53429bf435480c2911ba1154abccb4ff7953ef5d543ba49ab21bd2fadf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlY2RmNzc4NTIyZTc2N2EzNGI4ZDhmN2FiMmNhZjFhODM4YmEzMjZjZTlkNjIxNzU5Yjk1YmQ0YzU4M2FhNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2MjA5YzRlZjg3ZDdiZmNkYzQ2NTdhMDY2MmNhOWFlZGM5ZDRhZDVjNDJlMjVmNGFiOWYxY2QwNzY5NjlkMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0ZjllMjA1NTJlODMzNDdmODk0Yjc2MWYxZmNjMjUwNTIxMDk4NjhhYzg4NmUwYmFjMGJiNDAwNDUyZmIzMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmYWI4ZTRkOTNmYjdkODg5MzZmMTk2YjViYWU1ZjFlZTg2MDRjNGNkMjljZGQ5ZTE0ZGE4YTMxOTljZDczZTIifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L84-L90",
+          "version": "repo-lines-v1:sha256:bfed218cecf9bad374ccb3731ca24710c3e36a1003fd6a98297109158f09c31c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGRhNTNhYTRlNTZkODQxYzlkZGUzNGI4YzMwZjllYjUyMzA0ZTBmMGVjN2UxZDZjYjk0ODk4OTFlOWJjMWQyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2ZhYzE4YTNiNTQ5ODY5MDRjMjc3OGE0MGNmNWRlYzRmZWJjNTYyY2U1ZGE5OGU1NjcyYzFlYzY3NjlhYjYxOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTI5YTEzMGFiZDFjMmZhYWNlNzEyMzhjNWE3OGRiNzk0NTY5ZDcwMmUxMjk5NTE0YWEwN2I0ZjJhODEwMjc3NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWI0YzIwZDQ1MzYyMDllNWYxYWM1MjI2Yzc0MTVhNmFjNjQ2ZjI1NmRiYTdiZjliNzc5Yjk2NjhjMjRiNTkyOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2445869f382549fb896184e1aecd6d96",
+      "statement": "example/otel demonstrates injecting OTEL semantic conventions into admitted workloads through inject_otel, not enabling NACP's own telemetry exports.",
+      "evidence": [
+        {
+          "resource": "repo://example/otel/otel.conf.hcl",
+          "version": "repo-file-v1:sha256:f0ffd8724406b954f0145e58ad5103b391140e82ea11f59381fd9210c4ac2d65"
+        },
+        {
+          "resource": "repo://example/otel/readme.md",
+          "version": "repo-file-v1:sha256:3331ee93cf109419baf0c926014d25130cc2ad79a810ffd90d4712aa294ef8e6"
+        }
+      ]
+    },
+    {
+      "id": "claim_7f425f5b0dae4db6a2e702fe98b28d40",
+      "statement": "Admission enforcement follows controller return values and route handling rather than log severity: register and plan abort on admission errors, whereas validate-only carries validator errors in request context for response augmentation.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L148-L163",
+          "version": "repo-lines-v1:sha256:1f6e802c1160f629c39140621e01e871e370574024223e3e194203b0f195753c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZDExZWFhNTcwNzg2MjZjZTQyODgxOGUyOWVkZTg4ZjAwMjc3OGQyZThiOWJkNzg5MDRhOThiY2YwNjBlYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjMDg1YmM0MmFmNmEyNmRhN2ViYjljYjVhYjM0NDY2ZDYyNDYzM2I2YTdlNmFmM2QyY2E4YzU5YjZkNTIxMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwNzE2NWQ1YzQwZjg3YzFkZjIyZWRmNzNlYWNiMmY4Zjc4NmFlODVkZjdkMzUxZWNiMWYyYzg0MzdiNzliOGQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L303-L371",
+          "version": "repo-lines-v1:sha256:3b55d5a79be00dcc7e3b9a6d29538579c0911baa94646923fc8a473faebd37c8:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NzU3OWFmYjIyMTc4M2IyYjQwMzI1Y2VmNjYzMmM3MTdmMDViNWNmZDA5NmQ5OTBlNmExMDFjOWIxMWQxNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmOGJiOTU1NzRlZGQwNWQwYzM0ZjhmNGNkY2Y5YTU4YTgzNzFkNTYzNTdiYWVkZjlkOTQ0MzdiYzMzZWFhYWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3OTIyYzliOTJjNmU3ZGI5YzQ3NmIxZmZhNjczOTdkNzc1ZmJhYTkyNTJlMTYzYzJlOGYxNzQzMTU5NzEzZjIifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L533",
+          "version": "repo-lines-v1:sha256:204f505b22ebc956da67068adaf5c17170ff9e143418c2b771c91d43936ddecd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZTk5YTA3MTBkZjgyYjk3YmU2YTMwZTQzNDY3YmFkZmQ0MzFkODgyNTkwZDJjMjlmZDZkZWVlN2Q2NmZiMmQ0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTg0Y2I1NWMzZDUwN2E0MjNhZDhhOTBiZTQyOGM0ODU5OGRlZTI3NjdiNjk5NTUxZGFhNjc1YWNlZDExZWEwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiODJjODRiOTZhMWU0ZWRmMDc2ZWUwNTFlYzRlODYyZmFiMzY0NjZjMTMyZjAwNzhhYTNlNWM3OWM5Yjc1ZDVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_85f145dd81214752a8c62254cd8b3749",
+      "statement": "JobHandler creates admission.apply, mutators.process, mutate: <name>, validators.process, and validate: <name> spans using tracer scope github.com/mxab/nacp; admission.apply and invocation spans carry nomad.job.id, invocation spans carry the relevant controller-name attribute, and successful reported mutations add mutated=true.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L90-L228",
+          "version": "repo-lines-v1:sha256:6062d7e08e097136d5308548c9393a6785b7e4aac7c4a82f6715a1e9c7420a77:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1MzYyNjc4MTE2NDdlN2E3ODY0ZWQzMjQ2OWU4MDAxYTc5MDEwOGY5NzUyNmM5N2M2NTIyNzQ0NTZiNTRmOGE3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMGIwYjA3ODdlYWM0ODk4YmIzZjA0ZDgwNTc2YTJlYThjOWY4NDgwZDc1OThmMGI1YmRhZTE4MTU3Zjk0OWZlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ZDRhYjA0MjhlY2MyN2E2MjIxNWM0ZTg3YmMwMzZjYmY4MmNhZjA1YjU3Y2UyNGJmMDYwYWYyNzNkMjIxMzYzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c6cc0adbd5094747a3eab0e210c642a0",
+      "statement": "The validate-only route calls mutation and validation phase methods directly and therefore has no admission.apply span; missing job IDs are represented as empty strings on the spans that attach that attribute.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L490-L533",
+          "version": "repo-lines-v1:sha256:505ea93f227c0fef368116bdb0c7713a36f25c0178ce43e57a80ebd45296dbdb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0Mjc1OTkxYzBiYzg3NTIwODI4NzFjMjU4YmI2MTZlNzQ2N2YyOWVjODczNWU3MTk1NGQ1ZDM4M2MxZjIwOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ODRjYjU1YzNkNTA3YTQyM2FkOGE5MGJlNDI4YzQ4NTk4ZGVlMjc2N2I2OTk1NTFkYWE2NzVhY2VkMTFlYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjMjYwMjAwOWJlMjM0MGYwNmQ1ZTU1ZWRhMTExZjM3MjMxYmY2YzkyNTQ0NWUyZTRhYmQ2OTkyMDJiM2ZjOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L251-L255",
+          "version": "repo-lines-v1:sha256:98f018309adf7e643976ccec8bbf289e5e4892c9699c58e1fbb12b348e737e7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmM5NTU0OWQ2OTk2NmI0MjM3ODc0NDM1NDQzZWY1YmZmNDVlZjM1OGFjZTZlZGYxOGU3YzVlNjg4ZjgxMGE2OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjUzNWZiOWIwNTU1OWJkOWJiMzEwNTFjNmYxMmIxODEyZmQ4ZGMzMTMzOWVmMzg0MDM3NjVlZTc0NDVjOWIxYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzJjNGEyMzY0MjEzZGNjNGQ4OTU4MTA4MDdjMmE0NzE5MWZlMjM0YzhjYWFiYWFhNTNlNWEwOWRiYjQ4OWQ1ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1809a59cb2d5447d84e73a0ca814872f",
+      "statement": "Mutator errors stop the chain and prevent validation on the combined admission path; validators otherwise receive isolated copies of the final mutated job and aggregate their failures.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L125",
+          "version": "repo-lines-v1:sha256:3f703968344701bb018b76ab6491093d074dceef2061c4e48d226d933e1afba9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNDA4ZDUyYzJiYTFiZTc0MmVkZTczNjBlNGQ0MDJiMTljYWE3ODdkYTQ0NGYyYmU2NjFmZWZkNDViMzYyZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNjk1YmMzNWYzNjFkNTNjZWZkMTk2OTA3NjFkMDM2NDU2OWRiMjdiMzA0NTA4ODJlMDMwNzc3NGMzNThjN2UifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L128-L248",
+          "version": "repo-lines-v1:sha256:1799c8db885a959b3bd7cb056e6f0672ca51d09403813ad1a8d5159043a92c3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxOGFmZGM4ODQ1NWYwZjk3MGJiMTVlNmY4YmZjNzE2Yjg1MWI0ZTdlZWZkMGRmZTA5ZjY5NjA1MjllOThjYjYzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkZjRhY2UwODZhOTY1NzllODdkMjc3ZjhiM2UyNzU5ZTNjYTg4YmY4ZDQ3MmRjOWY4ODliYmU3NzIyN2U5MjcxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiMzJkNDBjZDA0ZTM5MWQxZDFjOTI3NTFhYmJmYzllZDMxZjU5MTkzM2Q1ZDMyNGFmZDdjMjAyNmFhZjFkZDc4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0YThmOTQ0NDI3YTEzOTBiYTRmM2UzYTRiMGQwNDg4NGVkNjc5MzIyZDVmMWZlZTEyZDE5YzdkNzJjMmRhNTM0In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_d9eda384eea84bcbbf8025af05bb415d",
+      "statement": "Non-nil controller invocation errors set invocation-span error status and record the error; a nil mutator job sets error status and increments errors without RecordError, while phase and admission.apply spans do not explicitly mirror child error status.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L228",
+          "version": "repo-lines-v1:sha256:927d640a1a689e7b9416064a29fbb29451911b05cadb73ead52922878bd7e3e0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2ZTQwOGQ1MmMyYmExYmU3NDJlZGU3MzYwZTRkNDAyYjE5Y2FhNzg3ZGE0NDRmMmJlNjYxZmVmZDQ1YjM2MmU2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMGIwYjA3ODdlYWM0ODk4YmIzZjA0ZDgwNTc2YTJlYThjOWY4NDgwZDc1OThmMGI1YmRhZTE4MTU3Zjk0OWZlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmMjk2NDA3OWMzYzVjODE1MjBlZjMzYTJiOWQyZTE1YTFiODRkNzI4MGRiODU5MGRjZDY1NzQ3ZTNlMDEyYTQwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_7e367322ae0f4ac5ada701a1539871ef",
+      "statement": "NACP wraps incoming proxy requests with otelhttp using operation name /, and buildServer supplies a remoteutil-instrumented Nomad transport for both upstream proxying and token resolution.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L190-L205",
+          "version": "repo-lines-v1:sha256:8d8ca65d19bb9812bd24e3358c0d3d18e8be9c8672760316831edf538e5e8b5f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1ZDJlYmI3NWYyY2JiOTY4NTk2YjgwYTkwMGRlYTA0NDQ3ZGJlMDJlOGI3MDZmYzk0NjVmZDc5M2I5ZDIxODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMTU0Y2RhZWY4MmJhMzM4NjZhZjgzYTBmYjQ2Mjc3MDlmZGUwYWRmNmIzNWVjZTE2MzU1ZjQ1N2Y1NWVkNzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkMjU1NjlmMjc0M2NkOTQ5Y2FhYzc5MWQzMWJhYWNiNjQ5YmUxMzM4NDJhOGJjYWY4YjlmYzMyYmIzMjMxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2ZWYxY2I1MGNlZGQ1YjkxNGExZjc1MjhlZDJlOGJhZGIwZmQxYjQ4MmZmOTBhMzllZjVjOTFhZmFkYjJhMWMifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L680-L721",
+          "version": "repo-lines-v1:sha256:d845d673e1e647ca998b98ff6f7113d78d03ec0fe966480f1cf6ae1131f17428:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4NTlkNmQ2MTY1YzZjZTUzZjE5NWM0Zjk2MzRkZDIyYzU3ZThjMjU1NzY3ZmRiOGJjZDIxNTgyM2Q3ZmY4NjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMTY1OTUyNTk1ZDE5NmU4NGMwNGRkMGY1ODYyMThjM2U3NDMzN2MxYzQ1ODlhMDdmMzNiNzU2ZDYyZmY3NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkM2JkZTYwMzgxMTAyN2RhMTYwMGI0NzE3OGM2NmI2MDRiZjA3MzcyNzdjNTgzOGJlOTM0YTE0OTQzM2JkMTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3MzllMWIzYzc0Mzk1Nzg3MDQ0OTg4MjU4NmE5OGM1ZjMwODA5OWM2NmU0NDdjMmE3YjJmZTIzMzVhMjRhMDAifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L85-L162",
+          "version": "repo-lines-v1:sha256:51eabe06bda0fa623b8f19bdadb36f7f871fda210f3fc26f1489b5fd75a94cb7:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjcxOTJiNDI4ZjMwNzgzNDBkN2VmNjY0NmZjOWViMjU0MjBiZTg3OTliMTMzZjNhMmI4MTMxYzQ2OTYyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1NGZlNzMyNmVmODhlMWRiMThjZjZkMDM4MmZhZGRkZDQ3MzQxZjA5ZDNjYTdhNWIzMTEzMTVlZjRkMmY3OWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YmEyMDU4Y2I5NzVhYjQwMjY1NWE5YTM4YzkzMWY5MjE4YWNjYWU4ODA4NjNhNDBjN2MyN2ExNWNkOGIzNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczNzA5ZDEyNDgyNzBhMjUwODMxNzc1MTQ5OTVjZmIyYTkwYTg3OGU1MWM1MjJiNDA1YTQ3OTk5OGMwZDlmM2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d7446bdd1324b4e913f70509b155381",
+      "statement": "Webhook mutator and validator calls preserve the admission context using NewRequestWithContext and a shared instrumented transport with a 30-second client timeout; InstrumentedTransport installs otelhttptrace after the transport span starts so connection spans are children of it.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L44-L64",
+          "version": "repo-lines-v1:sha256:d43017362bc6e20c78bb8fa42638df5d1aca1befebea325e0af475327e4e95f1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYmI0OTRhZDhkODc3NDU0M2U4NjJhZTFhNmY4NWYzNDdkOTM0NGIyMWRkN2IzNjFhMDcyYTlmMjg1YzRiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNjRjM2VkZWUxZTFkZDk1ZjkwNjc3Mjk0M2JiZjU1NjMwZmQwYmQxOWVhMTliZTgxMDhhOWIzMjIwODI2MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDYzYzNiM2IzYzNjNWU2NGYxMjIwYTJjNjhhY2RlODgzYzk5MWY4Mzc3MjY5NzhlZTYyNDJmZGFjZmUyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYmM0MGYwNzg1MTBlMmVkNmY0OTI0MjFiYjRkYmQ4MWNlMTRlNzIyMDNmNjliMTAwOTMyODhjMTY5YTVmYzUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L31-L57",
+          "version": "repo-lines-v1:sha256:b04c2a15ef379558753cbea835547d3ffd66bcf74a5303d2ca086c2c1667d158:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkMDdkNzliYzU0ZTA4NWNmMTk1MzY0ZTE2OWQ2YzhjMTUxNjNlYWQwNzQ2YTE5ZDk4MTdkYzM4MWJjZWZjNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkNmM1MTFjYWY4OTA2MGVmY2RhNWVjZGMzNDRkNTcxNDM0ZTFhZmIyMDVkNWZkYTczM2VlZDI4ZWZkZDBiNDgifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L30-L47",
+          "version": "repo-lines-v1:sha256:97f6b5c2ae73117d386036fb21ee1d71758717c60b091616d5e305e8f1f37653:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwZjVlYzI0MzQwODlkNGZiYTIxNDgxMDc5MzMxMGQyZjA3ZGZiOTNiZjdiOWM2NWUzNGI0NmY1YmY2ZTY5ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OWY4OGNjMzM1NTI5ZTY3OTE5NTNmMmYxY2RlYjQ3YmQ4ODEyMjI2YzE0MTBmMzMzZTI1ZTg1NmUzYjRkODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOWQyYWUzZjExODQxZjZlYTBiMGFkNGI4Yjg2NGU0ZWJjMmFhY2M2YzNlY2ExYTJkMGExNzUyNWJkYWMxNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZDZmYmJmNTI4Nzg4NTNmZjlmYjg5NmJhODJiZmE5M2VhYzJhNzQwNzBmM2YxNWViOGQxNTIzNGQyYTQ5YTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1e647e2ae6b46468c49fc463f25500e",
+      "statement": "ApplyProviders installs a TraceContext and Baggage composite propagator; NACP-Client-IP, NACP-Accessor-ID, and X-Forwarded-For are separate admission-context headers rather than trace-parent headers.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/remoteutil/remoteutil.go#L18-L29",
+          "version": "repo-lines-v1:sha256:a12fe11015fd7836df15321e3094bb0ae2fb4ef7832d7c5fffb81ec04abca52a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZjRjNjg1MGZmYWQ0YzBiNTExNTM4Y2IxY2Q4NmYzYWY4OWI3ZDg4NWZiY2NhOTJlZTAyOWY1OGQ0MzI3ODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjYjg2YTA3OGExM2U2MTM0Zjg2NWE4ZWNmNGYxOGIwMTI2MTI0MzQwYjliMGJiOGZlMWM2N2RlOWZiMmI0YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNDUzZmNiYjg2ODI0NGExNTI1MTY5Y2JmOTkyNzc5ZWM5MTM1Mzk1OTVkZDZmOTI0MjFhYzdkZGQ4ZmIwYjcifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L142-L163",
+          "version": "repo-lines-v1:sha256:960481b48d2ab04254e19409bef49821ecb3d9f6e33c34959a51ce601de1b650:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkYTYyMGQxOTk4NzNkYjU3OGU0MzY1MDk3NDBlMzQ2MTQ5OTg5ZDc4NjYzZGExNzgwODJhMzQzMTA2YWEyYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjZWZlYzQ3MTIzY2ZkY2EyYWNkZDU2ZTUxNzg4NDZhNDU5ZGUzNDU5YjI1ZTZkZjEyOGVlZjdmMzY0NmUzZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1N2Y5ZGVmYTE1OTlmNzQ2MDFlMjk4M2JlZDRhMDY0MmY1NzllNmYxZmM4YWNjMjczNzUxMGFmZWZlM2M0MDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b7fe1143bb8465ba397c08a4b37a7df",
+      "statement": "Controller and proxy context-aware logs pass the active request/span context to logging, but post-admission job logs use plain Debug, so not every record has request trace correlation.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L148-L159",
+          "version": "repo-lines-v1:sha256:df07d9e07949b0f99de705d86ea8a41947b857994227171d78b214d2e30124d1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZDExZWFhNTcwNzg2MjZjZTQyODgxOGUyOWVkZTg4ZjAwMjc3OGQyZThiOWJkNzg5MDRhOThiY2YwNjBlYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMzE0NTFkYjBiMWY4ZWUyNDgzNzRjZmI2NTg3Y2Q3ODQ4Mjk2MTA5OTExNzhkY2QwNDBkMzgwZGQ0ZTFlM2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjMDg1YmM0MmFmNmEyNmRhN2ViYjljYjVhYjM0NDY2ZDYyNDYzM2I2YTdlNmFmM2QyY2E4YzU5YjZkNTIxMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxNWM5ZmQxNmEzNWQzMDI4NzMzZmY5NzUwNmQ1YmIyNTc2NzI3ZTk0YzViNGFjNTIzNDNkNTYyOTE5NmViZjAifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L430-L485",
+          "version": "repo-lines-v1:sha256:c045e890b07565e30c8dae02cad780696a7653f4b23447be291f55f6d429373f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzMWU5OTk4NDAyZmMxNjk2YmIxZDhlNTczMTA5NDI3MzYyNDNlMDJmMDVmZmVlMjgxODkwMzUzNDI4ZmQ4ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyYTMxNTJlNDkzMWE0NDk5ODk1YjQ4ZTJkMzg4YTdiNDQ2MjVmMjY0OWRlYTI5ZWQ3YmQ5MDgyZWM3YWQzYmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMzY5MjY5MjE1YjdlMTBkOTA4OGFkMzZiM2RlZWE0ZjllOWFkNmE0NGQ0MTA2MDE3MTE2YzNhNTlkZmQzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYzY1YTNjMWRlNWJkYjRiMjgxMGVkZDhhOGI5NjlkZDY4YTYzYzUzODFiYWIwZmQ1ZTAzYjU3NzQwZGI1ZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L133-L173",
+          "version": "repo-lines-v1:sha256:493bad02715e47a07afb08a42360eb64ed8de2ce41234692915571855a99d285:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3NDM4OTYwMGE0ZTdkMDRiMzQ0MDkzYTgxNGM5ODc1ZjdkMjU3YjdiMjlkMjgyMDkyYjdiM2E3ODlkNWUwZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjODdiMjViMDFjZjMwZGM5ZWQyM2RkZDA1NmYwNjExMGVkMWFjZjU4ZGQ1NjBlM2M3MjAwYjc5NjdhN2E2ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwYmY1OTU4MmNkNmY2NDhhYmYzNDhkNjdjNzQ2MTVhYmNjMDExNTdjMjgzNjBkNDg1ODFkMTlhYmFiZDkzNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2MDc5MmQxMjdiZjUzYTgzNjZiMWQxZmUzODE0NzBkYTY5N2Q1NTI5YmE0YWZiZDkwMjNmY2YzYWYyMzA3ZjYifQ"
+        },
+        {
+          "resource": "repo://pkg/logutil/logutil.go#L137-L142",
+          "version": "repo-lines-v1:sha256:776c8923c7d4467a9c9571a3dfc6c5f0e06f681f18ed8cd40b9329900c18c930:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2JkYmIwYjM3MWI0ODIyODE3MmNlNDQ3MzVjMWU3ZTJkMWM3MWYwYzYwNTM5ZWE2ODYyNjg1NmRiMjFjNzk1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODcyZWIwOTE2YzAzOGZmMDNkMGFjOTE2ZDRiNTNmOTk1NzQ1YzU0M2UxNWM0N2Q4MjcxNGVjMTc0YjgxZDIwMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTkyNWNiMGIwZDU4N2JiMWY2ZDI5MDc3Mzc1YzBhOTRmN2Y5YWU4NDI3ODhlZmVjNTcxZjk5MmQ3OTU0YzQxMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_74aa92cfb793442db7b17ca94d615d06",
+      "statement": "The five generated NACP controller instruments are Float64Counters in meter scope nacp.controller with only validator.name or mutator.name as explicit data-point attributes, not job ID.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L27-L64",
+          "version": "repo-lines-v1:sha256:d7783bf73af6ae1ab30a72b5aa3559ba6d2d0bb8968fcf81b5cb9df930a9c023:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZTg1YmMyODBmMjFlMTFkMGE4ZjA5YmU0NjAwOWFhYjJiYTdmODM0YmU5OGI3N2E4OWQ5ZGRmM2Q4ZDk1NTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNWU3MmFmMTY5MjliNGUwODc5Y2YyYjZkMTU0YTgzODA2MTAxNmY4YzM4YTFkNTVmNzA0MTczZjJhOTE1ZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhNWFjMGMwYmIwOGM3YTdjYTJjYjdlNDhkNzEwOWUxNzlmYjBjOGM2NGVhZDZmYTY3Zjk2MjQxMTU0NmMxYjAifQ"
+        },
+        {
+          "resource": "repo://pkg/o11y/metric.go",
+          "version": "repo-file-v1:sha256:ee0dab1fde93e4cc6a0e5d58cd1327bd886edc9acdf48ccff92175f5be15c465"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbbc0617c2c248a9b1b83c980d49adce",
+      "statement": "nacp.validator.warning.count adds the number of warnings returned by each validator even alongside an error, while nacp.validator.error.count adds one per non-nil invocation error rather than one per constituent error message; job-copy failure happens before this instrumented invocation path.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L188-L228",
+          "version": "repo-lines-v1:sha256:21b727d70fd33cb8b9ae6b837acb3e66fee092a321a9831e9eabddd87809574b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1OTU4MWY4MTNlNjVjZDY2MWI0Mzk1Y2M0OWY1YjNlYWVhMmM5MDZhYmRjZDQxYWE0MWY5MTI0ZTI2MDFmNDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwYjBiMDc4N2VhYzQ4OThiYjNmMDRkODA1NzZhMmVhOGM5Zjg0ODBkNzU5OGYwYjViZGFlMTgxNTdmOTQ5ZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNhMmM2OWM4YTlmYmU1MWZiNDM1Y2I3ZGVhZmZhM2VjMDYzYWFmNWQ5ZjJiZjA3ODlmZmM2ODQxNDRlZWZmMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_38630db9e54c46419bfa30d1c2ec64bc",
+      "statement": "nacp.mutator.error.count adds one for an invocation error or nil returned job before aborting the chain; nacp.mutator.warning.count adds returned warning count only after success with a non-nil job, and nacp.mutator.mutation.count adds one when mutated is true.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L128-L183",
+          "version": "repo-lines-v1:sha256:26f328d805865a503442cb1f9e5b84346da20d7494abef83cc24ce45a2220e29:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4YWZkYzg4NDU1ZjBmOTcwYmIxNWU2ZjhiZmM3MTZiODUxYjRlN2VlZmQwZGZlMDlmNjk2MDUyOWU5OGNiNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyN2M5MDU1Nzk4MWU4YjdkMjVlZTRmMjg5Y2Q0YzU0YWZhY2Y4NDk4YjQzYTk5ZGE2Y2JmMjA1ZGIwNWYyYTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMmQ0MGNkMDRlMzkxZDFkMWM5Mjc1MWFiYmZjOWVkMzFmNTkxOTMzZDVkMzI0YWZkN2MyMDI2YWFmMWRkNzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3ZWY3ODZmNjNlYzE5MWY0NjRkN2I4NjdmNTY3YjljYTNkYzQ0N2FiODJlMGNmZGRiMmI4NmFkOGU3NjYxYjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb4c89169dd9424896cad6466e60cbdc",
+      "statement": "Built-in JSON-patch mutators derive their mutation boolean from successful PatchJob application with len(patch)>0, not a semantic before/after diff or changed-field count; controller mutation increments are not rolled back when later admission fails.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L101-L183",
+          "version": "repo-lines-v1:sha256:a34de064746afe3a5cb9360c296a46244550a947e1fcfa32b1661a79d1a1ea06:eyJzZWxlY3RlZExpbmVDb3VudCI6ODMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNDA4ZDUyYzJiYTFiZTc0MmVkZTczNjBlNGQ0MDJiMTljYWE3ODdkYTQ0NGYyYmU2NjFmZWZkNDViMzYyZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyN2M5MDU1Nzk4MWU4YjdkMjVlZTRmMjg5Y2Q0YzU0YWZhY2Y4NDk4YjQzYTk5ZGE2Y2JmMjA1ZGIwNWYyYTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3ZWY3ODZmNjNlYzE5MWY0NjRkN2I4NjdmNTY3YjljYTNkYzQ0N2FiODJlMGNmZGRiMmI4NmFkOGU3NjYxYjMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/json_patch_webhook.go#L87-L91",
+          "version": "repo-lines-v1:sha256:e98ff2adcc2fd5808ca7e502e3badc13cf3ce69349cf66f427dc753c7805696c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNThjYWIxYzAyNDhmNzk4NjAzZjA5ZWM2OGE3MjFjOTc2ZWRkMmZhOGM3ZDE3NmRjYzBkM2FhOTNhOWQzZjViNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTM3NjQwZmUwYjc1ZDZhOTExYjZlOTgyYTJhM2QzNGI0MDZjZGY2OTJiMDMxODYxYWFmNzAzMjY0NjRkYTBiMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzOTE5MDg0NDljYjVmMjkzODI2YWUxNWJhMDRkYzc3ZjNiYzk5ZTBlNzkzYWE3YmI3NGUxYmQxNzY0MTQyNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzNlNDVmMzA1NjM3ZjkwMWE4M2M1MGZlZmFkMTA5ZjI5NGNkNWUzNmIxYWEyMTRiODcyYWM3NDJhYWU2NjQ1ZiJ9"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/jsonpatcher/jsonpatcher.go#L11-L37",
+          "version": "repo-lines-v1:sha256:86a06ed2466c8306bc4625c2c29b765f183bc28c3752077a86d7991b080cec92:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZTU2OWIyYmI3NWNkOGY4MTAzYTczNjBjNjA5MGJmNjBmMjY0MTk1YjY3MGU1YjE3MjRmNDVlYTgwMmFhY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ZWRhYjgwYzUzYzIzM2NhYmE2ZGY4NjUyOGU5MWEwMzFhY2IwYWNkMTI0N2YxZmZiZDQ2Y2JmMzMxY2M0YWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ODNjZDg1YjRjODgwNTEwYzA5M2JkNGExZTQ1MTRhNzZkNjBhNDIyMWM1NjY4MDUzMmIzMjgzOTllY2Q5ZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L107-L117",
+          "version": "repo-lines-v1:sha256:cc1f4c2682024635abeb8f4a57d1745403557d8ae355c617c096195d93eb82c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMmRhYjYyNzBmMmI1YTNhNDQ2YWM0OWVhZGVlNTE3ZmYwMWQ2Zjk4NmRiNjhiMjI5ZTNjYmIwZTMzN2VlMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1YTQ2MTVkNWJlODkxMjkzZTA4YjcwOTc0Yjg2Yjc1NmFhNDhlMDNmZWRjMTIzYTA3ZWQzMWE4ZDNmOTY3ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDJjYTU4OWIxZjRjNmQ2ZjlhNTFlZTFhMjY4YjI4NjNlNzUyZWE3Njk3NWQxYTg5ZDNjOGZhMTM3NTJjYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2NjQ2ZmZlYmU3MmM4ZGI5OWFmYmQxZmM2NWRlODIxZWE3MTU5MDEyYWQ2ZDExNDI2OThjMzYwZTRjZjZmYTIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_json_patch.go#L49-L55",
+          "version": "repo-lines-v1:sha256:9d22cbb6bb671b132ded2862a76b1278af9db210f3837d24e53868c9d9967196:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTA0MzQwMDk1Y2FhMTZiMTNjYmU3M2NkOGVlN2M4MmQyMzQ0YzkyMTU0ZDE3ODFjMDlkYTljMmIyMzgyOGJkMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzZjZWM2ZDZkNzUzZGY5NjkxN2UzNjcwMjAwZWYxMmMwZTc5YmRmZDMzM2IzMzMwYWRjMTU2ZjM4OGVlZTVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTA1YWI1YzYyMTZmNTUxN2M4NTBhYjI4Y2IzMTY5MGNiZjcxMmNmODg2YWU3N2M2Mzk2YWQ1YjczM2JkMzNmMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGJiY2VhOTg3YTA3ZDhmYTc3ODVmN2UxZWYyMjBhNWE1Yzc4OGQyMDRmNWZkMjkxZjNkMjg4NGE3NTI3MmRmOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_db2b889ffb1e4d99a695cf329ae2a63e",
+      "statement": "Controller error counters are not rejected-job totals: multiple validators can fail one request, validate-only uses the same counters, and failures before controller invocation can bypass them; HTTP instrumentation provides a separate metric population.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L412-L533",
+          "version": "repo-lines-v1:sha256:204f505b22ebc956da67068adaf5c17170ff9e143418c2b771c91d43936ddecd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZTk5YTA3MTBkZjgyYjk3YmU2YTMwZTQzNDY3YmFkZmQ0MzFkODgyNTkwZDJjMjlmZDZkZWVlN2Q2NmZiMmQ0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTg0Y2I1NWMzZDUwN2E0MjNhZDhhOTBiZTQyOGM0ODU5OGRlZTI3NjdiNjk5NTUxZGFhNjc1YWNlZDExZWEwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiODJjODRiOTZhMWU0ZWRmMDc2ZWUwNTFlYzRlODYyZmFiMzY0NjZjMTMyZjAwNzhhYTNlNWM3OWM5Yjc1ZDVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwZmM1ZDhlYzdkNTNhOTE5MzMyNTY2M2RjMGU3Y2JmYmQ4M2U4N2RmNzdlMWM5NjZiNjY1N2ZlNjU3ODQwZTBkIn0"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp_otel_test.go#L223-L245",
+          "version": "repo-lines-v1:sha256:2a1af6af0230b8d63822c936d0c48566df6ce36402add21e45d6525c03ca281b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2Zjg3ODU1ZDNmMmNlNmE2MDRmODUyZmZhZTkyMzhjZjgzYTY4NzY3Y2JkMTE5ZGI0YmEzNDNkM2Y2MTE2NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5NmU4M2Q3OWMzOTZhZTY2OWNjOGI3Mzk5ODVkNGU3YmVjMzFjMWQzYjM5ZDhlY2JiNjYxOGQ2NWI3NjNhODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyYzAwMmQxZGRlN2I1NjQ4NDI0N2JmOTU4MDJmZjM0ZGMwOTlhODUzMzE2YmViYTYzMGY2ZGFjM2MwYTA1MmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiMmFhNWYyOGUyOGVjZTFhMWM1MTliOTA4MjAzZGI0NGM4NDEyNWUzMDk0N2M1NDg4NTllNmYzOGYyN2I2NTIifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/controller.go#L188-L228",
+          "version": "repo-lines-v1:sha256:21b727d70fd33cb8b9ae6b837acb3e66fee092a321a9831e9eabddd87809574b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1OTU4MWY4MTNlNjVjZDY2MWI0Mzk1Y2M0OWY1YjNlYWVhMmM5MDZhYmRjZDQxYWE0MWY5MTI0ZTI2MDFmNDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwYjBiMDc4N2VhYzQ4OThiYjNmMDRkODA1NzZhMmVhOGM5Zjg0ODBkNzU5OGYwYjViZGFlMTgxNTdmOTQ5ZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNhMmM2OWM4YTlmYmU1MWZiNDM1Y2I3ZGVhZmZhM2VjMDYzYWFmNWQ5ZjJiZjA3ODlmZmM2ODQxNDRlZWZmMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9dc49fe9f54749a4a8131e7321aad83d",
+      "statement": "Severity is log-site-specific: local OPA validator policy warnings and errors are logged at DEBUG, webhook validation errors at ERROR, and proxy admission failure at WARN, independent of their returned enforcement errors.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L148-L159",
+          "version": "repo-lines-v1:sha256:df07d9e07949b0f99de705d86ea8a41947b857994227171d78b214d2e30124d1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZDExZWFhNTcwNzg2MjZjZTQyODgxOGUyOWVkZTg4ZjAwMjc3OGQyZThiOWJkNzg5MDRhOThiY2YwNjBlYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMzE0NTFkYjBiMWY4ZWUyNDgzNzRjZmI2NTg3Y2Q3ODQ4Mjk2MTA5OTExNzhkY2QwNDBkMzgwZGQ0ZTFlM2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjMDg1YmM0MmFmNmEyNmRhN2ViYjljYjVhYjM0NDY2ZDYyNDYzM2I2YTdlNmFmM2QyY2E4YzU5YjZkNTIxMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxNWM5ZmQxNmEzNWQzMDI4NzMzZmY5NzUwNmQ1YmIyNTc2NzI3ZTk0YzViNGFjNTIzNDNkNTYyOTE5NmViZjAifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_validator.go#L20-L59",
+          "version": "repo-lines-v1:sha256:2416cfb775859a9b932ba6d295a8a2170a650f7addc5a77466310cfefe956ed3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkM2MwOWIzZWI0MThmMmYwY2ZhODc0MjM4Nzk5MmRmMjdhYjM0YTBlMDVjODc5NjdhNDY0Y2Y4NzQyZDAzNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmYzM4ZWZkNjYyMGU5ZTI0ZjMzYjdjOWEwYmFlMjMxODlhZTIzMWMzNDgxZGExODA3ZWJmZTdkMGM1N2IwZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZThlYWU2OThhNzNhODU5NjAxM2YxYzFkY2E5ODM5OTcyMzNjOTBiMWFjMWRmZDI2MmJiMzRmOTI1ZDRjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTlkY2JkNzVkMzIyZTA0OTRmYWJmZDRkYmQzZDEyYjU2OWRkMWI4ZDk5YWRlNzNkNDI5ZmE0MTBiM2QzM2QifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/webhook_validator.go#L54-L69",
+          "version": "repo-lines-v1:sha256:40b2814a476bf8f4976229cc47e256b09b3cb42c37fd0de1e7c2f8ff019e747b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4ODAyMmZlOWY5NWQ3ZjNkNjliMThiZWY3YzQxMGMyN2IzMjNlN2JjMDhlYjdmMTQwNjAwMWRkMDk1OTA0YjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5ZWYzYzUyMTQyY2QyNjM4OTQ3OTk5OGI5NjAyMmYyZjQ4ZWU4OTBjZWMzZTcxN2U5OTYwN2ViMzRkOGViZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2NmIwMzA2ZjIwNjViYjFjNTcxMTFkYTg5ZjFkNDc5Yzc4ZmY4NTU2YTQ4NDQyYjE2NzlmZmEwN2JlNDljMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwZTlhOTcyNzhiNjkzZjhmZTRhOGExNThjMDY0YWE3ZDkxZGM5Zjk5OTQyZjM0MzBiOGUxNmIwMzQ1ZGU4MjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e4da569967784b5898a737a7c64fc840",
+      "statement": "DEBUG telemetry can disclose sensitive serialized post-admission job/request content and OPA decision results; sanitizing the resolved ACL token to omit SecretID and ExpirationTTL does not redact arbitrary job or policy data.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L430-L485",
+          "version": "repo-lines-v1:sha256:c045e890b07565e30c8dae02cad780696a7653f4b23447be291f55f6d429373f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzMWU5OTk4NDAyZmMxNjk2YmIxZDhlNTczMTA5NDI3MzYyNDNlMDJmMDVmZmVlMjgxODkwMzUzNDI4ZmQ4ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyYTMxNTJlNDkzMWE0NDk5ODk1YjQ4ZTJkMzg4YTdiNDQ2MjVmMjY0OWRlYTI5ZWQ3YmQ5MDgyZWM3YWQzYmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMzY5MjY5MjE1YjdlMTBkOTA4OGFkMzZiM2RlZWE0ZjllOWFkNmE0NGQ0MTA2MDE3MTE2YzNhNTlkZmQzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYzY1YTNjMWRlNWJkYjRiMjgxMGVkZDhhOGI5NjlkZDY4YTYzYzUzODFiYWIwZmQ1ZTAzYjU3NzQwZGI1ZGUifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/mutator/opa_bundle_json_patch.go#L26-L38",
+          "version": "repo-lines-v1:sha256:6c1b63c597f9b6a53752d8105ac91b1c0161cdc22a205ceffae5d7c3e01a4637:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NzM1ZmRiZTNmMDZhYmQ5YzkzMjI0MjI0YmIwOTYxMWM0ODZiMTkwZDAzZDFiNDk0NTc0MDdhMWUyNTFlOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MzM2YTVkY2JhNTVjMGFlNjUwN2Q1N2NmZGE1MTNhNmNjNjBhZDNhMjkzYThkZWVkYWE5NTcxY2ViY2U4MzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4MTE1Yzk3YTI2MmUzNzA3Y2Q3NDYyZDdhOTA4NDlmNzdjM2IwYTg4ZDJhOTg1MWY0ZWUyMmVjODRlYTRjMGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhNmRjMGNkOTgwODE1ZGMwNGNlMDAwNDVhZDhiODdiMTI3MjJmN2Q3YWMyNGNjZmFlMTYxNWExNDdhYWZjNTMifQ"
+        },
+        {
+          "resource": "repo://pkg/admissionctrl/validator/opa_bundle_validator.go#L38-L48",
+          "version": "repo-lines-v1:sha256:d7b2ecff03d124981bc6955d6b9d7e7f98e3d2cbe1472a6de9daba51586f40ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyZGJjNjliMjZmMGQwM2YxNjE3YzlhNmYyYjBmMTEzMWZlYTA3MTIyZDkzY2M3MGNiZWE3NGI4M2M4ZGE3YmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkYjgwNDZlMzRlOTg4YzUwZjM1MzMwOTAxOWRkYjBjYjU0MDEzM2FiMTMwOWVlMjIzM2IzZDU0YjIyNmMyZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyMjg4YTYxYmFmNzBkYmMxZWZiMDEwOTczZTljNDJlMGU1YTVjMzA3NjA1YTZmNWI2YTg4YjYyNTFlN2NhYTAifQ"
+        },
+        {
+          "resource": "repo://pkg/config/config.go#L59-L87",
+          "version": "repo-lines-v1:sha256:6aa6c2dfc4100ae241b5d98f8af293d66bd96f2be45c6158afdd14f1894dd31e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1NTdjMjhiNDcyYjM0NzVlZTA2ODk2ZjI1NjNjMDIzY2ZhZDAzZDUyNzExYjIyZmFlOTYyNmVjMjg3YTQxNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwOWU4NzhjN2ZiZGYwMTk1ZThmODcwNWMwYjk4NWYyMjIwMGEwZGY1YmRlNmJjM2FhYmY2ZDY3MTIxNzIyNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjYjg0OTI2ZTk3ZmU1NWZhMDQyMmI2Nzg3NTMzNDcxMGIyMjExNjczZjgzYzgwMjY2NGMzMWRlODQ4ZjJhYWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c6cf68973857435fb86eef4a0ce5b7f3",
+      "statement": "The otelslog bridge now stores error-valued attributes on the record's error field for OTLP exception.message/exception.type export, requiring old error-attribute queries to change; migration of test log body/attribute types to shared attribute APIs is separately a test API change rather than itself a runtime format change.",
+      "evidence": [
+        {
+          "resource": "repo://CHANGELOG.md#L104-L106",
+          "version": "repo-lines-v1:sha256:c215fc3acb09de348dfae6e8fd60ddc9e77fd6e888bfa4c947cc013aab2b7b84:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JlNDU1MDczYjViMWNmZjExMmE4YTYyMDBkMGY0NDg2ZjQzYzFiNDhjNDkyMDY5MjU5MTc4NjRhZGNlZDE0MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTMwNmQwMDU3NTZlYWI1Mjk0ODA1ZGNmYTEzMjA4NmRlNDBmOTI4ZGY1YTEwZDAxOWFjMTljZDUzYjUwNTk2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDkyMDJiMzZiZTVhNDJmMzc0NTk0OTBhZTNlMjk2ZDYyZWVjMDgwMWU1ZGI1ZjhmZmMwODkzYTM5ZmFmNjdiZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTAwMDgzOWIxZTQyODQ0MmQ0NDZmODE5ZDBkNmNlOWQ4NTY4NTYzYTk0YmYzMTIxZTM5N2ViZDEzNGE3MGZiNCJ9"
+        },
+        {
+          "resource": "repo://CHANGELOG.md#L58-L62",
+          "version": "repo-lines-v1:sha256:c8bb88bdfe7c5cb7cca12e5b5b8929120c4267d844de96223f803bc0f3be8f09:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTAyMjUyMTFhMTZlMDI3MDhlZmI4NTFlODYyNTkzZDJmYjFmNTk4YmY4ZjY4MTg1NDRkOWQ4YTY4ZDNlYTg1YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg3MTRiNTgzMWYyMGRhMzJlYjFjMmI5NzQyNjIwOTc5NjQyNjA0MDliYzdlMzM1YTllMWExZDcyNzE5NzczYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWRmNjMzNWFmZTU1NmFiZGUzYzZiNTJlY2IyMDQzNDI1MmM4Y2EwMGY5Y2RjZTU3NmYzMTk2ZjZjMzVhMWUyOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2E5NzFmMTU5YWZjYjE1NWNlOTgzMTdlMmI4OTFiYjZmNDhhNjM4MjVmMjdmYjRiOTYzNTU5NDI0YTY4ODgxOCJ9"
+        },
+        {
+          "resource": "repo://pkg/otel/otel_test.go#L27-L105",
+          "version": "repo-lines-v1:sha256:774a1c3040c0da1641e00d7905c3ca31fe1a6e6555df7ab9fe936fe08957d201:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0YjU0OTk5NDIxNDEyY2QzMzk3OTg3NDEyZjkyMTI5NDdlNjY0MWYxNGNjYjg3ZDk4OTRhMTlkMmQxNzk4ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYWMxOGEzYjU0OTg2OTA0YzI3NzhhNDBjZjVkZWM0ZmViYzU2MmNlNWRhOThlNTY3MmMxZWM2NzY5YWI2MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0MjczYThmMTUxMGVlZTBkYzliMTdlNDA3NzU3YTlmYTUyNTZiYTZmNjcwNDJlNWUyNWNmZTMyYmM4MWM0MmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNGY4OWZjMGVjOThjOTgyNDE4M2U3OTVkM2VkZDE5ZTkzMGY3YmM0NzFmOTAxMmFhM2Q1MDNiZTJmODk3NGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b213550b3d6467292c224c95bc470bb",
+      "statement": "Runtime initializes configured logging, then enabled telemetry providers, then OPA and server/controller instrumentation; SDK setup constructs enabled trace, metric, and log providers in that order before installing globals, with trace/log batching and a periodic metric reader.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L597-L634",
+          "version": "repo-lines-v1:sha256:fd189d2d61ff6b74dce126e6968a65a59f6af1136746e97bf198467c6c8f56c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmNjc2MmNkMjA1YTRkYzNjYjRlY2E5MjdlOTJmYzkwZjRmNmI4ODFlMDcxMjNhNTFkMGEwM2NhYjhiZTc5NTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyOTY0MDc5YzNjNWM4MTUyMGVmMzNhMmI5ZDJlMTVhMWI4NGQ3MjgwZGI4NTkwZGNkNjU3NDdlM2UwMTJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5MzI3YjJkMDZiYWU5YTI1Y2IzNDk3MzZmNWM0MGUwMTk0NWVhYzdlNmIwODhjNGFmZjQwZmYzMjA3N2NhMzYifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L698-L721",
+          "version": "repo-lines-v1:sha256:2078eb4543b8a0cd5f4321f4c5c222b56e9f48f24e0535e8ad3379bca5cfe0c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNzA1MWE3Yjg3ZWI4YjA2ZjA1ZmE5NDBmNzUwMDAyNTlkNDg2MjM1M2JlNWM4ZTUyMzA3ZTlhNDNhOWZlNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMTY1OTUyNTk1ZDE5NmU4NGMwNGRkMGY1ODYyMThjM2U3NDMzN2MxYzQ1ODlhMDdmMzNiNzU2ZDYyZmY3NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NDhjNGQwOTIyNTg1YTg4ZmM0NmIwYzIwMjUxNGVjMWQxMzI3YjAxN2I3ZWQ2OWNlYzgzYTA5OTAwNWRhMTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3MzllMWIzYzc0Mzk1Nzg3MDQ0OTg4MjU4NmE5OGM1ZjMwODA5OWM2NmU0NDdjMmE3YjJmZTIzMzVhMjRhMDAifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L84-L194",
+          "version": "repo-lines-v1:sha256:d607f8fb58d9c8f3945be59780164fcf0830bb80caa89d5c3b63886ec31d9a8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTExLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4ZGE1M2FhNGU1NmQ4NDFjOWRkZTM0YjhjMzBmOWViNTIzMDRlMGYwZWM3ZTFkNmNiOTQ4OTg5MWU5YmMxZDJmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1MjlhMTMwYWJkMWMyZmFhY2U3MTIzOGM1YTc4ZGI3OTQ1NjlkNzAyZTEyOTk1MTRhYTA3YjRmMmE4MTAyNzc0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_21cbeb4770f14206b66d6770b7e54f3d",
+      "statement": "An exporter constructor failure causes SetupOTelSDK to shut down previously registered providers and run to abort startup; cleanup joins errors and clears its callback list, while ApplyProviders only replaces non-nil providers and therefore does not reset disabled signals' preexisting globals.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L607-L618",
+          "version": "repo-lines-v1:sha256:daf22c53429bf435480c2911ba1154abccb4ff7953ef5d543ba49ab21bd2fadf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlY2RmNzc4NTIyZTc2N2EzNGI4ZDhmN2FiMmNhZjFhODM4YmEzMjZjZTlkNjIxNzU5Yjk1YmQ0YzU4M2FhNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2MjA5YzRlZjg3ZDdiZmNkYzQ2NTdhMDY2MmNhOWFlZGM5ZDRhZDVjNDJlMjVmNGFiOWYxY2QwNzY5NjlkMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0ZjllMjA1NTJlODMzNDdmODk0Yjc2MWYxZmNjMjUwNTIxMDk4NjhhYzg4NmUwYmFjMGJiNDAwNDUyZmIzMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmYWI4ZTRkOTNmYjdkODg5MzZmMTk2YjViYWU1ZjFlZTg2MDRjNGNkMjljZGQ5ZTE0ZGE4YTMxOTljZDczZTIifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L25-L50",
+          "version": "repo-lines-v1:sha256:c533ac1d4befe7bbfa729085a7f44aeae4b9e9bc6b6c217ce7eb6fc9df9f1611:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwNjM1YWQ1ZjBiMDEwYmY2OTM1MGI3MDczMjMwZTFmNDI0ZTUxNWU3ZDNhNTE0OTRhNDZjMDBmN2ZjYWY4MmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmYWYzYzUzMTM2MmQ0OWY5NjY2ZTExZDAzMWRiNTgxOWQyYjk5NmY0OTJjZDQwNGQwN2I1OGI4ZmQ0MDYyNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5Mjc2OGZiMTEyODJhMjU2ZjFmNjY2MGUzYWM0MTE5M2UzMDZiYmNjNzQ0NjcxZjljZGQyMmZkODFlM2RlOWIifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L84-L155",
+          "version": "repo-lines-v1:sha256:597a296c5e9f66f789aa940d5f3739a062385ea3d57edd8f73b87dabe50b8f82:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYTUzYWE0ZTU2ZDg0MWM5ZGRlMzRiOGMzMGY5ZWI1MjMwNGUwZjBlYzdlMWQ2Y2I5NDg5ODkxZTliYzFkMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyOWExMzBhYmQxYzJmYWFjZTcxMjM4YzVhNzhkYjc5NDU2OWQ3MDJlMTI5OTUxNGFhMDdiNGYyYTgxMDI3NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0YWNjMTI2MGQ2YmFhYWJiNTExOThkNzc2YzUxZTRlZjU5ZWU0M2JkNjI3YWM3NjRiY2JhYjY5YWNhZTNiMDUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a523ce0730aa4cc18db1c0d0eef0fc54",
+      "statement": "On interrupt or SIGTERM, run attempts HTTP server shutdown with a 30-second deadline, then deferred telemetry shutdown uses context.Background and joins errors into the return error; production SetupOTelSDK exposes shutdown rather than a separate flush callback.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L599-L668",
+          "version": "repo-lines-v1:sha256:14727acb776c419126942f747da7ea289f38a04433ee35a108c6fcc16dd5f619:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiZTZlNDNkMTQ4OTYyNTg2MDYzZWY5OWRmMDMxMGE2MzNmYmU5ZTM2NjEyMjc2ZjgzOTBhMWQyYWU5MzM3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTFkNzkxNDgwOWUzNDk5ZDQ1NzNlOGJmZTU4MjZhZTA4MmVhMmUyYTE0ZGI3Y2MxNDE3MjU3N2M2YTczNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0OTFhOGMxYjg0MjA2ZTRhNjZkYjFmYjE5MjRmODQyNGNlY2Y4MmFkZmQxYzM2YWFhZGIxMGVkNTE0ZWIxYjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://cmd/nacp/nacp.go#L63-L65",
+          "version": "repo-lines-v1:sha256:0bef6319c7a6924e6bda390682963f4fce0bf42e49c4cb556d078158ada4bc4a:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzNmZTlmZDE5ZTQ4MTg0NzhkMWYxMTFjYTBhOWQ5NWM1NTE4ZDgxYjVjMjJjNzVkZTU0YTkwZjkyMWYwMTAyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzYyZDk1NjhkOWIxOTFhYTlhOWJiZTI3N2QzNDQxMmQ0YTk1NjI4ZTliNzQ4NmFjNjU4ZDdjZTdhZDYzM2NjNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWZkMDQ0MTFkNzRhNTBmM2FkNWNlNzA2YjVmNzQ1ZGIzZjIwYmM3NzQ1ZmYzOGM2Zjc5Y2NlNjBiZGNiNmJjYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2U3ZGI3MDRkN2YzNThkM2M4Y2E5YTc0OTY5ZWExYjY0NTkwMTk2NjNjZjMzZDY5ODI4ZDY3MjZjM2YxOThlNyJ9"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L84-L139",
+          "version": "repo-lines-v1:sha256:0cc80191c042711c4f08a238127d030991f61b4f881ad3f13814832af2ec3d05:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYTUzYWE0ZTU2ZDg0MWM5ZGRlMzRiOGMzMGY5ZWI1MjMwNGUwZjBlYzdlMWQ2Y2I5NDg5ODkxZTliYzFkMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ZDFmOTk1NTg3ZTJhMzAzNDg0MjY4MjljM2QzZDUxNjM4NWQ3Mjc0OTFiOTdkNjhkZjM2OTYwYTdhZmM4OWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyOWExMzBhYmQxYzJmYWFjZTcxMjM4YzVhNzhkYjc5NDU2OWQ3MDJlMTI5OTUxNGFhMDdiNGYyYTgxMDI3NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlNDRmYzgwOWI5YmIzOWZjYTExYzk1YmFjMzczZmQ3N2I1YjVkNTg1NGRlMzJlNWI0NDAwZWQ1YTRiZDgxYTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f68ee70ab1b84d0da8a06aa209be2bbf",
+      "statement": "SetupOTelSDKWith flushes only tracer and meter providers, registers tracer-provider, meter-provider, and trace-exporter shutdown, and leaves lifecycle of its caller-supplied logger provider to the caller; tests collect/read telemetry before teardown.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp_otel_test.go#L223-L230",
+          "version": "repo-lines-v1:sha256:6606993506496989830c955c55626c5ed01f1f02b63cc45ec173a456e92018ea:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODZmODc4NTVkM2YyY2U2YTYwNGY4NTJmZmFlOTIzOGNmODNhNjg3NjdjYmQxMTlkYjRiYTM0M2QzZjYxMTY1MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBlYWFkNDYyMjc4NDdjZDQwMzE2YmMxODczMmI5ODg1MjliOTc4MjdjODI0NGQ5OTBhMDBiOTY5OGVmMzdlZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODJjMDAyZDFkZGU3YjU2NDg0MjQ3YmY5NTgwMmZmMzRkYzA5OWE4NTMzMTZiZWJhNjMwZjZkYWMzYzBhMDUyZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWMxN2U5NTk0MGQzOTVkNWQzODgzMTJjZGE0YjljNWYyZTA5ZjFhOTI3NTdiZjQ3NGFhYTdlZDJlZjEyMjA4ZiJ9"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L54-L82",
+          "version": "repo-lines-v1:sha256:621e806d39d117d935f1d5ec928f3a6434d9acaf0c6948415d3a955b2d2dbf9e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmMTlkYzQ1OGZiN2IxNDg1YzU0ZWQ5NzQ4YjY0ODQwNTEzY2M2OTdiOGIxMmU5YTJmZGQ0MGFiNWFjZGNlN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5Mjc2OGZiMTEyODJhMjU2ZjFmNjY2MGUzYWM0MTE5M2UzMDZiYmNjNzQ0NjcxZjljZGQyMmZkODFlM2RlOWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2MDY0ZWY1YjhjMjgwYjQyZjcwZWM1ZWZmOWNlZTM0NjVmMWRlODk2MGQ5ZmE1YWNlNTk2M2M5YzZhNTA5MDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4bff28e813f24d808f13783756ebf1d2",
+      "statement": "pkg/o11y/metric.go is generated from registry definitions in pkg/o11y/nacp.yaml and common.yaml with templates/registry/go metric template and Weaver settings; root generate.go still targets ./o11y for registry/output rather than the inspected pkg/o11y layout, so its regeneration command is not a verified recipe for this layout.",
+      "evidence": [
+        {
+          "resource": "repo://generate.go",
+          "version": "repo-file-v1:sha256:3ab59ecf43ca0fcb315f448741aba99ac36b924ca307989af24c90f7b8307999"
+        },
+        {
+          "resource": "repo://pkg/o11y/common.yaml",
+          "version": "repo-file-v1:sha256:0335e910c61f5fd21073d2b78f56d02c92cda2d1e0e67f816657aac7741ed911"
+        },
+        {
+          "resource": "repo://pkg/o11y/metric.go#L1-L11",
+          "version": "repo-lines-v1:sha256:bbe0eb38ddab33f034fe72ef372fb4c5946a5c01e8fefffa6918d9bdc4e655e7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiOTI0NmZiNmJlZDM0MTA3NTMyYzczMGQwNmRiZmMwMDRiZWFlMDQ2NDA5ZDBkYjUxYjU2YmFhMmNkMzYyOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZDg2MDhhZjE0ZTgxNzkyY2QyNTVmMWYxYWM3NzlmNGM1MGU5Y2I4M2YxYjUwMmIzOTc0MjA2MzA5NWE1MzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzYmQzNTY5ZDczMzA2NThlYTllOGFmZWRmNDMwNWYwMGIyMzMwMzkyY2JkNjM4MmFhY2U0NzNlNmZjYzJjZWEifQ"
+        },
+        {
+          "resource": "repo://pkg/o11y/nacp.yaml",
+          "version": "repo-file-v1:sha256:6d00c5755528cf9a760c0ea139596064f0bfa9ef3058a49c865f6fb7e8d75566"
+        },
+        {
+          "resource": "repo://templates/registry/go/metric.go.j2",
+          "version": "repo-file-v1:sha256:8f5c914a1bdb488430535f5e2e261c2c8d2f6afdc57c04474b1e7e6c33e14832"
+        },
+        {
+          "resource": "repo://templates/registry/go/weaver.yaml",
+          "version": "repo-file-v1:sha256:2ead6356bb30796cfa3369356cde903811b3e1a32e1b80cb426039e3d695c353"
+        }
+      ]
+    },
+    {
+      "id": "claim_cfb9c30d908349f5b40937d85d8c0471",
+      "statement": "Telemetry tests use a log recorder, manual metric reader, and in-memory span exporter to check all five controller counters, HTTP metrics, and logs, but the integration span assertion only checks a minimum count rather than exact parentage; separate tests cover fanout/level changes and actual OTLP logs via a container collector.",
+      "evidence": [
+        {
+          "resource": "repo://cmd/nacp/nacp_otel_test.go",
+          "version": "repo-file-v1:sha256:038356f4f08ac487e8137f0a3a8c1d4aa01367a12e25bd42ab4710e8ecfe0548"
+        },
+        {
+          "resource": "repo://pkg/logutil/logutil_test.go",
+          "version": "repo-file-v1:sha256:79ab60fead61db9418325d51324230b0dfd0ce7099389ce33c6f239ec06e7dc1"
+        },
+        {
+          "resource": "repo://pkg/otel/otel_test.go",
+          "version": "repo-file-v1:sha256:21abcc4b2da6587aec412218f993c7e50bd2d4ff6849f2353416f1644bb18446"
+        },
+        {
+          "resource": "repo://testutil/otel.go#L53-L101",
+          "version": "repo-lines-v1:sha256:5c4d278ec1d5c8f248ef48c40c3d1f4af4bb7fb927660dee59f4cd71fc2d64a1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjYmJkNTlkOWEyZTRjNzI0YWQzZmE1MTNkYjE3ZjdmZmIwMWU2MmNhY2U5YjExMzI4MmI3OTQwZTQwYjYyMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZWMwMGVmNzZhMTk3YzJmZGI5YzBmOWMyODJhMzI0NGRkZjFkZjg4MWZiZDg2MmVhZjIwYzUzODU5ZjgyMTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNjU5NzA4NjNkNTgxM2JmOTcwYjAyZTM0YjU1YTIxMDIyZmY5MWZiYjM3NjAwYmM5ZjZhNzY2NzkwZWVkMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://testutil/testutil.go#L104-L112",
+          "version": "repo-lines-v1:sha256:61adb793f4e0a2076fc4cb65fec80eb499ea1f2ab681fd810725298ae092d5be:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjVmNGFjZWU0MzEzNDZiY2Q5ZTQwMzkzZTlkYzI4ZmQyMzBjZDlhYTVhYzM0NzFjNDNhOTRhODViZDRlYThjNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODViMWMzOTFmMzZkMTBiNzFmYWRjZTE1N2Q4ODE0MWM0OGRkMmNkZGFkYTYxNzgwMGM5MDE5MTJhMDRhZTBhYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWNjOTUyMmE3MDgxYjIxY2M2YjkxNDU4ZWFmM2Y5MjhjNmM1NWFlNjI0YmU3NDFkN2FhMDg0ZGRmMzQ2MTZlNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_295b496d24a24bbf89e4ccb339356fcd",
+      "statement": "Telemetry test setup installs process-global providers and the collector helper mutates process environment, so concurrent global-mutating tests require isolation.",
+      "evidence": [
+        {
+          "resource": "repo://pkg/logutil/logutil_test.go#L193-L204",
+          "version": "repo-lines-v1:sha256:76da6d47ccb671b5250b0951515c040092b0bdaf162984be0ce380bba71c4ca9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiMGQyOTBhM2NjOWU5NTY3Mjc4MGM3ZTVlNDE1NWZjMDhjZjY5ODc2OGY4ZTNiYWNmOGJlYmVjMjRiOTM1MDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyYjk1ZDdmNWMyZjVmOGYwODExZDJkOGU2M2FhMjVhN2FkMTJlNjQyNzNhZTdmMWYyMGEyMGY2MmUzOWRhZTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5OWFjOWZiOWQ0MjQ3NzA2YjM5MjNhZGEyZTA5YzZkMThjNWM0ZjkwMmYzY2YxOWEzZWFlZTI4M2Q5YWU5NmEifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L142-L154",
+          "version": "repo-lines-v1:sha256:932477e0707fc1787dfe40d61939ce41cde4beebee77f7141b6e568f86c924d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkYTYyMGQxOTk4NzNkYjU3OGU0MzY1MDk3NDBlMzQ2MTQ5OTg5ZDc4NjYzZGExNzgwODJhMzQzMTA2YWEyYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3Y2RhODJkYTYwNjIzOGUwNWU2MjM5OTU2OWM1ZWUwMzk5MzQxOTY0OGFlNWQ0M2EyYmY4Y2Q2MzQ3ZjgyNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjZWZlYzQ3MTIzY2ZkY2EyYWNkZDU2ZTUxNzg4NDZhNDU5ZGUzNDU5YjI1ZTZkZjEyOGVlZjdmMzY0NmUzZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmYzVkOGVjN2Q1M2E5MTkzMzI1NjYzZGMwZTdjYmZiZDgzZTg3ZGY3N2UxYzk2NmI2NjU3ZmU2NTc4NDBlMGQifQ"
+        },
+        {
+          "resource": "repo://pkg/otel/otel.go#L54-L81",
+          "version": "repo-lines-v1:sha256:9581800ab904736dedc2200ddca3ecd099afcedbc7fe1603e3555af7b32d03a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmMTlkYzQ1OGZiN2IxNDg1YzU0ZWQ5NzQ4YjY0ODQwNTEzY2M2OTdiOGIxMmU5YTJmZGQ0MGFiNWFjZGNlN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyYjg5MDljNTYzN2ExNGIzMTY0NDIzOThjMTg4MWY5MTllMWE4OTZkZDliOTM3ZGQ0N2RlZDIzZDMzMTdkOTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5Mjc2OGZiMTEyODJhMjU2ZjFmNjY2MGUzYWM0MTE5M2UzMDZiYmNjNzQ0NjcxZjljZGQyMmZkODFlM2RlOWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3NmM3ZDZlYjgzYWYyMTFkZjgyNjUyNWU1NDk3ZGMzMWRhZTQxMTU4NDVmNjMyYTJlMzM5ODg0YzdmMGZmY2QifQ"
+        },
+        {
+          "resource": "repo://testutil/otel.go#L91-L99",
+          "version": "repo-lines-v1:sha256:a4cd167a9ab38a52aa91b833086422f0b2e200841f5540c58de0ebff6f035914:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjMwYmM5ZTAyMWFlZDkyMjAzMjcyNDczOWMwNjhjYzNjYzdhOWFhNjU3MmU5ZWU2ZWFlMzQ2NzMxMjFkZDc5YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzdhOWI1ZTkwMTljOGRiODc4M2VjOWMzZmViYjBhMmM5ODYyZjYxYTA1YzMwOGZlODk1ZTRhOWJlZDAzZWRiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGUyM2RhNDM2ZGMyZTE1ZjI5MTI1NjQxMTc2NDIyMGQzN2Q0MTA0YjFmOGNkODJlN2I2Njc5MjE0NTg1ZDM3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzNjZTdmMTYxZDY1NDUwYzY3OThjY2YzN2U1NDVmMzM4MWJkZTMzZTZlNWY1ZjU1OWM2YTMyYzcwMDU1OTRlOSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-06T10:26:01.086Z"
+  }
+}
