@@ -1,17 +1,19 @@
 module github.com/mxab/nacp
 
-go 1.26.5
+go 1.27.3
 
 require (
-	github.com/docker/go-connections v0.8.1 // indirect
 	github.com/evanphx/json-patch v0.5.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hashicorp/nomad/api v0.0.0-20260804144404-aeca0c707e53
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/moby/go-archive v0.3.2
+	github.com/moby/moby/api v1.55.0
+	github.com/moby/moby/client v0.5.1
 	github.com/notaryproject/notation-core-go v1.3.0
 	github.com/notaryproject/notation-go v1.3.2
+	github.com/open-policy-agent/opa v1.19.0
 	github.com/samber/slog-multi v1.8.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.43.0
@@ -35,12 +37,6 @@ require (
 )
 
 require (
-	github.com/moby/moby/api v1.55.0
-	github.com/moby/moby/client v0.5.1
-	github.com/open-policy-agent/opa v1.19.0
-)
-
-require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Azure/go-ntlmssp v0.1.1 // indirect
@@ -61,6 +57,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
+	github.com/docker/go-connections v0.8.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.10.2 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect

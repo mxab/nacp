@@ -1,6 +1,6 @@
 [tools]
 actionlint = "latest"
-go = "1.26.5"
+go = "1.27.3"
 "go:github.com/go-delve/delve/cmd/dlv" = "latest"
 golangci-lint = "latest"
 nomad = "latest"
