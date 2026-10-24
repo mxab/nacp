@@ -2,148 +2,131 @@
 
 ## [Unreleased]
 
-### OpenTelemetry
-OpenTelemetry with OTLP support has been added, allowing for better observability and monitoring of admission requests and responses.
-
-The otlp exporter is configured by the common otel environment variables.
-
-```hcl
-telemetry {
-    logging {
-        otel {
-            enabled = true
-        }
-    }
-    metrics {
-        enabled = true
-    }
-    tracing {
-        enabled = true
-    }
-}
-```
-
-
-### `log/slog` for logging
-
-Switch from `hashicorp/go-hclog` to `log/slog` for logging.
-
-### Initial logging config
-Allow configuring the initial logger from `text` to `json` formats by adding `-bootstrap-json-logger`
-
-### Dependencies
-
-All direct dependencies have been updated to their latest releases, and the
-`github.com/hashicorp/nomad` main module has been removed — NACP now depends only on
-`github.com/hashicorp/nomad/api`.
-
-- **OPA upgraded from 1.16 to 1.19**
-  The Wasm engine switched from `wasmtime-go` to the pure-Go `wazero`, which removes the cgo
-  dependency from the build.
-
-- **Removed the `hashicorp/nomad` main module**
-  The main module has been licensed under BUSL-1.1 since Nomad v1.6.6, while NACP and
-  `nomad/api` are both MPL-2.0. It was pulled in for a single production call
-  (`helper.MergeMultierrorWarnings`) plus two test-only helpers.
-  - `MergeMultierrorWarnings` is now vendored at `pkg/helper/warning.go`, taken verbatim from
-    Nomad v1.6.3 — an unambiguously MPL-2.0 release, predating the BUSL-1.1 switch at v1.6.6 —
-    so warning strings returned in `X-Nomad-Warnings` remain byte-identical.
-  - Nomad's `helper/tlsutil` and `lib/file` test helpers were replaced with `crypto/x509` and
-    `os.WriteFile` equivalents in `cmd/nacp/tlshelper_test.go`.
-  - This removes all BUSL-1.1 code from the dependency tree and roughly halves the module
-    graph (510 → 258 modules).
-
-  See [update_and_nomad_dep_removal.md](update_and_nomad_dep_removal.md) for the full rationale.
-
-- **OpenTelemetry upgraded to 1.45.0 / 0.21.0 (contrib 0.70.0)**
-  Upstream removed the `Kind`, `Value` and `KeyValue` types from `go.opentelemetry.io/otel/log`;
-  log bodies and attributes now use the shared `go.opentelemetry.io/otel/attribute` types. This
-  is confined to NACP's test assertions — the emitted OTLP logs, metrics and traces are
-  unchanged.
-
-### Breaking Changes
-
-- **Switch from `hashicorp/go-hclog` to `log/slog` for Logging**
-  The logging library has been changed from `hashicorp/go-hclog` to the standard library's `log/slog`.
-  - This change may affect how logs are formatted and structured.
-
-- **Move `log_level` config to `telemetry/logging/level`**
-  The `log_level` setting has been moved under the `telemetry/logging/level` path to better organize telemetry-related configurations.
-
-- **Jobs that previously bypassed admission control are now evaluated**
-  The route patterns matching `/v1/job/:id` and `/v1/job/:id/plan` were malformed and only matched a subset of legal Nomad job IDs. Job IDs containing underscores or dots, starting with a digit, or using uppercase letters were proxied straight to Nomad with **no mutators or validators applied**.
-  - These requests now go through the full admission pipeline. Jobs that silently slipped past your policies before may now be mutated or rejected.
-  - Review your policies against existing workloads before upgrading.
-
-- **`tokenInfo` in policy input is now sanitized**
-  When `resolve_token` is enabled, the ACL token passed to OPA policies and webhooks is no longer the full `api.ACLToken`. It is now a reduced `ACLTokenContext` that omits `SecretID` and the creation-only `ExpirationTTL`.
-  - All other fields keep their names and JSON shape, so policies reading `AccessorID`, `Policies`, `Roles`, `Global`, `CreateTime`, `ExpirationTime`, `CreateIndex`, or `ModifyIndex` continue to work unchanged.
-  - Any policy or webhook reading `SecretID` or `ExpirationTTL` must be updated.
-  - `RequestContext.ResolveToken` is now populated to reflect whether token resolution was requested; it was previously always `false`.
-
-- **OPA bundle validator fails closed on malformed decisions**
-  A bundle policy decision that is not a JSON object, or whose `errors`/`warnings` are not lists of strings, is now treated as a policy contract failure and rejects the job. Previously such decisions silently passed validation.
-  - Policies whose configured decision path can yield a scalar or `undefined` value must be updated to return an object.
-
-- **Configuration is validated at startup**
-  Configuration is now checked after HCL decoding and when building a server, instead of failing later at request time or panicking. Invalid configurations that previously started now refuse to start.
-  - Covers port range and bind address, an absolute HTTP(S) Nomad address, listener TLS requiring both `cert_file` and `key_file`, upstream TLS cert/key pairing, known mutator and validator types, required `opa_rule`/`opa_sdk_rule`/`webhook`/`notation` blocks, absolute HTTP(S) webhook endpoints and valid methods, duplicate mutator and validator names, and bundle controllers requiring a configured `opa_sdk` block.
-  - An explicitly supplied but missing `-config` path now fails startup instead of silently falling back to the default configuration. Defaults still apply when no `-config` is given.
-
-- **`json_patch_webhook` mutators honour the `errors` response field**
-  The documented `errors` field was parsed and then discarded, so a webhook rejecting a mutation was ignored and the job proceeded. Errors returned by the webhook now reject the request.
-
-- **Upstream error responses are passed through untouched**
-  Warning and validation-error injection is now limited to successful (2xx) upstream responses, so Nomad's own error bodies reach the client intact instead of being unmarshalled into a response struct and mangled.
-
-- **Stricter Rego assignment safety in OPA 1.19**
-  OPA now treats the right-hand side of `:=` as a read that must be made safe by other expressions, and it can no longer be satisfied through the left-hand side.
-  - Policies that previously compiled may now fail with `rego_unsafe_var_error`.
-  - All policies bundled with NACP were checked and needed no changes, but custom policies should be re-verified against OPA 1.19.
-
-- **Error attributes in exported logs now use the `exception.*` semantic conventions**
-  The `otelslog` bridge records an error-valued log attribute on the log record's error field rather than as a regular attribute, and it is exported as `exception.message` / `exception.type`.
-  - Collector pipelines, queries, or dashboards matching on an `error` attribute must be updated.
+## [v0.12.0] - 2026-10-24
 
 ### Security
 
-- **Validators now evaluate the job that is actually forwarded to Nomad**
-  `ApplyAdmissionControllers` ran validators against the caller's original payload while returning the mutator chain's output, so on the register and plan paths a mutator could introduce content that validators never inspected. Validators now receive the final mutated job, each as an isolated copy, so one validator cannot alter what another validator or Nomad sees.
+- **Validators evaluate the final mutated job**
+  `ApplyAdmissionControllers` now provides validators with an isolated copy of the final mutated job produced by the mutator chain rather than the original caller payload. This prevents mutations from escaping validation and ensures validators cannot mutate inputs.
+- **Jobs previously bypassing admission control are now evaluated**
+  Route patterns matching `/v1/job/:id` and `/v1/job/:id/plan` previously matched only a subset of legal Nomad job IDs. Job IDs containing underscores, dots, uppercase letters, or starting with digits bypassed admission hooks entirely and were proxied directly to Nomad. They now undergo full admission evaluation.
+- **Sanitized `tokenInfo` in policy context**
+  When `resolve_token` is enabled, the ACL token passed to OPA policies and webhooks is now an `ACLTokenContext` omitting `SecretID` and creation-only `ExpirationTTL`. Other fields (`AccessorID`, `Policies`, `Roles`, `Global`, `CreateTime`, `ExpirationTime`, `CreateIndex`, `ModifyIndex`) remain unchanged. `RequestContext.ResolveToken` now accurately reflects whether token resolution was requested.
+- **Token resolution failures abort the request**
+  When `resolve_token` is enabled, a failure to look up `/v1/acl/token/self` immediately halts request processing instead of proceeding unauthenticated.
+- **TLS 1.2 minimum version enforced**
+  Both the listener and upstream Nomad client TLS connections require at least TLS 1.2.
+- **Strict PEM CA validation**
+  Invalid PEM CA certificates now fail configuration/startup instead of silently producing an empty root pool.
+- **Payload limits and timeouts**
+  Admission request bodies are limited to 32 MiB, webhook responses to 10 MiB, and webhook calls timeout after 30 seconds.
+- **Webhook endpoint constraints**
+  Webhook targets must be absolute HTTP/HTTPS URLs, validated at startup.
 
-- **Token resolution failures now stop the request**
-  With `resolve_token` enabled, a failed `/v1/acl/token/self` lookup wrote an error and then continued through admission and upstream proxying without the required identity context. Such failures now abort the request.
+### Breaking Changes
 
-- **ACL token secrets are no longer sent to policy engines**
-  See the `tokenInfo` breaking change above; `SecretID` was previously serialized into every OPA and webhook admission payload.
+- **Configuration validated at startup**
+  Invalid configurations (invalid port range/bind address, non-absolute Nomad or webhook URLs, missing TLS cert/key pairs, duplicate controller names, or missing explicit `-config` paths) fail startup immediately instead of panicking or falling back silently.
+- **OPA bundle validator fails closed on malformed decisions**
+  Decisions from OPA bundle policies that are not JSON objects, or whose `errors` / `warnings` fields are not arrays of strings, now fail closed and reject the job as a policy contract failure.
+- **`json_patch_webhook` mutators honour the `errors` response field**
+  Errors returned by JSON-Patch mutation webhooks now reject the request instead of being silently ignored.
+- **Upstream error responses passed through untouched**
+  Validation-error and warning injection is now restricted to successful (2xx) upstream Nomad responses so Nomad's own error payloads reach the client intact.
+- **Stricter Rego assignment safety in OPA 1.19**
+  OPA 1.19 treats the RHS of `:=` as a read that must be made safe by other expressions. Verify custom policies against OPA 1.19.
+- **Error attributes in exported logs now use `exception.*` semantic conventions**
+  The `otelslog` bridge records error log attributes using `exception.message` and `exception.type`. Collector pipelines and dashboards matching on an `error` attribute must be updated.
 
-- TLS 1.2 is now the minimum version for both the listener and upstream Nomad connections.
-- Invalid PEM CA files are rejected instead of silently producing an empty trust pool.
-- Webhook endpoints must be absolute HTTP(S) URLs, validated at configuration load.
-- Admission request bodies are limited to 32 MiB and webhook response bodies to 10 MiB.
-- Webhook calls now have a 30 second timeout; previously they could hang indefinitely.
+### Added & Improved
+
+- **Refactored OPA SDK & Bundle Wiring**
+  Refactored OPA SDK initialization and dependency injection, supporting cleaner test isolation and robust lifecycle management for dynamic policy bundles.
+- **Tracing `nomad.job.id` Span Attribute**
+  Introduced `attrNomadJobID` constant for tracing spans to cleanly correlate traces by Nomad Job ID.
+- **Docker-backed Notation tests isolated**
+  Notation tests requiring Docker are behind the `integration` build tag, allowing local `go test ./...` execution without Docker while maintaining full coverage in CI.
 
 ### Fixed
 
 - Fixed a nil-pointer panic when rendering a validation error on the `/v1/validate/job` response path.
-- Webhook mutators and validators now close their HTTP response bodies, and share a single instrumented transport instead of allocating a new one per call.
-- Gzip response handling now closes both the decompressor and the underlying upstream body, and no longer discards write and close errors.
-- Non-2xx webhook responses are now rejected instead of being decoded as if they were successful.
-- Upstream Nomad TLS now supports CA-only, client-certificate, and system-root configurations instead of requiring all three files.
-- The server handles `SIGTERM` in addition to `SIGINT`, shuts down with a 30 second deadline, and propagates shutdown failures. A normal `http.ErrServerClosed` is no longer reported as a runtime failure.
-- `ReadHeaderTimeout` and `IdleTimeout` are now configured on the HTTP server.
-- `X-Forwarded-For` values are trimmed, and an unparseable `RemoteAddr` no longer yields an empty client IP.
-- Notation defaults (`max_sig_attempts`) are now applied to nested `opa_rule` notation blocks on both validators and mutators, not just top-level validators.
-- Fixed a data race on the Testcontainers log consumer used by the OpenTelemetry tests.
+- Webhook mutators and validators now close HTTP response bodies and share a single instrumented transport.
+- Gzip response handling now properly closes both the decompressor and upstream response body, correctly propagating write and close errors.
+- Non-2xx webhook responses are rejected cleanly with contextual errors.
+- Upstream Nomad TLS now supports CA-only, client-certificate, and system-root configurations.
+- The server cleanly handles `SIGTERM` and `SIGINT` with a 30-second graceful shutdown deadline; `http.ErrServerClosed` is no longer logged as a failure.
+- `ReadHeaderTimeout` and `IdleTimeout` are configured on the HTTP server.
+- `X-Forwarded-For` header entries are trimmed, and unparseable `RemoteAddr` values fall back safely.
+- Notation defaults (`max_sig_attempts`) are applied to nested `opa_rule` notation blocks on mutators and validators.
+- Fixed a data race on the Testcontainers log consumer in OpenTelemetry tests.
 
-### Container image
+### Dependencies & Licensing
 
-- The release image now ships the system CA certificate bundle. The previous `scratch` image had none, so HTTPS webhooks, OPA bundle servers, and registries failed with `x509: certificate signed by unknown authority`.
-- The certificate stage is a version-pinned Alpine image instead of `ubuntu:latest`, and the runtime image runs as numeric UID/GID `10001:10001` without requiring an `/etc/passwd` entry.
+- **Removed `github.com/hashicorp/nomad` main module**
+  Removed the BUSL-1.1 licensed Nomad main module dependency, leaving only `github.com/hashicorp/nomad/api` (MPL-2.0). NACP is now entirely free of BUSL-1.1 code, cutting module dependencies in half (510 → 258 modules). `MergeMultierrorWarnings` has been vendored from Nomad v1.6.3 (MPL-2.0).
+- **OPA upgraded from 1.16 to 1.19**
+  Wasm engine migrated from `wasmtime-go` to pure-Go `wazero`, removing CGO build dependencies.
+- **OpenTelemetry upgraded to 1.45.0 / 0.21.0 (contrib 0.70.0)**
+  Updated to shared attribute APIs (`go.opentelemetry.io/otel/attribute`).
+- **Dropped `github.com/docker/docker`** in favor of split moby modules.
+- **Go toolchain updated** to latest Go LTS.
+
+### Container Image
+
+- Release image includes the system CA certificate bundle sourced from Alpine 3.24 (updated to latest release) into the minimal `scratch` image, allowing HTTPS webhooks, OPA bundle servers, and public registries to work out of the box with up-to-date roots.
+- Container executes as non-root UID/GID `10001:10001`.
+
+## [v0.11.0] - 2026-03-22
+
+### Added
+- **OPA Bundle Support (`opa_bundle`)**: Introduced OPA SDK integration allowing policy bundles to be loaded and evaluated for:
+  - `opa_bundle` validator
+  - `opa_bundle` JSON-Patch mutator
+- Added mock OPA bundle server test utilities in `testutil`.
+- Updated dependencies (oras-credentials-go, notation archive handling).
+
+## [v0.10.0] - 2025-10-03
+
+### Changed & Fixed
+- Upgraded to OPA v1.
+- Refactored internal directory layout and relocated packages into `pkg/`.
+- Fixed token resolution error handling.
+- Regal linting fixes across testdata mutators and validators.
+
+## [v0.9.0] - 2025-09-04
+
+### Added & Changed
+- Reworked logging architecture.
+- Go version updated to 1.25.
+- Updated OpenTelemetry image and dependencies.
+
+## [v0.8.0] - 2025-07-04
+
+### Added
+- **OpenTelemetry with OTLP Support**: Full OpenTelemetry instrumentation for traces, metrics, and logs with OTLP export, configured via standard OpenTelemetry environment variables or the `telemetry` block:
+  ```hcl
+  telemetry {
+      logging {
+          type = "otel"
+      }
+      metrics {
+          enabled = true
+      }
+      tracing {
+          enabled = true
+      }
+  }
+  ```
+- **`log/slog` Standard Structured Logging**: Switched logging from `hashicorp/go-hclog` to Go's standard library `log/slog`.
+- **Startup JSON Logger Flag**: Added `-bootstrap-json-logger` flag to format initial startup logs as JSON.
+- **Resource Version Header**: Added resource version support.
+
+### Breaking Changes
+- Switch from `hashicorp/go-hclog` to `log/slog`.
+- Relocated `log_level` setting under `telemetry/logging/level`.
 
 ### Improvements
-
-- Improved the controller handling of mutation jobs so it can be ensured that jobs mutations are aggregated
-- Docker-backed Notation tests are behind an `integration` build tag, so `go test ./...` no longer requires a running Docker daemon. CI runs with `-tags=integration` to preserve the coverage.
+- Improved controller handling of mutation jobs so it can be ensured that job mutations are aggregated.
 
 ## [v0.7.0]
 
